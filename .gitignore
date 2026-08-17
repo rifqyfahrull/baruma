@@ -37,6 +37,7 @@ wall-dump-*.txt
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -84,6 +85,7 @@ scripts/test-prod-agent.mjs
 .pnpm-store/
 .env
 .env.*
+!.env.example
 *.env
 credentials.json
 *.key
