@@ -82,3 +82,9 @@ scripts/test-prod-agent.mjs
 
 # local pnpm content-addressable store (from install)
 .pnpm-store/
+.env
+.env.*
+*.env
+credentials.json
+*.key
+.credentials
