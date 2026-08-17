@@ -2,7 +2,9 @@
 
 Web-based SaaS untuk membuat konsep rumah terukur dari ide sederhana: brief →
 alternatif layout → editor denah 2D → preview 3D → RAB → contractor pack.
-Dibangun **frontend-first** dengan **mocked backend** (lihat [docs/PRD.md](docs/PRD.md)).
+**Fullstack** (Next.js App Router API + Postgres via `pg`), dengan data layer
+yang bisa di-switch **mock ⇄ HTTP** untuk demo tanpa backend (lihat
+[docs/PRD.md](docs/PRD.md)).
 
 > Prinsip: user awam harus merasa mudah, tetapi output teknis harus tetap jujur
 > soal batasannya.
@@ -13,14 +15,16 @@ Dibangun **frontend-first** dengan **mocked backend** (lihat [docs/PRD.md](docs/
 - **Tailwind CSS v4** + **shadcn/ui** (radix-nova, Geist font, Lucide icons)
 - **TanStack Query** (server state) + **Zustand** (UI state)
 - **React Hook Form + Zod** (forms & validation)
-- **Auth.js (NextAuth v5)** — real auth, Credentials + demo fallback
+- **Auth** — custom JWT (`jose` HS256 + `@node-rs/argon2`) untuk akses API/Bearer,
+  digabung dengan **Supabase SSO** (session cookie `.tampil.dev`) untuk login app +
+  OAuth/reset password. Bukan NextAuth.
 - **Data layer** (`src/lib/data`) — mock ⇄ HTTP, di-switch via env (lihat [docs/API.md](docs/API.md))
 
 ## Menjalankan
 
 ```bash
 pnpm install
-cp .env.example .env.local && echo "AUTH_SECRET=$(openssl rand -base64 32)" >> .env.local
+cp .env.example .env.local && echo "BARUMA_JWT_SECRET=$(openssl rand -base64 32)" >> .env.local
 pnpm dev          # http://localhost:3000
 pnpm build        # production build
 npx tsc --noEmit  # typecheck
@@ -38,8 +42,8 @@ di [docs/API.md](docs/API.md). Schema DB kanonik: [db/migrations/0001_init.sql](
 | --- | --- |
 | Design system + brand palette (teal/sand) + tema light/dark | ✅ |
 | Landing page + Pricing (`/`, `/pricing`) | ✅ |
-| Auth nyata — Auth.js (`/login`, `/register`, `/forgot-password`) | ✅ |
-| Billing & paket (`/app/billing`) — langganan Mayar nyata + admin backoffice (`/app/admin`) | ✅ |
+| Auth nyata — custom JWT + Supabase SSO (`/login`, `/register`, `/forgot-password`) | ✅ |
+| Billing & paket (`/app/billing`) — langganan **Stripe** nyata + admin backoffice (`/app/admin`) | ✅ |
 | App shell (sidebar, topbar, command palette ⌘K, user menu, credits) | ✅ |
 | Dashboard + Projects list (`/app/dashboard`, `/app/projects`) | ✅ |
 | Create-project wizard 5 langkah (`/app/projects/new`) | ✅ |
@@ -122,20 +126,30 @@ Config: `playwright.config.ts` (auto-start dev di :3100).
 
 ### Backend, auth & payments (di luar PRD awal)
 
-- **Auth.js (NextAuth v5)** — `src/auth.ts` (Credentials → `API_URL/auth/login`,
-  fallback demo), middleware gating `/app/*`, `SessionProvider`. Login/register
-  pakai `signIn`, logout `signOut`.
+- **Auth (server)** — `src/lib/server/auth-server.ts`: `requireUser()` menerima
+  **JWT Bearer** (`jose` HS256, sign di `/api/v1/auth/login|register`) **atau**
+  **Supabase session cookie** (SSO `.tampil.dev`, dibroker via `src/lib/supabase/sso.ts`),
+  lalu memetakan ke Baruma profile. `requireAdmin()` selalu re-fetch role dari DB
+  (session role UI-only, tak pernah dipercaya untuk otorisasi). Middleware gating
+  `/app/*` di `src/lib/supabase/middleware.ts` + `src/proxy.ts`. Password di-hash
+  `@node-rs/argon2`; login/register rate-limited + anti timing-enumeration. **Bukan
+  Auth.js/NextAuth** (tidak ada di deps).
 - **Data layer** — `src/lib/data` (`DataSource` interface, impl `mock` + `http`).
-  Hooks tidak berubah; sumber data di-switch via env. HTTP client kirim bearer
-  token dari session. Kontrak endpoint: [docs/API.md](docs/API.md).
-- **SQL schema** — [db/migrations/0001_init.sql](db/migrations/0001_init.sql):
-  domain + billing (plans, subscriptions, credits_ledger, payment_events).
-- **Billing (Mayar)** — `/api/checkout` + `/api/webhooks/payment` (provider di
-  `src/lib/billing/providers/mayar.ts`, akun bersama tampil.dev), langganan
-  manual-renew (aktivasi via webhook, expiry lazy via `/me`), enforcement
-  server (kredit AI/kuota proyek/GLB) + gate export PDF client, admin
-  backoffice `/app/admin` (plans/transaksi/users). Env: `MAYAR_API_BASE_URL`
-  + `MAYAR_API_KEY` + `MAYAR_WEBHOOK_TOKEN` + `ADMIN_EMAILS` (lihat `.env.example`).
+  Hooks tidak berubah; sumber data di-switch via env (`NEXT_PUBLIC_DATA_SOURCE`,
+  `NEXT_PUBLIC_API_URL`). HTTP client kirim bearer token dari session. Kontrak
+  endpoint: [docs/API.md](docs/API.md).
+- **SQL schema** — `db/migrations/*` (kanonik `0001_init.sql` + 30+ migrasi lanjutan:
+  auth, billing, assets, interior, knowledge, seed). Setiap akses tabel lewat server
+  (`src/lib/server/repo/*`) dengan cek kepemilikan (`getOwnedProject(id, ownerId)` →
+  `WHERE owner_id = $2`). Supabase dipakai **khusus auth**, bukan baca/tulis tabel
+  dari client. Untuk backend Supabase penuh, tambah **RLS owner-based** (defense-in-depth).
+- **Billing (Stripe)** — `/api/checkout` + `/api/webhooks/payment` (provider tunggal di
+  `src/lib/billing/providers/stripe.ts`). Webhook **verifikasi signature HMAC** atas raw
+  body (invalid → 401) + **idempotensi atomik** (`activateSubscription ... WHERE
+  status='pending'`). Langganan manual-renew (aktivasi via webhook, expiry lazy via
+  `/me`), enforcement server (kredit AI/kuota proyek/GLB) + gate export PDF client, admin
+  backoffice `/app/admin`. Env: `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` +
+  `ADMIN_EMAILS` (lihat `.env.example`).
 - **A11y audit** — `e2e/a11y.spec.ts` (@axe-core/playwright) scan 15 halaman,
   **0 violation serious/critical**.
 

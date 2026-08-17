@@ -30,6 +30,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# local dev/debug artifacts (never commit — clutter, may capture request/console output)
+dev-server.log
+*-watch.console.log
+wall-dump-*.txt
+
 # env files (can opt-in for committing if needed)
 .env*
 

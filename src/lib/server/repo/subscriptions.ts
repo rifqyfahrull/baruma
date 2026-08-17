@@ -1,5 +1,5 @@
 /**
- * Typed queries for the subscriptions table (Mayar manual-renew billing).
+ * Typed queries for the subscriptions table (Stripe manual-renew billing).
  * Falls back to a module-level in-memory store when `DATABASE_URL` is absent
  * (dev/test-only — see memory-fallback.ts).
  */
