@@ -60,4 +60,27 @@ describe("resolveRegion", () => {
   it("covers all 38 BPS provinces", () => {
     expect(Object.keys(IKK_2024)).toHaveLength(38)
   })
+
+  it("city/kabupaten override takes precedence over province (costly kab in province)", () => {
+    const r = resolveRegion("Puncak", "Papua Tengah")
+    expect(r.matchLevel).toBe("city")
+    expect(r.regionLabel).toContain("Puncak")
+    expect(r.factor).toBeGreaterThan(3) // 361.36 / 114.79 ≈ 3.15
+    expect(r.confidence).toBe("low") // approx (2025 basis)
+    expect(r.uncertaintyPct).toBe(0.28)
+    expect(r.source).toContain("perkiraan")
+  })
+
+  it("city override beats an explicit (cheaper) province", () => {
+    // Even if province says DKI Jakarta, a known costly kabupaten city wins.
+    const r = resolveRegion("Intan Jaya", "DKI Jakarta")
+    expect(r.matchLevel).toBe("city")
+    expect(r.regionLabel).toContain("Intan Jaya")
+  })
+
+  it("unknown city falls back to the provincial IKK", () => {
+    const r = resolveRegion("Kota Antah Berantah", "Jawa Barat")
+    expect(r.matchLevel).toBe("province")
+    expect(r.provinceKey).toBe("jawa_barat")
+  })
 })

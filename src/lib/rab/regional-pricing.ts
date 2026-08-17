@@ -111,6 +111,44 @@ const PROVINCE_LABELS: Record<string, string> = {
   papua_pegunungan: "Papua Pegunungan",
 }
 
+/**
+ * City/kabupaten-level IKK overrides — consulted BEFORE the provincial value
+ * when the project city is known, so a COSTLY SMALL KABUPATEN inside an
+ * otherwise-cheap province is priced correctly (e.g. Papua-highland kabupaten,
+ * remote islands). Keyed by normalized (lowercased, spaced) city/kab name.
+ *
+ * PROVENANCE: the seeded highland-Papua + Mentawai values are APPROXIMATE — they
+ * come from BPS's 2025 kab/kota ranking (acuan Banjarmasin=100) pending the exact
+ * 2024 kab/kota table (locked in the BPS PDF, not machine-readable). They are
+ * flagged `approx` → low confidence + a wider uncertainty band, and are still far
+ * closer to reality than the provincial average for these regions. Extend this
+ * map (ideally from a loaded BPS data file) to raise city coverage; anything not
+ * listed falls back to the reliable provincial IKK below.
+ */
+const IKK_CITY_2024: Record<string, { ikk: number; label: string; approx?: boolean }> = {
+  puncak: { ikk: 361.36, label: "Kab. Puncak (Papua Tengah)", approx: true },
+  "intan jaya": { ikk: 342.92, label: "Kab. Intan Jaya (Papua Tengah)", approx: true },
+  "puncak jaya": { ikk: 340.84, label: "Kab. Puncak Jaya (Papua Tengah)", approx: true },
+  "pegunungan bintang": { ikk: 299.88, label: "Kab. Pegunungan Bintang (Papua Pegunungan)", approx: true },
+  nduga: { ikk: 295.0, label: "Kab. Nduga (Papua Pegunungan)", approx: true },
+  "kepulauan mentawai": { ikk: 117.65, label: "Kab. Kepulauan Mentawai (Sumbar)", approx: true },
+}
+
+/**
+ * Baseline price-book provenance stamped onto every RAB. Baseline unit prices
+ * (DKI Jakarta) are AHSP-coefficient × 2024 market rates; the regional factor
+ * (BPS IKK 2024) then spatially adjusts them. `effectiveDate` is surfaced in the
+ * RAB assumptions so each estimate carries the date its prices were valid.
+ */
+export const PRICE_BOOK_META = {
+  version: "2024.1",
+  effectiveDate: "2024-07-01",
+  baselineRegion: "DKI Jakarta",
+  standard:
+    "AHSP Bidang Cipta Karya & Perumahan 2024 (SE Dirjen Bina Konstruksi No. 68/SE/Dk/2024) — koefisien × harga pasar 2024",
+  regionalIndex: "BPS Indeks Kemahalan Konstruksi (IKK) 2024",
+} as const
+
 /** Free-text province aliases → canonical key. */
 const PROVINCE_ALIASES: Record<string, string> = {
   jakarta: "dki_jakarta",
@@ -262,6 +300,25 @@ export function resolveRegion(
   city?: string | null,
   province?: string | null,
 ): RegionResolution {
+  // 0) city/kabupaten-level IKK override — most precise where we have it.
+  if (city) {
+    const hit = IKK_CITY_2024[normalize(city)]
+    if (hit) {
+      const factor = round4(hit.ikk / BASELINE_IKK)
+      const uncertaintyPct = hit.approx ? 0.28 : 0.12
+      return {
+        provinceKey: null,
+        regionLabel: hit.label,
+        ikk: hit.ikk,
+        factor,
+        matchLevel: "city",
+        uncertaintyPct,
+        confidence: hit.approx ? "low" : "high",
+        source: `BPS IKK kabupaten/kota — ${hit.label} IKK ${hit.ikk}${hit.approx ? " (perkiraan, basis 2025; tabel kab/kota 2024 belum dirilis mesin-terbaca)" : ""}. Faktor regional ×${factor} (baseline DKI Jakarta IKK ${BASELINE_IKK}).`,
+      }
+    }
+  }
+
   let provinceKey: string | null = null
   let matchLevel: RegionResolution["matchLevel"] = "none"
 

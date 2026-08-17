@@ -19,7 +19,7 @@ import type {
   RAB,
 } from "@/types"
 import { FINISHING_LEVELS, ROOF_MATERIALS, ROOF_PRICES, ROOF_TYPES } from "@/lib/constants"
-import { resolveRegion } from "@/lib/rab/regional-pricing"
+import { PRICE_BOOK_META, resolveRegion } from "@/lib/rab/regional-pricing"
 import { effectiveRoof } from "@/lib/drawings/elevation"
 import {
   isUnpricedFurniture,
@@ -976,6 +976,7 @@ export function generateRAB(
     },
     items,
     assumptions: [
+      `Buku harga v${PRICE_BOOK_META.version} — berlaku ${PRICE_BOOK_META.effectiveDate}. Baseline ${PRICE_BOOK_META.baselineRegion}: ${PRICE_BOOK_META.standard}; penyesuaian wilayah: ${PRICE_BOOK_META.regionalIndex}.`,
       region.source,
       `Estimasi "mid" dengan margin ketidakpastian ±${Math.round(unc * 100)}% (rentang low–high).${region.matchLevel === "province" ? " Wilayah dikenali di tingkat provinsi — harga kota spesifik bisa berbeda." : region.matchLevel === "none" ? " Wilayah tidak dikenali — verifikasi harga lokal." : ""}`,
       `Level finishing: ${FINISHING_LEVELS[finishing].label}.`,

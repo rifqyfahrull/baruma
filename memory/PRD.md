@@ -39,6 +39,28 @@ Billing = Stripe (single provider). AI = OpenAI SDK via OPENAI_BASE_URL
 
 ## Backlog (prioritized)
 
+### 2026-06 (cont. 3) — Generator activated + city IKK + AHSP calibration (ALL VERIFIED via real vitest + tsc)
+- **Env now online**: pnpm 10.15.0 (Node 20; pnpm 11 needs Node 22, pnpm 9 rejects the
+  allowBuilds workspace file). `pnpm install` OK, full vitest + `tsc --noEmit` runnable.
+- **Generator ACTIVATED (Task 1, VERIFIED):** adjacency ordering wired into `packFloor`
+  via a **never-regress** wrapper — `generateLayout` builds with `"adjacency"`, and if
+  `analyzeRoomConnectivity().isolated.length > 0` falls back to `"program"` order (inner
+  `buildLayout(project, brief, strategy)`). Clusters rooms when safe, never strands.
+  Verified: layout.test.ts 15 + layout-ordering 4 + 101 dependent tests green.
+- **City-level IKK (Task 2, VERIFIED):** `IKK_CITY_2024` override resolved BEFORE province
+  in `resolveRegion`, seeded with documented high-cost Papua-highland kabupaten (Puncak,
+  Intan Jaya, Puncak Jaya, Pegunungan Bintang, Nduga) + Kep. Mentawai — flagged `approx`
+  (2025 basis, low confidence, ±28% band) pending the exact BPS 2024 kab/kota table.
+  Extend the map to grow coverage. regional-pricing.test.ts 11 green.
+- **AHSP calibration + effective dates (Task 3, VERIFIED):** `PRICE_BOOK_META`
+  (v2024.1, effective 2024-07-01, AHSP SE Dirjen Bina Konstruksi 68/SE/Dk/2024) stamped
+  into every RAB's assumptions; reconciliation table `docs/rab-price-book.md` (beton
+  baseline = "terpasang" incl rebar+formwork, clarified vs AHSP beton-polos ~1.15jt/m³).
+- Note: user provided a Postgres DATABASE_URL; these tasks are pure logic + unit tests so
+  it was not needed/persisted. Use it in the app `.env` for runtime/e2e.
+
+
+
 ### 2026-06 (cont.) — RAB per-region + generator adjacency helper
 - **RAB per-region (DONE, logic-verified offline):** new `src/lib/rab/regional-pricing.ts`
   — BPS IKK 2024 (38 provinsi, acuan Banjarmasin=100), resolver with province
