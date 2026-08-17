@@ -58,7 +58,14 @@ import { columnLoad } from "@/lib/structural/takedown"
 import { sizeColumn, sizeBeam } from "@/lib/structural/sizing"
 import { sizeFooting } from "@/lib/structural/foundation"
 import { computeExteriorWallArea, computeInternalWallArea } from "@/lib/exterior/quantities"
-import { SOIL_DEFAULT_KPA } from "@/lib/structural/loads"
+import { SOIL_DEFAULT_KPA, floorWu } from "@/lib/structural/loads"
+import {
+  REBAR_KG_PER_M,
+  rebarKg,
+  columnLongitudinalAs,
+  beamBottomAs,
+  barsForArea,
+} from "@/lib/structural/rebar"
 import { exteriorElementQuantities } from "@/lib/exterior/quantities"
 import { exteriorRateFor } from "@/lib/exterior/rates"
 import {
@@ -108,15 +115,7 @@ const BETON_POLOS_IDR_M3 = 1_250_000 // K250–300: cor + upah (tanpa besi & bek
 const PEMBESIAN_IDR_KG = 18_500 // besi tulangan + bendrat + fabrikasi + pasang
 const BEKISTING_IDR_M2 = 185_000 // multiplek + rangka, pasang + bongkar (2× pakai)
 // Rasio pembesian (kg besi per m³ beton) — tipikal rumah tinggal 2–3 lantai.
-// Berat besi tulangan per meter (kg/m) untuk Ø umum (BJTS/BJTP).
-const REBAR_KG_PER_M: Record<number, number> = {
-  8: 0.395,
-  10: 0.617,
-  12: 0.888,
-  13: 1.042,
-  16: 1.578,
-}
-const rebarKg = (dia: number, totalLenM: number) => (REBAR_KG_PER_M[dia] ?? 0) * totalLenM
+// Berat besi tulangan per meter & takeoff batang: lihat structural/rebar.ts.
 
 function toItem(spec: Spec, i: number, regionFactor: number): BOQItem {
   const volume = round1(spec.volume) || 1
@@ -425,34 +424,40 @@ export function generateRAB(
 
   // Pembesian — TAKEOFF batang (BBTB indikatif): n × Ø × panjang + sengkang/jaring,
   // dihitung dari geometri elemen, bukan rasio kg/m³ selimut.
-  // Pondasi: jaring D13-150 dua arah per telapak.
-  const footBarsPerWay = footing.side / 0.15 + 1
-  const footingRebarKg = round1(columnCount * rebarKg(13, 2 * footBarsPerWay * footing.side))
-  const footingSchedule = "jaring D13-150 dua arah"
-  const footingFormM2 = round1(4 * footing.side * footing.thickness * columnCount)
-  // Kolom: n longitudinal D13 + sengkang D8-150.
-  const colLongN = column.side >= 300 ? 8 : column.side >= 250 ? 6 : 4
+  // Kolom: n longitudinal D16 dari As aksial (Pu), + sengkang D8-150.
   const colLenM = STOREY_HEIGHT_M * floors
+  const colAs = columnLongitudinalAs(load.Pu, column.side)
+  const colLongN = barsForArea(colAs, 16, 4)
   const colTieLenM = 2 * (2 * (column.side - 50) / 1000)
   const columnRebarKg = round1(
-    columnCount * (rebarKg(13, colLongN * colLenM) + rebarKg(8, colTieLenM * (colLenM / 0.15)))
+    columnCount * (rebarKg(16, colLongN * colLenM) + rebarKg(8, colTieLenM * (colLenM / 0.15)))
   )
-  const columnSchedule = `${colLongN}D13 + sengkang D8-150`
+  const columnSchedule = `${colLongN}D16 (As≈${Math.round(colAs)}mm² dari Pu ${load.Pu}kN) + sengkang D8-150`
   const columnFormM2 = round1(4 * (column.side / 1000) * STOREY_HEIGHT_M * columnCount * floors)
-  // Balok: 3D16 bawah + 2D16 atas + sengkang D8-150. Sloof: 4D12 + sengkang D8-200.
+  // Balok: n D16 bawah + top dari As lentur (Mu = w·L²/10), sengkang D8-150.
+  const beamLineLoad = floorWu() * grid.spanY
+  const beamMu = round1((beamLineLoad * grid.spanX * grid.spanX) / 10)
+  const beamAs = beamBottomAs(beamMu, beam.b, beam.h)
+  const beamBottomN = barsForArea(beamAs, 16, 2)
+  const beamTopN = barsForArea(0.4 * beamAs, 16, 2)
   const beamTieLenM = 2 * ((beam.b - 50) / 1000 + (beam.h - 50) / 1000)
   const sloofTieLenM = 2 * ((150 - 50) / 1000 + (200 - 50) / 1000)
   const beamRebarKg = round1(
-    rebarKg(16, 5 * totalBeamLenM) +
+    rebarKg(16, (beamBottomN + beamTopN) * totalBeamLenM) +
       rebarKg(8, beamTieLenM * (totalBeamLenM / 0.15)) +
       rebarKg(12, 4 * sloofLenM) +
       rebarKg(8, sloofTieLenM * (sloofLenM / 0.2))
   )
-  const beamSchedule = "balok 3D16+2D16 sengkang D8-150; sloof 4D12 sengkang D8-200"
+  const beamSchedule = `balok ${beamBottomN}D16 bawah + ${beamTopN}D16 atas (Mu≈${beamMu}kNm) sengkang D8-150; sloof 4D12`
   const beamFormM2 = round1(((beam.b + 2 * beam.h) / 1000) * totalBeamLenM + 0.55 * sloofLenM)
+  // Pondasi & plat: jaring baja tulangan minimum (geometri/min-steel, bukan demand).
+  const footBarsPerWay = footing.side / 0.15 + 1
+  const footingRebarKg = round1(columnCount * rebarKg(13, 2 * footBarsPerWay * footing.side))
+  const footingSchedule = "jaring D13-150 dua arah (min-steel)"
+  const footingFormM2 = round1(4 * footing.side * footing.thickness * columnCount)
   // Plat: jaring D10-150 dua arah (≈ 8.23 kg/m²).
   const slabRebarKg = round1(builtArea * ((2 * REBAR_KG_PER_M[10]) / 0.15))
-  const slabSchedule = "jaring D10-150 dua arah"
+  const slabSchedule = "jaring D10-150 dua arah (min-steel)"
   const slabFormM2 = round1(builtArea)
 
   const specs: Spec[] = [

@@ -1,0 +1,46 @@
+{
+  "summary": "Backend/API testing of Baruma RAB demand-based rebar takeoff PASSED: all 12 struktur lines present with correct units (beton/m³, pembesian/kg, bekisting/m²); Kolom pembesian notes cite Pu 125.87kN with '4D16 (As≈225mm²)' (demand-driven), Balok pembesian cites Mu≈27.6kNm with '2D16 bawah + 2D16 atas' + 'sloof 4D12'; assumptions carry 'Buku harga v2026.1 — berlaku 2026-06-01' and cite BPS IKK 2024 + AHSP; no ⚠ stale warning. Layout API returns 1 floor + 6 rooms + openings including doors and windows. Vitest suite (110/110) and pytest API regression (9/9) both green. UI DID NOT hydrate the data — RAB and 2D Editor pages show 'RAB/Layout belum tersedia — Pilih salah satu alternatif layout dulu', i.e. a client-side gate requires an 'alternatif' selection before the API data is rendered. Per the review request, API responses were used as source of truth.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "app/projects/[id]/rab page", "issue": "Page shows 'RAB belum tersedia — Pilih salah satu alternatif layout dulu' even though GET /api/v1/projects/{id}/rab returns full RAB with 12 struktur lines. UI gate on 'alternatif chosen' blocks hydration when opening the URL directly with phantom auth. Consumer of the API data does not fall back to the returned payload / does not auto-select the persisted alternatif from the versionId.", "selector": "text='RAB belum tersedia'", "priority": "HIGH"},
+      {"component": "app/projects/[id]/editor page", "issue": "Same client gating — '2D Editor' shows 'Layout belum tersedia — Pilih salah satu alternatif layout dulu' while /api/v1/projects/{id}/layout returns floors+rooms+openings.", "selector": "text='Layout belum tersedia'", "priority": "HIGH"},
+      {"component": "SSR hydration", "issue": "React 'Hydration failed because the server rendered HTML didn't match the client' PAGEERROR fires on both /rab and /editor pages (also a 'script tag while rendering React component' console.error). Indicates SSR/CSR mismatch — likely date/time or `typeof window` branch in a client component.", "selector": "console-error", "priority": "MEDIUM"},
+      {"component": "static assets", "issue": "~10 x 404 'Failed to load resource' entries on /rab and /editor loads (likely fonts or images from _next). Investigate missing assets in public/_next output.", "selector": "network-404", "priority": "LOW"}
+    ],
+    "integration_issues": [
+      {"flow": "Open project → RAB page", "issue": "Backend rab endpoint returns correct payload but the RAB view does not render items — the UI never leaves the 'pilih alternatif' state even though a versionId (ver-proj-asset-rumah-tipe-36-asset-bank) is already returned by the API. The alt-selected state is not seeded from server data on first mount.", "affected_selectors": ["text='RAB belum tersedia'", "text='Layout belum tersedia'"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/backend_api_rab_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix UI hydration for /app/projects/[id]/rab and /editor: when the API response already contains a versionId / persisted alternatif, auto-select it (or render the RAB/layout regardless of client-side 'alternatif chosen' flag).",
+    "Investigate and fix the SSR hydration mismatch on the project editor + RAB pages (React error boundary reports 'Hydration failed'). Check for Date.now()/Math.random()/`typeof window` in a Server Component tree.",
+    "Investigate/eliminate console 'Encountered a script tag while rendering React component' warning.",
+    "Resolve 404s for static resources on the RAB/editor pages."
+  ],
+  "critical_code_review_comments": [
+    "Rebar takeoff correctly derived from structural demand (Pu/Mu) — good. Notes strings contain human-readable numbers with locale rounding; consider structuring them (n, dia, As, Pu, Mu) as separate JSON fields on the item so the UI/BOQ exports do not need to string-parse notes.",
+    "src/lib/mock/rab.ts fixtures assert exact kg (426.2 / 687.9) for struktur8x6 — the live demo project (rumah tipe 36) reports 265.2 / 685.5 kg for kolom/balok pembesian. Different fixture, so acceptable, but consider adding an integration test that pins the demo project's takeoff to guard against silent regressions.",
+    "isPriceBookStale() logic is verified live (no ⚠ line as of 2026-08-17) — add a scheduled reminder before nextReviewDate 2026-12-01.",
+    "Layout API nests rooms/openings under the top-level 'layout' object (not under each floor) — ensure downstream consumers (2D editor) reads from the correct path when the UI wiring is fixed."
+  ],
+  "updated_files": [
+    "/app/test_reports/backend_api_rab_test.py",
+    "/app/test_reports/iteration_1.json"
+  ],
+  "success_rate": {"backend": "100% (9/9 pytest, 110/110 vitest)", "frontend": "0% (UI did not hydrate RAB/editor data)"},
+  "test_credentials": "phantom-token (JWT sub=usr-Qm4UqnMZ9-, exp 2 days) as supplied in the review_request; no /app/memory/test_credentials.md file present (only PRD.md).",
+  "seed_data_creation": "None — used existing demo project proj-asset-rumah-tipe-36.",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "API-level verification is fully covered by /app/test_reports/backend_api_rab_test.py (pytest, 9 tests) and vitest run over src/lib/mock/rab.test.ts + src/lib/structural + src/lib/rab/regional-pricing.test.ts (110 tests). Main outstanding item: UI on /app/projects/[id]/rab and /editor does not render server data because it waits for a client-side 'alternatif' selection; RAB API already returns a versionId — the main agent needs to seed the selected alternative from server state (or unconditionally render when data exists) before the browser preview reflects the demand-based rebar schedule.",
+  "rca of the issue": "Symptom: RAB page renders 'RAB belum tersedia' skeleton even though /api/v1/projects/{id}/rab returns full payload. Repro: (1) inject sessionStorage baruma:phantom-token; (2) navigate to /app/projects/proj-asset-rumah-tipe-36/rab with #phantom_token=… hash; (3) auth works (rab_opened analytics fires), API returns 200 with items, but the UI shows the empty-state. Likely cause: a client store gate (e.g. selectedAlternativeId in a Zustand/RQ store) is null on first mount and the RAB/Layout view early-returns the empty state instead of falling back to the server payload's versionId. Mitigation: on mount, if RAB/Layout data is present in the query cache AND selectedAlternativeId is null, hydrate it from the response's versionId; also fix the SSR hydration mismatch that regenerates the tree client-side (likely the same code path). Until fixed, the API remains the source of truth and matches every acceptance criterion."
+}

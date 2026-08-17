@@ -36,15 +36,15 @@ balok & sloof, plat) agar bisa dipakai kontraktor:
 | Bekisting `BEKISTING_IDR_M2` | Rp185.000/m² | Multiplek + rangka, pasang+bongkar (2× pakai) ≈ Rp150–200k/m² | Luas bidang cetak |
 
 Rasio pembesian **tidak lagi memakai kg/m³ selimut** — dihitung dari **takeoff
-batang (BBTB indikatif)**: n × Ø × panjang + sengkang/jaring, dari geometri elemen:
-- **Pondasi:** jaring D13-150 dua arah per telapak.
-- **Kolom:** 4–8 D13 longitudinal (per ukuran) + sengkang D8-150.
-- **Balok:** 3D16 bawah + 2D16 atas + sengkang D8-150; **sloof:** 4D12 + sengkang D8-200.
-- **Plat:** jaring D10-150 dua arah (≈8,23 kg/m²).
-Berat per meter dari tabel `REBAR_KG_PER_M` (D8 0,395 … D16 1,578 kg/m). Angka final
-tetap perlu diverifikasi dengan gambar penulangan (bar bending schedule) aktual.
-Luas bekisting dihitung dari geometri elemen (sisi telapak, keliling kolom × tinggi,
-bidang bawah+sisi balok/sloof, luas bawah plat).
+batang berbasis DEMAND (bar schedule)**, `structural/rebar.ts`:
+- **Kolom:** As longitudinal dari **aksial Pu** (Pu = φ[0.85 f'c(Ag−Ast)+fy·Ast], φ=0.65,
+  ρ∈[1%,4%]) → n D16 + sengkang D8-150.
+- **Balok:** As lentur dari **momen Mu = wu·L²/10** (wu = beban lantai × bentang tributari)
+  → n D16 bawah+atas (φ=0.9, jd≈0.9d) + sengkang D8-150; **sloof** 4D12.
+- **Pondasi & plat:** jaring min-steel (D13-150 / D10-150) — geometri/min-steel, bukan demand.
+Berat per meter dari `REBAR_KG_PER_M` (D8 0,395 … D16 1,578 kg/m). Angka final tetap
+perlu diverifikasi bar bending schedule aktual.
+Luas bekisting dihitung dari geometri elemen.
 
 ## Kalibrasi berkala (jadwal update)
 - **Kadens:** tinjau ulang harga baseline **tiap 6 bulan** (`PRICE_BOOK_META.reviewCadenceMonths`),

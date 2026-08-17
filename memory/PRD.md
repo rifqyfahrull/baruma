@@ -39,6 +39,26 @@ Billing = Stripe (single provider). AI = OpenAI SDK via OPENAI_BASE_URL
 
 ## Backlog (prioritized)
 
+### 2026-06 (cont. 6) — Rebar demand-based bar schedule (VERIFIED PASSED by testing_agent) + preview
+- **Detail penulangan (DONE + VERIFIED):** new `src/lib/structural/rebar.ts` —
+  `columnLongitudinalAs(Pu,side)` (φ=0.65, ρ 1–4%), `beamBottomAs(Mu,b,h)` (φ=0.9,
+  jd≈0.9d), `barsForArea`. Wired into `rab.ts`: kolom pembesian dari **aksial Pu**
+  (→ nD16, notes cite Pu+As), balok dari **momen Mu=wu·L²/10** (→ nD16 bawah+atas,
+  notes cite Mu); pondasi/plat = jaring min-steel (documented). Fixture: kolom 426.2kg,
+  balok 687.9kg. Tests updated. testing_agent iteration_1: backend 100% (9/9 pytest,
+  110/110 vitest), feature confirmed against real DB (kolom "4D16 As≈225mm² Pu 125.87kN",
+  balok "2D16+2D16 Mu≈27.6kNm").
+- **Preview against real Postgres (tunnel 188.166.182.139):** app boots http mode,
+  auth via minted phantom JWT works, APIs return real denah + demand BOQ. **UI pages
+  (editor/rab) NOT rendering** — pre-existing client gate: `useLayout` result gates the
+  page and it does NOT fall back to the persisted `current_version_id` layout ("Pilih
+  alternatif dulu"); alternatives=[] for this project. testing_agent flagged HIGH
+  (frontend 0%, retest_needed) — this is a PRE-EXISTING preview/hydration+gate issue,
+  separate from the rebar feature. Fix: editor/rab should load the persisted layout
+  (and ensure httpSource attaches phantom-token) instead of requiring an alternatif pick.
+
+
+
 ### 2026-06 (cont. 5) — 514 coverage + price calibration + rebar takeoff + app preview (verified: 111 touched tests + tsc clean)
 - **IKK kab/kota 495/514 (semua 98 kota):** re-ekstrak PDF BPS via word+table positioning
   (`ikk-kabkota-2024.json`); ~19 kabupaten obscure tak terekstrak → fallback provinsi.

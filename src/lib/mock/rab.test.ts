@@ -473,7 +473,7 @@ describe("generateRAB", () => {
       expect(form!.totalIDR).toBe(1_998_000) // 10.8 × 185,000
     })
 
-    it("Kolom terurai: beton 2.2 m³ + pembesian 310.4 kg (takeoff) + bekisting 43.2 m²", () => {
+    it("Kolom terurai: beton 2.2 m³ + pembesian 426.2 kg (takeoff dari Pu) + bekisting 43.2 m²", () => {
       const rab = generateRAB(sampleProject, sampleBrief, struktur8x6Layout())
       const beton = rab.items.find((i) => i.item === "Kolom — beton")
       expect(beton!.volume).toBe(2.2)
@@ -483,16 +483,17 @@ describe("generateRAB", () => {
 
       const besi = rab.items.find((i) => i.item === "Kolom — pembesian")
       expect(besi!.unit).toBe("kg")
-      expect(besi!.volume).toBe(310.4) // 4D13 + sengkang D8-150, 9 kolom × 2 lantai
-      expect(besi!.totalIDR).toBe(5_742_000)
-      expect(besi!.notes).toContain("D13")
+      expect(besi!.volume).toBe(426.2) // As longitudinal dari Pu → nD16 + sengkang
+      expect(besi!.totalIDR).toBe(7_885_000)
+      expect(besi!.notes).toContain("D16")
+      expect(besi!.notes).toContain("Pu")
 
       const form = rab.items.find((i) => i.item === "Kolom — bekisting")
       expect(form!.volume).toBe(43.2) // 4 × 0.2 × 3.0 × 9 × 2 lantai
       expect(form!.totalIDR).toBe(7_992_000)
     })
 
-    it("Balok & sloof terurai: beton 4.2 m³ + pembesian 621.6 kg (takeoff) + bekisting 60.9 m²", () => {
+    it("Balok & sloof terurai: beton 4.2 m³ + pembesian 687.9 kg (takeoff dari Mu) + bekisting 60.9 m²", () => {
       const rab = generateRAB(sampleProject, sampleBrief, struktur8x6Layout())
       const beton = rab.items.find((i) => i.item === "Balok & sloof — beton")
       expect(beton!.volume).toBe(4.2)
@@ -500,9 +501,9 @@ describe("generateRAB", () => {
       expect(beton!.notes).toContain("200×350 mm")
 
       const besi = rab.items.find((i) => i.item === "Balok & sloof — pembesian")
-      expect(besi!.volume).toBe(621.6) // 3D16+2D16 + sloof 4D12 + sengkang
-      expect(besi!.totalIDR).toBe(11_500_000)
-      expect(besi!.notes).toContain("D16")
+      expect(besi!.volume).toBe(687.9) // As lentur dari Mu → nD16 bawah+atas + sloof
+      expect(besi!.totalIDR).toBe(12_726_000)
+      expect(besi!.notes).toContain("Mu")
 
       const form = rab.items.find((i) => i.item === "Balok & sloof — bekisting")
       expect(form!.volume).toBe(60.9) // (0.9 × 42) + (0.55 × 42)
