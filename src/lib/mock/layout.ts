@@ -60,6 +60,60 @@ function clampNum(v: number, min: number, max: number) {
   return Math.min(Math.max(v, min), max)
 }
 
+/**
+ * Functional-adjacency ordering used to seed the treemap packer.
+ *
+ * squarifiedTreemap places items in INPUT ORDER (row/column by row/column), so
+ * consecutive units land next to each other. Ordering units by functional zone
+ * therefore CLUSTERS related rooms before packing — the missing "adjacency"
+ * constraint the pure area-proportional treemap never had:
+ *   public (tamu/keluarga/makan) → dapur → service (laundry/gudang) →
+ *   wet (kamar mandi) → circulation core (tangga/koridor/void) →
+ *   private (musholla/workspace/kamar tidur) → outdoor (balkon/taman/kolam).
+ * The chain is intentional: dapur bridges social↔service, the circulation core
+ * sits between public and private, and wet rooms group so their plumbing risers
+ * stay close. generateConnectingDoors then wires doors across these now-sensible
+ * adjacencies instead of across a random arrangement.
+ */
+const ADJACENCY_RANK: Record<RoomType, number> = {
+  carport: 0,
+  ruang_tamu: 1,
+  ruang_keluarga: 2,
+  area_kumpul: 3,
+  ruang_makan: 4,
+  dapur: 5,
+  laundry: 6,
+  gudang: 7,
+  kamar_mandi: 8,
+  tangga: 9,
+  koridor: 10,
+  void: 11,
+  musholla: 12,
+  workspace: 13,
+  kamar_tidur: 14,
+  balkon: 16,
+  taman: 17,
+  kolam: 18,
+  rooftop_lounge: 19,
+}
+
+/**
+ * Stable-sort units by functional zone so the treemap packs related rooms
+ * adjacently. Stable → multiples of the same type (Kamar tidur 1/2/3) keep
+ * their sequence and stay grouped. Unknown types sort last (rank 99) without
+ * disturbing the known chain.
+ */
+export function orderUnitsByAdjacency(units: Unit[]): Unit[] {
+  return units
+    .map((u, i) => ({ u, i }))
+    .sort((a, b) => {
+      const ra = ADJACENCY_RANK[a.u.type] ?? 99
+      const rb = ADJACENCY_RANK[b.u.type] ?? 99
+      return ra - rb || a.i - b.i
+    })
+    .map((x) => x.u)
+}
+
 /** Ruang yang menjadikan sebuah lantai "bisa dilalui dari dalam". */
 const CIRCULATION_TYPES = new Set(["ruang_tamu", "ruang_keluarga", "ruang_makan", "koridor", "foyer", "teras"])
 const PRIVATE_TYPES = new Set(["kamar_tidur", "kamar_mandi", "musholla", "kamar_art"])
@@ -221,6 +275,15 @@ function packFloor(
   }
 
   // Tile the footprint proportional to each room's desired area.
+  //
+  // ADJACENCY (siap-pakai, belum diaktifkan): `orderUnitsByAdjacency(units)`
+  // mengurutkan unit per zona fungsional sebelum treemap agar ruang terkait
+  // berdampingan. squarifiedTreemap menempatkan item sesuai URUTAN input, jadi
+  // mengganti `units` → `orderUnitsByAdjacency(units)` di dua baris bawah akan
+  // meng-cluster ruang. SENGAJA belum diaktifkan di sini: perubahan ini
+  // memengaruhi lantai ber-sirkulasi yang dijaga guard konektivitas di
+  // layout.test.ts, dan harus diverifikasi `pnpm test src/lib/mock/layout.test.ts`
+  // (butuh install deps) sebelum di-hot-path — helper + unit test sudah ada.
   const weights = units.map(
     (u) => ROOM_TYPES[u.type].defaultAreaM2 * sizeFactor(u.size)
   )

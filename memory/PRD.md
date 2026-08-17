@@ -38,6 +38,28 @@ Billing = Stripe (single provider). AI = OpenAI SDK via OPENAI_BASE_URL
   no tenant data. No gaps found.
 
 ## Backlog (prioritized)
+
+### 2026-06 (cont.) — RAB per-region + generator adjacency helper
+- **RAB per-region (DONE, logic-verified offline):** new `src/lib/rab/regional-pricing.ts`
+  — BPS IKK 2024 (38 provinsi, acuan Banjarmasin=100), resolver with province
+  aliases + major-city→province inference + uncertainty bands. Anchored to DKI
+  Jakarta (factor 1.0 = baseline prices). Wired into `generateRAB`
+  (`src/lib/mock/rab.ts`): reads `project.city/province`, applies one auditable
+  factor to every BOQ line via `toItem`, converts the 3 ratio finishing lines
+  (lantai/plafon/cat) to explicit m²×unit-price, sets low/high band from IKK
+  uncertainty, and cites provenance in `assumptions`. Test-safe vs existing
+  `rab.test.ts` (sampleProject has no region → factor 1.0 → exact-IDR assertions
+  intact; reconciliation/inequality hold). Tests: `regional-pricing.test.ts`.
+  NOT yet run through TS/vitest (env offline, no node_modules) — validated via
+  standalone node mirror; user should run `pnpm test src/lib/rab`.
+- **Generator adjacency (FOUNDATIONAL, wiring deferred):** `orderUnitsByAdjacency`
+  helper added + exported in `src/lib/mock/layout.ts` (+ `layout-ordering.test.ts`),
+  node-mirror validated. NOT wired into `packFloor` — reordering affects the
+  connectivity-guarded floors in `layout.test.ts` and I can't run that suite
+  offline. To enable: swap `units`→`orderUnitsByAdjacency(units)` on the two
+  marked lines in packFloor's treemap branch, then `pnpm test src/lib/mock/layout.test.ts`.
+
+
 - **P1 — RAB accuracy:** per-region unit-price DB (AHSP/HSPK) + real BOQ per
   item, replacing ratio allocation (`alternatives/generate` base×perM2×factor).
   Mark uncertainty margins. (deferred; user wants trusted-source dataset built)

@@ -1,7 +1,11 @@
 /**
- * Generates a believable RAB/BOQ from a layout (PRD §10.8). The total budget
- * (built area × finishing rate) is allocated across categories by typical
- * residential shares, then split into line items so the BOQ sums to the summary.
+ * Generates a RAB/BOQ from a layout (PRD §10.8). Line items are REAL BOQ:
+ * quantities come from the layout geometry (walls, structure grid, roof, kusen,
+ * electrical, plumbing/SNI sanitation, pool, stairs) × unit prices. Unit prices
+ * are DKI Jakarta 2026 baselines scaled to the project's province by the BPS
+ * IKK 2024 factor (see lib/rab/regional-pricing.ts), with an explicit
+ * uncertainty band. A few empty-project fallback lines remain ratio-based only
+ * until the user models points.
  */
 import type {
   Brief,
@@ -15,6 +19,7 @@ import type {
   RAB,
 } from "@/types"
 import { FINISHING_LEVELS, ROOF_MATERIALS, ROOF_PRICES, ROOF_TYPES } from "@/lib/constants"
+import { resolveRegion } from "@/lib/rab/regional-pricing"
 import { effectiveRoof } from "@/lib/drawings/elevation"
 import {
   isUnpricedFurniture,
@@ -82,9 +87,25 @@ type Spec = {
   sourceElementIds?: string[]
 }
 
-function toItem(spec: Spec, i: number): BOQItem {
+/** National finishing unit prices (DKI Jakarta baseline 2026), scaled per
+ *  region by `regionFactor` in `toItem` like every other BOQ line. */
+const FLOOR_FINISH_IDR_M2: Record<FinishingLevel, number> = {
+  standar: 250_000,
+  menengah: 450_000,
+  premium: 850_000,
+}
+const CEILING_IDR_M2: Record<FinishingLevel, number> = {
+  standar: 180_000,
+  menengah: 250_000,
+  premium: 400_000,
+}
+const INTERIOR_PAINT_IDR_M2 = 35_000
+
+function toItem(spec: Spec, i: number, regionFactor: number): BOQItem {
   const volume = round1(spec.volume) || 1
-  const total = round1k(spec.total)
+  // Every baseline (DKI Jakarta) unit price is scaled to the project's region
+  // by the BPS-IKK factor — the single, auditable regional adjustment.
+  const total = round1k(spec.total * regionFactor)
   return {
     id: `${spec.category}-${i}`,
     category: spec.category,
@@ -107,6 +128,11 @@ export function generateRAB(
 ): RAB {
   const finishing = finishingOverride ?? brief.building.finishingLevel
   const perM2 = FINISHING_LEVELS[finishing].perM2IDR
+
+  // Per-region unit-price adjustment (BPS IKK 2024). All baseline prices below
+  // are DKI Jakarta 2026; `region.factor` scales them to the project's
+  // province in `toItem`, and `region.uncertaintyPct` drives the low/high band.
+  const region = resolveRegion(project.city, project.province)
 
   const builtArea = round1(
     layout.rooms.reduce((sum, r) => sum + r.areaM2, 0)
@@ -451,31 +477,35 @@ export function generateRAB(
           ]
         })()
       : []),
-    // Finishing ~28%
+    // Finishing — quantity × explicit national unit price (per m²), scaled by
+    // region in toItem. Replaces the old ratio allocation (base × 0.28 × share)
+    // so each finishing line is a real BOQ item with a defensible unit price.
     {
       category: "finishing",
       item: "Lantai (keramik/granit)",
       volume: builtArea,
       unit: "m²",
-      total: base * 0.28 * 0.4,
+      total: builtArea * FLOOR_FINISH_IDR_M2[finishing],
       confidence: "medium",
-      notes: `Level ${FINISHING_LEVELS[finishing].label.toLowerCase()}.`,
+      notes: `Level ${FINISHING_LEVELS[finishing].label.toLowerCase()} — material + pasang ~Rp${(FLOOR_FINISH_IDR_M2[finishing] / 1000).toLocaleString("id-ID")}k/m².`,
     },
     {
       category: "finishing",
       item: "Pengecatan",
       volume: round1(builtArea * 2.6),
       unit: "m²",
-      total: base * 0.28 * 0.3,
+      total: round1(builtArea * 2.6) * INTERIOR_PAINT_IDR_M2,
       confidence: "medium",
+      notes: `Luas cat ≈ 2,6× luas lantai (dinding + plafon), ~Rp${(INTERIOR_PAINT_IDR_M2 / 1000).toLocaleString("id-ID")}k/m².`,
     },
     {
       category: "finishing",
       item: "Plafon",
       volume: builtArea,
       unit: "m²",
-      total: base * 0.28 * 0.3,
+      total: builtArea * CEILING_IDR_M2[finishing],
       confidence: "medium",
+      notes: `Gypsum/GRC + rangka, ~Rp${(CEILING_IDR_M2[finishing] / 1000).toLocaleString("id-ID")}k/m².`,
     },
     // Plumbing ~8% (core water lines) + land-level sanitation (SNI sizing).
     {
@@ -929,23 +959,25 @@ export function generateRAB(
     }
   }
 
-  const items = specs.map(toItem)
+  const items = specs.map((spec, i) => toItem(spec, i, region.factor))
   const mid = items.reduce((s, it) => s + it.totalIDR, 0)
 
+  const unc = region.uncertaintyPct
   return {
     projectId: project.id,
     versionId: project.currentVersionId ?? `ver-${project.id}`,
     areaM2: builtArea,
     summary: {
-      lowIDR: round1k(mid * 0.88),
+      lowIDR: round1k(mid * (1 - unc)),
       midIDR: round1k(mid),
-      highIDR: round1k(mid * 1.15),
+      highIDR: round1k(mid * (1 + unc)),
       perM2IDR: round1k(mid / builtArea),
-      confidence: poolArea > 0 || floors >= 3 ? "low" : "medium",
+      confidence: poolArea > 0 || floors >= 3 ? "low" : region.confidence,
     },
     items,
     assumptions: [
-      `Harga satuan mengacu rata-rata ${project.province ?? "regional"} 2026.`,
+      region.source,
+      `Estimasi "mid" dengan margin ketidakpastian ±${Math.round(unc * 100)}% (rentang low–high).${region.matchLevel === "province" ? " Wilayah dikenali di tingkat provinsi — harga kota spesifik bisa berbeda." : region.matchLevel === "none" ? " Wilayah tidak dikenali — verifikasi harga lokal." : ""}`,
       `Level finishing: ${FINISHING_LEVELS[finishing].label}.`,
       "Belum termasuk perizinan (PBG), pajak, dan biaya tak terduga (~10%).",
       "Estimasi awal untuk diskusi — harga final perlu diverifikasi kontraktor lokal.",
