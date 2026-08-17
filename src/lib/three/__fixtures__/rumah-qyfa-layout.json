@@ -1,0 +1,44 @@
+{
+  "id": "layout-proj-sKeE6zh-",
+  "projectId": "proj-sKeE6zh-",
+  "versionId": "ver-proj-sKeE6zh-",
+  "roof": { "type": "datar", "material": "aspal", "slopeDeg": 30, "overhangM": 0.5 },
+  "pools": [],
+  "walls": [],
+  "stairs": [],
+  "floors": [
+    { "id": "floor-1", "name": "Lantai 1", "level": 1, "heightM": 3.2 },
+    { "id": "floor-2", "name": "Lantai 2", "level": 2, "heightM": 3.2 }
+  ],
+  "rooms": [
+    { "x": 2.26, "y": 1.41, "id": "room-OVGDUO", "name": "Kamar 2", "type": "kamar_tidur", "depth": 2.9, "width": 2.58, "areaM2": 7.48, "floorId": "floor-1" },
+    { "x": 2.26, "y": 4.31, "id": "room-BB_A3S", "name": "Ruang tamu", "type": "ruang_tamu", "depth": 3.69, "width": 2.58, "areaM2": 9.52, "floorId": "floor-1" },
+    { "x": 0, "y": 0, "id": "room-B9lRfP", "name": "Dapur", "type": "dapur", "depth": 1.41, "width": 2.26, "areaM2": 3.19, "zoneId": "zone-open-room-B9lRfP-room-FPMQ_F", "floorId": "floor-1", "zoneIds": ["zone-open-room-B9lRfP-room-FPMQ_F"] },
+    { "x": 4.84, "y": 5.5, "id": "room-FPMQ_F", "name": "Kamar 1", "type": "kamar_tidur", "depth": 2.5, "width": 3.16, "areaM2": 7.9, "floorId": "floor-1" },
+    { "x": 0.28, "y": 0.28, "id": "room-Y-XU_R", "name": "Kamar tidur 1", "type": "kamar_tidur", "depth": 3.69, "width": 4.23, "areaM2": 15.59, "floorId": "floor-2" },
+    { "x": 0.28, "y": 4.03, "id": "room-DFJOh4", "name": "Kamar tidur 2", "type": "kamar_tidur", "depth": 3.69, "width": 4.23, "areaM2": 15.59, "floorId": "floor-2" },
+    { "x": 0, "y": 1.41, "id": "room-uPeA4g", "name": "Kamar mandi 1", "type": "kamar_mandi", "depth": 2.09, "width": 1.38, "areaM2": 2.88, "floorId": "floor-1" },
+    { "x": 4.57, "y": 1.95, "id": "room-_DHzeT", "name": "Kamar mandi 2", "type": "kamar_mandi", "depth": 1.61, "width": 3.15, "areaM2": 5.07, "floorId": "floor-2" },
+    { "x": 4.57, "y": 3.61, "id": "room-yNYUsz", "name": "Musholla", "type": "musholla", "depth": 2.44, "width": 3.15, "areaM2": 7.7, "floorId": "floor-2" },
+    { "x": 4.57, "y": 6.11, "id": "room-LY6ezQ", "name": "Laundry", "type": "laundry", "depth": 1.61, "width": 3.15, "areaM2": 5.07, "floorId": "floor-2" },
+    { "x": 4.84, "y": 0, "id": "room-ogTeoD83", "name": "Ruang Keluarga", "type": "ruang_keluarga", "depth": 5.5, "width": 3.16, "areaM2": 17.38, "zoneId": "zone-open-room-B9lRfP-room-FPMQ_F", "floorId": "floor-1" },
+    { "x": 2.26, "y": 0, "id": "room-_97f3nw5", "name": "Void", "type": "void", "depth": 1.41, "width": 2.58, "areaM2": 3.64, "zoneId": "zone-open-room-B9lRfP-room-FPMQ_F", "floorId": "floor-1" },
+    { "x": 1.38, "y": 1.41, "id": "room-zBfXt9DH", "name": "Void", "type": "void", "depth": 2.09, "width": 0.88, "areaM2": 1.84, "zoneId": "zone-open-room-B9lRfP-room-FPMQ_F", "floorId": "floor-1", "zoneIds": ["zone-open-room-B9lRfP-room-FPMQ_F"] }
+  ],
+  "openings": [
+    { "id": "op-U6zkBL", "kind": "pivot_door", "type": "door", "wallId": "room-BB_A3S:s", "widthM": 1.2, "floorId": "floor-1", "heightM": 2.4, "positionM": 1.44, "headHeightM": 2.4, "sillHeightM": 0 },
+    { "id": "op-7mc8jP", "type": "window", "wallId": "room-FPMQ_F:s", "widthM": 1.2, "floorId": "floor-1", "heightM": 1.2, "positionM": 2.25 },
+    { "id": "op-QggHcf", "type": "window", "wallId": "room-Y-XU_R:s", "widthM": 1.2, "floorId": "floor-2", "heightM": 1.2, "positionM": 2.12 },
+    { "id": "op-co_njA", "type": "window", "wallId": "room-DFJOh4:s", "widthM": 1.2, "floorId": "floor-2", "heightM": 1.2, "positionM": 2.12 },
+    { "id": "op-YQd-rh", "type": "window", "wallId": "room-_DHzeT:s", "widthM": 1.2, "floorId": "floor-2", "heightM": 1.2, "positionM": 1.58 },
+    { "id": "op-1964427086", "kind": "open_passage", "type": "door", "wallId": "room-BB_A3S:e", "widthM": 0.9, "floorId": "floor-1", "heightM": 2.1, "positionM": 0.6, "headHeightM": 2.1, "sillHeightM": 0 },
+    { "id": "op-721687822", "kind": "hinged_door", "type": "door", "wallId": "room-ogTeoD83:w", "widthM": 1, "floorId": "floor-1", "heightM": 2.1, "positionM": 3.53, "headHeightM": 2.1, "sillHeightM": 0 },
+    { "id": "op-1123122340", "kind": "awning_window", "type": "window", "wallId": "room-OVGDUO:w", "widthM": 0.6, "floorId": "floor-1", "heightM": 0.8, "positionM": 2.45, "headHeightM": 1.8, "sillHeightM": 1 },
+    { "id": "op-72197787", "kind": "pivot_door", "type": "door", "wallId": "room-zBfXt9DH:s", "widthM": 0.5, "floorId": "floor-1", "heightM": 2.4, "positionM": 0.44, "headHeightM": 2.4, "sillHeightM": 0 },
+    { "id": "op-502457183", "kind": "hinged_door", "type": "door", "wallId": "room-uPeA4g:w", "widthM": 0.9, "floorId": "floor-1", "heightM": 2.1, "positionM": 0.75, "headHeightM": 2.1, "sillHeightM": 0 },
+    { "id": "op-1821804109", "kind": "hinged_door", "type": "door", "wallId": "room-ogTeoD83:s", "widthM": 1, "floorId": "floor-1", "heightM": 2.1, "positionM": 0.65, "headHeightM": 2.1, "sillHeightM": 0 },
+    { "id": "op-615968887", "kind": "sliding_window", "type": "window", "wallId": "room-B9lRfP:n", "widthM": 1.2, "floorId": "floor-1", "heightM": 1.2, "positionM": 0.75, "headHeightM": 2, "sillHeightM": 0.8 },
+    { "id": "op-1414125861", "kind": "sliding_window", "type": "window", "wallId": "room-ogTeoD83:n", "widthM": 1.2, "floorId": "floor-1", "heightM": 1.2, "positionM": 1.58, "headHeightM": 2, "sillHeightM": 0.8 }
+  ],
+  "validation": { "passed": true, "issues": [] }
+}

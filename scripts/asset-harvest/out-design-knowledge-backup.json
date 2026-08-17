@@ -1,0 +1,1332 @@
+{
+ "system:pompa-air-rumah-tangga": {
+  "topic": "Pompa air rumah tangga",
+  "topic_type": "system",
+  "knowledge": {
+   "fungsi": "Memompa air dari sumber (sumur, tandon bawah) ke titik pemakaian atau tandon atas untuk memenuhi kebutuhan air bersih rumah tangga.",
+   "perawatan": [
+    "Bersihkan saringan (strainer) pada pipa hisap secara berkala dari kotoran.",
+    "Periksa dan kencangkan sambungan pipa serta kabel listrik setiap 3-6 bulan.",
+    "Lumasi bantalan motor (jika ada) sesuai petunjuk pabrik."
+   ],
+   "pertimbangan": [
+    "Kedalaman dan debit sumber air (sumur/PDAM).",
+    "Jumlah titik kran dan kebutuhan air serentak.",
+    "Ketersediaan listrik dan daya listrik rumah.",
+    "Kualitas air (kandungan pasir, kapur, besi) yang mempengaruhi material impeller.",
+    "Kebisingan dan getaran – penting untuk rumah tinggal dengan area tidur dekat pompa."
+   ],
+   "pilihan_umum": [
+    "Pompa sumur dangkal (jet pump kecil) – untuk sumur dengan kedalaman <9 meter, lazim di permukiman padat.",
+    "Pompa sumur dalam (submersible) – untuk sumur >9 meter, cocok daerah dengan muka air tanah dalam.",
+    "Pompa booster – untuk meningkatkan tekanan air dari tandon bawah atau PDAM yang lemah.",
+    "Pompa transfer – untuk memindahkan air dari tandon bawah ke tandon atas, biasanya tanpa tangki tekanan."
+   ],
+   "tropical_note": "Kelembapan tinggi dan suhu panas di Indonesia mempercepat karat pada bodi pompa dan korsleting, sehingga pilih pompa dengan material tahan karat (stainless steel/plastik engineering) dan tempatkan di area kering berventilasi.",
+   "kesalahan_umum": [
+    "Memasang pompa terlalu besar hingga sering mati-hidup (short cycling) dan boros listrik.",
+    "Mengabaikan pipa hisap yang bocor atau terlalu panjang sehingga pompa tidak bisa prime.",
+    "Tidak memasang foot valve atau check valve sehingga air balik dan pompa sering start.",
+    "Meletakkan pompa di tempat lembap tanpa ventilasi, mempercepat korosi dan korsleting."
+   ],
+   "kapan_panggil_ahli": [
+    "Pompa tidak mau menyedot meskipun sudah dipriming dan tidak ada kebocoran.",
+    "Motor panas berlebihan atau trip MCB berulang kali.",
+    "Suara tidak normal (berisik, berdecit) yang menandakan bantalan atau impeller aus."
+   ]
+  }
+ },
+ "system:daya-listrik-pln-untuk-rumah-tinggal": {
+  "topic": "Daya listrik PLN untuk rumah tinggal",
+  "topic_type": "system",
+  "knowledge": {
+   "fungsi": "Menyediakan suplai listrik dari jaringan PLN ke rumah tinggal untuk memenuhi kebutuhan penerangan, peralatan elektronik, dan peralatan rumah tangga.",
+   "perawatan": [
+    "Periksa secara berkala kondisi panel MCB dan kabel dari kerusakan atau kelembapan.",
+    "Bersihkan debu pada panel listrik dan pastikan ventilasi cukup.",
+    "Uji fungsi ELCB/RCD setiap bulan untuk memastikan proteksi kebocoran arus."
+   ],
+   "pertimbangan": [
+    "Total kebutuhan daya berdasarkan jumlah dan jenis peralatan listrik yang digunakan.",
+    "Luas rumah dan jumlah penghuni yang memengaruhi beban puncak.",
+    "Ketersediaan jaringan PLN di lokasi (jarak dari tiang listrik, kapasitas trafo).",
+    "Rencana pengembangan beban di masa depan (misal penambahan AC, kendaraan listrik)."
+   ],
+   "pilihan_umum": [
+    "Listrik 1 fase: untuk rumah dengan beban listrik rendah hingga sedang, umumnya daya kecil sampai menengah.",
+    "Listrik 3 fase: untuk rumah dengan beban listrik besar atau peralatan 3 fase (misal pompa air besar, AC sentral), biasanya daya besar."
+   ],
+   "tropical_note": "Iklim tropis lembap meningkatkan risiko korosi pada kontak listrik dan kebocoran arus, sehingga pemilihan komponen tahan lembap serta grounding yang baik sangat penting.",
+   "kesalahan_umum": [
+    "Memilih daya terlalu kecil sehingga sering trip atau beban tidak mencukupi.",
+    "Tidak mempertimbangkan faktor serentak (semua alat menyala bersamaan) sehingga daya tidak sesuai.",
+    "Mengabaikan kebutuhan grounding yang baik untuk keamanan sistem."
+   ],
+   "kapan_panggil_ahli": [
+    "Saat terjadi trip berulang tanpa penyebab jelas atau bau terbakar dari panel.",
+    "Untuk penambahan daya atau perubahan dari 1 fase ke 3 fase.",
+    "Jika ada kerusakan pada meteran PLN atau kabel masuk utama."
+   ]
+  }
+ },
+ "problem:dak-beton-bocor": {
+  "topic": "Dak beton bocor",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Bercak basah atau noda kuning pada plafon",
+    "Rembesan air saat hujan deras",
+    "Cat plafon mengelupas atau menggelembung",
+    "Bau apek atau tumbuhnya jamur di area plafon"
+   ],
+   "pencegahan": [
+    "Rutin bersihkan talang dan saluran air dari dedaunan",
+    "Inspeksi waterproofing setiap musim hujan",
+    "Hindari beban berlebih di atas dak yang bisa memicu retak"
+   ],
+   "solusi_aktif": [
+    "Tutup retak dengan sealant atau bahan grouting khusus beton",
+    "Aplikasi ulang waterproofing coating pada permukaan dak",
+    "Perbaiki atau ganti pipa yang bocor di dalam dak",
+    "Pasang injeksi epoxy untuk retak struktural"
+   ],
+   "solusi_pasif": [
+    "Buat kemiringan dak minimal agar air mengalir ke talang",
+    "Pasang talang dan saluran air yang cukup lebar",
+    "Berikan overstek pada atap untuk melindungi dak dari hujan langsung",
+    "Gunakan plafon dengan bahan tahan air seperti PVC"
+   ],
+   "penyebab_umum": [
+    "Retak rambut pada dak akibat penyusutan beton",
+    "Waterproofing rusak atau tidak diaplikasikan dengan benar",
+    "Sambungan dak dengan dinding tidak kedap air",
+    "Genangan air di atap dak karena talang tersumbat",
+    "Pipa instalasi di dalam dak bocor"
+   ],
+   "tropical_note": "Di Indonesia, hujan deras dan kelembapan tinggi mempercepat kerusakan waterproofing serta memicu pertumbuhan jamur pada dak beton yang bocor.",
+   "kapan_panggil_ahli": [
+    "Rembesan terus terjadi meski sudah diperbaiki sendiri",
+    "Retak melebar atau dak melendut",
+    "Ada bagian plafon yang ambrol atau runtuh"
+   ]
+  }
+ },
+ "system:titik-lampu-dan-penempatannya": {
+  "topic": "Titik lampu dan penempatannya",
+  "topic_type": "system",
+  "knowledge": {
+   "fungsi": "Menentukan posisi dan jenis titik lampu untuk pencahayaan optimal sesuai fungsi ruang dan aktivitas penghuni.",
+   "perawatan": [
+    "Bersihkan kap lampu dan fitting secara berkala dari debu dan serangga.",
+    "Periksa koneksi kabel pada terminal jika lampu berkedip atau mati.",
+    "Ganti lampu dengan tipe yang sama sesuai spesifikasi fitting."
+   ],
+   "pertimbangan": [
+    "Fungsi ruang dan aktivitas utama di dalamnya.",
+    "Tinggi plafon dan keberadaan balok atau lisplang.",
+    "Posisi furnitur tetap (tempat tidur, meja kerja, lemari).",
+    "Arah bukaan jendela dan sumber cahaya alami.",
+    "Kebiasaan lokal: sering menggunakan lampu tambahan (standing lamp) untuk fleksibilitas."
+   ],
+   "pilihan_umum": [
+    "Lampu downlight: untuk pencahayaan umum di ruang keluarga, kamar, dan dapur dengan plafon rata.",
+    "Lampu gantung: untuk meja makan atau area tengah ruang tamu dengan plafon tinggi.",
+    "Lampu dinding (wall lamp): untuk aksen atau pencahayaan dekat tempat tidur, tangga, atau lorong.",
+    "Lampu sorot (track light/spotlight): untuk menyorot lukisan, rak buku, atau area kerja dapur."
+   ],
+   "tropical_note": "Di iklim tropis lembap, pilih fitting dengan segel karet dan material anti karat, serta hindari lampu yang menghasilkan panas berlebih di ruang tanpa ventilasi.",
+   "kesalahan_umum": [
+    "Menempatkan titik lampu di tengah ruang tanpa mempertimbangkan tata letak furnitur.",
+    "Mengabaikan jarak antar titik sehingga pencahayaan tidak merata atau timbul bayangan.",
+    "Memasang lampu terlalu dekat dengan dinding sehingga sorotan tidak efektif.",
+    "Tidak menyediakan sakelar terpisah untuk zona berbeda dalam satu ruang."
+   ],
+   "kapan_panggil_ahli": [
+    "Jika ingin menambah titik lampu baru yang memerlukan penarikan kabel dari panel.",
+    "Saat terjadi konsleting atau bau terbakar pada sakelar/fitting.",
+    "Bila plafon retak atau bocor di sekitar titik lampu yang terpasang."
+   ]
+  }
+ },
+ "system:septic-tank-dan-resapan": {
+  "topic": "Septic tank dan resapan",
+  "topic_type": "system",
+  "knowledge": {
+   "fungsi": "Mengolah dan menampung limbah domestik (tinja) serta meresapkan air olahan ke dalam tanah agar tidak mencemari lingkungan.",
+   "perawatan": [
+    "Kuras lumpur secara berkala (biasanya 2-5 tahun tergantung pemakaian).",
+    "Hindari membuang bahan kimia keras (pemutih, pelarut) ke dalam kloset.",
+    "Pastikan lubang udara (vent) tidak tersumbat."
+   ],
+   "pertimbangan": [
+    "Jarak minimal ke sumber air bersih (sumur) dan bangunan tetangga.",
+    "Daya resap tanah (uji perkolasi) – tanah liat vs pasir menentukan perlu tidaknya resapan buatan.",
+    "Volume pemakaian air harian dan jumlah penghuni tetap.",
+    "Ketersediaan lahan untuk bidang resapan atau sumur resapan.",
+    "Kemudahan akses untuk pengurasan lumpur secara berkala."
+   ],
+   "pilihan_umum": [
+    "Septic tank beton konvensional (kedap air) – untuk lahan luas, akses mudah, dan biaya awal lebih rendah.",
+    "Septic tank biofilter (bahan fiber atau beton dengan media bio) – untuk lahan terbatas, tanah kurang resap, atau area padat.",
+    "Septic tank sistem anaerobik + bidang resapan – untuk tanah berpasir/poros, muka air tanah dalam.",
+    "Tangki septik komunal (bersama beberapa rumah) – untuk lahan sangat sempit atau kawasan padat penduduk."
+   ],
+   "tropical_note": "Iklim tropis lembap mempercepat dekomposisi limbah, namun juga meningkatkan risiko muka air tanah dangkal sehingga perlu resapan yang lebih dalam atau sistem biofilter untuk mencegah pencemaran air tanah.",
+   "kesalahan_umum": [
+    "Menyambung pipa air hujan atau saluran dapur ke septic tank (mengganggu proses anaerobik).",
+    "Membangun resapan terlalu dekat dengan pondasi rumah (risiko rembesan dan penurunan tanah).",
+    "Tidak memberi lubang udara (vent) pada septic tank (bau dan tekanan gas).",
+    "Menguras septic tank terlalu sering atau tidak sama sekali (merusak keseimbangan bakteri)."
+   ],
+   "kapan_panggil_ahli": [
+    "Saat bau tidak sedap muncul terus-menerus di area septic tank atau resapan.",
+    "Ketika air limbah meluap ke permukaan atau saluran pembuangan melambat.",
+    "Untuk uji perkolasi tanah sebelum menentukan sistem resapan baru."
+   ]
+  }
+ },
+ "problem:saluran-air-mampet": {
+  "topic": "Saluran air mampet",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Air wastafel atau dapur tidak mengalir atau meluap",
+    "Bau tidak sedap dari saluran pembuangan",
+    "Suara gurgling saat air mengalir di tempat lain",
+    "Air menggenang di lantai kamar mandi atau dapur"
+   ],
+   "pencegahan": [
+    "Buang sisa makanan ke tempat sampah, bukan ke wastafel",
+    "Bersihkan saringan saluran secara rutin setiap minggu",
+    "Siram saluran dengan air panas seminggu sekali untuk meluruhkan lemak"
+   ],
+   "solusi_aktif": [
+    "Gunakan alat penyedot karet (plunger) untuk mendorong sumbatan",
+    "Bersihkan dengan kawat spiral (snake auger) atau alat semprot tekanan tinggi",
+    "Tuang campuran soda kue dan cuka panas, diamkan lalu siram air mendidih",
+    "Bongkar sambungan pipa di bawah wastafel untuk mengeluarkan sumbatan manual"
+   ],
+   "solusi_pasif": [
+    "Pasang saringan kawat pada lubang saluran untuk menahan rambut dan sisa makanan",
+    "Buat jalur pipa dengan kemiringan minimal agar aliran lancar",
+    "Gunakan bak penampung lemak (grease trap) di dapur",
+    "Desain saluran dengan diameter cukup besar dan minim belokan tajam"
+   ],
+   "penyebab_umum": [
+    "Tumpukan rambut dan sabun di saluran kamar mandi",
+    "Sisa makanan dan minyak yang mengeras di saluran dapur",
+    "Endapan tanah atau pasir dari cucian",
+    "Penyumbatan oleh benda asing seperti tisu atau pembalut",
+    "Limbah lemak yang membeku di pipa dingin"
+   ],
+   "tropical_note": "Iklim tropis lembap mempercepat penumpukan lemak dan lumut di dalam pipa, sehingga saluran lebih cepat mampet jika tidak rutin dibersihkan.",
+   "kapan_panggil_ahli": [
+    "Air meluap dari beberapa titik saluran sekaligus",
+    "Bau gas atau limbah sangat menyengat dan menetap",
+    "Sumbatan tidak hilang setelah semua metode aktif dicoba"
+   ]
+  }
+ },
+ "problem:rumah-terasa-sempit-padahal-luas": {
+  "topic": "Rumah terasa sempit padahal luas",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Ruang terasa sumpek meski ukuran fisik cukup besar",
+    "Sirkulasi udara terasa pengap dan lembap",
+    "Furnitur besar mendominasi dan menghalangi gerak",
+    "Pencahayaan alami minim sehingga ruang tampak gelap"
+   ],
+   "pencegahan": [
+    "Rencanakan tata letak dan sirkulasi sebelum membeli furnitur",
+    "Terapkan kebiasaan declutter rutin (kurangi barang tak terpakai)",
+    "Pilih material dan warna yang mendukung kesan lapang sejak awal"
+   ],
+   "solusi_aktif": [
+    "Pasang exhaust fan atau kipas plafon untuk dorong sirkulasi",
+    "Gunakan lampu LED dengan CRI tinggi dan distribusi merata",
+    "Rapikan sistem penyimpanan vertikal (rak dinding, lemari tinggi)",
+    "Aplikasikan cat anti-lembap untuk kurangi efek pengap"
+   ],
+   "solusi_pasif": [
+    "Gunakan furnitur multifungsi dan ramping (built-in jika perlu)",
+    "Maksimalkan bukaan silang untuk ventilasi alami",
+    "Terapkan palet warna terang dan cermin untuk ilusi luas",
+    "Kurangi sekat non-struktural, buka denah ruang"
+   ],
+   "penyebab_umum": [
+    "Tata letak ruang tidak efisien (sirkulasi sempit, banyak sekat)",
+    "Pemilihan furnitur tidak proporsional dengan dimensi ruang",
+    "Penumpukan barang karena kebiasaan menyimpan (efek lembap tropis)",
+    "Bukaan (jendela/pintu) terlalu sedikit atau salah posisi",
+    "Warna dinding dan lantai gelap menyerap cahaya"
+   ],
+   "tropical_note": "Iklim tropis lembap mempercepat penumpukan barang dan jamur, sehingga desain terbuka serta material tahan lembap sangat krusial untuk menjaga kesan luas.",
+   "kapan_panggil_ahli": [
+    "Muncul jamur atau kebocoran dinding yang persisten",
+    "Retakan struktural atau perubahan bentuk plafon/lantai",
+    "Ventilasi alami tidak berfungsi meski bukaan sudah maksimal"
+   ]
+  }
+ },
+ "problem:rumah-bising-dari-jalan-raya": {
+  "topic": "Rumah bising dari jalan raya",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Suara kendaraan terdengar jelas di dalam ruangan meski jendela tertutup",
+    "Getaran terasa saat kendaraan berat melintas",
+    "Kesulitan tidur atau berkonsentrasi karena kebisingan",
+    "Gema atau dengung rendah terus-menerus dari lalu lintas"
+   ],
+   "pencegahan": [
+    "Saat renovasi, pilih material dinding dengan massa tinggi seperti bata ringan",
+    "Rencanakan orientasi ruang tidur dan ruang utama menjauhi sumber bising",
+    "Gunakan desain ventilasi silang yang tidak langsung membuka ke jalan"
+   ],
+   "solusi_aktif": [
+    "Tambahkan sealant atau weatherstrip pada celah pintu dan jendela",
+    "Pasang panel akustik pada dinding yang menghadap jalan",
+    "Gunakan karpet tebal atau peredam lantai untuk meredam getaran",
+    "Perbaiki atau ganti kusen yang aus agar rapat sempurna"
+   ],
+   "solusi_pasif": [
+    "Pasang jendela kaca ganda atau laminasi dengan bingkai kedap",
+    "Tambah tirai tebal atau gorden berlapis di sisi jalan",
+    "Gunakan tanaman pagar atau dinding hijau sebagai buffer suara",
+    "Atur tata letak ruang tidur menjauhi sisi jalan raya"
+   ],
+   "penyebab_umum": [
+    "Dinding tipis tanpa lapisan kedap suara",
+    "Jendela kaca tunggal dengan celah udara",
+    "Ventilasi atau lubang angin langsung menghadap jalan",
+    "Atap atau plafon tidak memiliki isolasi akustik",
+    "Pintu depan tidak rapat atau berbahan ringan"
+   ],
+   "tropical_note": "Di iklim tropis lembap Indonesia, solusi kedap suara harus tetap memungkinkan sirkulasi udara alami agar tidak memicu kelembapan dan jamur.",
+   "kapan_panggil_ahli": [
+    "Kebisingan tetap tinggi meski semua celah sudah ditutup rapat",
+    "Getaran struktural terasa di lantai atau dinding saat lalu lintas padat",
+    "Muncul retakan pada dinding yang diduga akibat getaran kendaraan berat"
+   ]
+  }
+ },
+ "problem:silau-matahari-sore-ke-ruang-keluarga": {
+  "topic": "Silau matahari sore ke ruang keluarga",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Cahaya matahari langsung masuk ke ruang keluarga pada sore hari",
+    "Suhu ruangan terasa panas dan tidak nyaman saat sore",
+    "Silau mengganggu aktivitas seperti menonton TV atau membaca",
+    "Warna furnitur atau lantai memudar di area yang terkena sinar"
+   ],
+   "pencegahan": [
+    "Rencanakan orientasi bangunan dengan bukaan utama menghindari barat",
+    "Sediakan ruang transisi seperti teras atau selasar di sisi barat",
+    "Gunakan material fasad yang memantulkan panas di sisi barat"
+   ],
+   "solusi_aktif": [
+    "Ganti kaca jendela dengan kaca low-e atau film reflektif",
+    "Pasang solar screen atau roller blind reflektif",
+    "Gunakan kaca film anti-silau dan reduksi panas",
+    "Tambah ventilasi silang untuk mengalirkan udara panas"
+   ],
+   "solusi_pasif": [
+    "Pasang overstek atau kanopi di atas jendela barat",
+    "Gunakan kisi-kisi atau secondary skin di luar jendela",
+    "Tanam pohon peneduh atau tanaman rambat di sisi barat",
+    "Pasang gorden tebal atau tirai blackout di dalam ruangan"
+   ],
+   "penyebab_umum": [
+    "Orientasi jendela atau bukaan menghadap barat",
+    "Kurangnya peneduh eksternal seperti overstek atau kisi",
+    "Kaca jendela tanpa lapisan anti-silau atau low-e",
+    "Tidak adanya tirai atau gorden yang memadai",
+    "Posisi ruang keluarga di sisi barat rumah tanpa buffer"
+   ],
+   "tropical_note": "Di iklim tropis Indonesia, sinar matahari barat sangat kuat dan lembap tinggi memperparah efek panas serta risiko jamur pada material.",
+   "kapan_panggil_ahli": [
+    "Silau disertai retak atau kebocoran di sekitar jendela",
+    "Suhu ruangan ekstrem meski sudah dipasang tirai tebal",
+    "Perubahan struktur dinding atau kusen akibat paparan panas terus-menerus"
+   ]
+  }
+ },
+ "problem:rumah-pengap-sirkulasi-udara-buruk": {
+  "topic": "Rumah pengap / sirkulasi udara buruk",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Udara terasa berat dan lembap saat masuk ruangan",
+    "Bau apek atau pengap yang menetap meski sudah dibersihkan",
+    "Dinding atau langit-langit berjamur, terutama di sudut ruangan",
+    "Penghuni sering pusing, lelah, atau sulit tidur tanpa sebab jelas"
+   ],
+   "pencegahan": [
+    "Rutin buka jendela dan pintu di pagi dan sore hari saat udara segar",
+    "Hindari menumpuk barang di dekat ventilasi atau jalur udara",
+    "Periksa dan bersihkan ventilasi minimal sebulan sekali"
+   ],
+   "solusi_aktif": [
+    "Pasang exhaust fan di dinding atau atap untuk menyedot udara panas",
+    "Gunakan kipas angin langit-langit atau kipas dinding untuk sirkulasi paksa",
+    "Tambahkan dehumidifier portabel jika kelembapan sangat tinggi",
+    "Bersihkan dan rawat saluran udara atau ventilasi yang tersumbat"
+   ],
+   "solusi_pasif": [
+    "Buat lubang ventilasi permanen di bagian atas dinding (jalusi atau roster)",
+    "Pasang kisi-kisi atau ventilasi di atas pintu dan jendela",
+    "Desain ulang tata letak agar ada jalur silang udara dari depan ke belakang",
+    "Gunakan material dinding yang bisa menyerap dan melepas uap air (misal bata ekspos)"
+   ],
+   "penyebab_umum": [
+    "Ventilasi silang tidak ada atau terhalang tembok/furnitur",
+    "Jendela terlalu kecil atau hanya di satu sisi rumah",
+    "Atap rendah tanpa celah udara atau plafon rapat",
+    "Dinding lembap akibat rembesan air hujan atau tanah",
+    "Kebiasaan menutup rapat jendela sepanjang hari karena debu atau privasi"
+   ],
+   "tropical_note": "Di iklim tropis lembap Indonesia, sirkulasi udara yang buruk mempercepat pertumbuhan jamur dan meningkatkan risiko penyakit pernapasan, sehingga ventilasi silang dan pengelolaan kelembapan sangat krusial.",
+   "kapan_panggil_ahli": [
+    "Jamur menyebar luas di dinding atau langit-langit hingga mengelupas cat",
+    "Bau apek sangat menyengat dan tidak hilang meski ventilasi diperbaiki",
+    "Penghuni mengalami gangguan pernapasan kronis atau alergi parah di dalam rumah"
+   ]
+  }
+ },
+ "system:toren-tandon-air": {
+  "topic": "Toren / tandon air",
+  "topic_type": "system",
+  "knowledge": {
+   "fungsi": "Menampung air dari sumber (PDAM/sumur) untuk menyediakan pasokan air bersih secara gravitasi ke seluruh titik kran rumah, terutama saat listrik padam atau debit sumber rendah.",
+   "perawatan": [
+    "Bersihkan endapan di dasar toren setiap 6-12 bulan dengan menyedot atau menguras.",
+    "Periksa kondisi tutup toren dan seal karet agar tetap rapat mencegah nyamuk dan kotoran.",
+    "Cek pipa overflow dan vent agar tidak tersumbat oleh sarang serangga atau lumut."
+   ],
+   "pertimbangan": [
+    "Ketersediaan ruang di atas (atap/dudukan) vs di tanah.",
+    "Kapasitas yang cukup untuk kebutuhan harian keluarga (tanpa menyebut angka).",
+    "Material yang tahan terhadap sinar UV dan suhu tropis (hindari material mudah retak).",
+    "Kemudahan akses untuk pembersihan dan perbaikan (lubang inspeksi cukup besar).",
+    "Kesesuaian dengan sistem pipa existing (ukuran inlet/outlet, posisi overflow)."
+   ],
+   "pilihan_umum": [
+    "Toren plastik/tangki PE (polietilen): ringan, tahan karat, cocok untuk atap/dudukan besi, paling umum di rumah tinggal.",
+    "Toren stainless steel: lebih kuat, higienis, tahan cuaca ekstrem, dipilih jika anggaran lebih longgar atau ingin durabilitas tinggi.",
+    "Toren beton/batu bata (ground tank): untuk kapasitas besar, dipasang di tanah, cocok jika lahan terbatas di atas atau ingin tampilan menyatu dengan taman."
+   ],
+   "tropical_note": "Di iklim tropis lembap, toren rentan terhadap pertumbuhan lumut dan nyamuk, sehingga tutup rapat dan pembersihan rutin sangat krusial.",
+   "kesalahan_umum": [
+    "Meletakkan toren langsung di permukaan atap tanpa dudukan yang rata dan kuat, menyebabkan goyang atau retak.",
+    "Tidak memasang filter pada inlet sehingga kotoran masuk dan mengendap di dasar toren.",
+    "Lupa memasang pipa overflow yang cukup besar dan mengarah ke saluran pembuangan, menyebabkan luber saat hujan atau overfill.",
+    "Memilih toren terlalu kecil sehingga sering kosong saat pemakaian bersamaan (mandi, cuci, siram)."
+   ],
+   "kapan_panggil_ahli": [
+    "Jika terjadi kebocoran pada badan toren (retak atau sambungan bocor) yang tidak bisa ditambal sendiri.",
+    "Saat tekanan air dari toren ke kran menurun drastis tanpa sebab jelas (mungkin ada sumbatan atau pipa pecah).",
+    "Jika ingin memindahkan atau mengganti toren dengan kapasitas berbeda, terutama jika menyangkut struktur atap/dudukan."
+   ]
+  }
+ },
+ "problem:listrik-sering-turun-mcb-jeglek": {
+  "topic": "Listrik sering turun (MCB jeglek)",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "MCB di meteran atau panel listrik tiba-tiba turun (jeglek) tanpa sebab jelas",
+    "Lampu atau peralatan listrik mati mendadak saat digunakan bersamaan",
+    "MCB sering jeglek saat cuaca lembap atau hujan",
+    "Ada bau hangus atau suara mendesis dari stopkontak atau kabel"
+   ],
+   "pencegahan": [
+    "Jangan menumpuk stopkontak dengan banyak colokan melebihi kapasitas",
+    "Lakukan pengecekan instalasi listrik secara berkala minimal setahun sekali",
+    "Hindari penggunaan kabel sambungan (roll kabel) dalam kondisi tergulung saat beban tinggi"
+   ],
+   "solusi_aktif": [
+    "Ganti MCB dengan kapasitas yang sesuai setelah dihitung beban total (oleh ahli)",
+    "Perbaiki atau ganti kabel yang terkelupas atau sambungan yang longgar",
+    "Pasang alat pelindung seperti surge protector atau stabilizer untuk peralatan sensitif",
+    "Bersihkan panel listrik dari debu, sarang serangga, atau karat kontak"
+   ],
+   "solusi_pasif": [
+    "Atur jadwal pemakaian alat listrik berdaya besar agar tidak serentak",
+    "Pastikan ventilasi panel listrik cukup untuk mengurangi kelembapan",
+    "Gunakan kabel dan stopkontak berkualitas dengan isolasi tebal untuk iklim lembap",
+    "Rutin periksa kondisi kabel dan sambungan, terutama setelah musim hujan"
+   ],
+   "penyebab_umum": [
+    "Beban listrik melebihi kapasitas MCB (misal: menyalakan AC, setrika, dan pompa air bersamaan)",
+    "Korsleting akibat isolasi kabel rusak atau sambungan longgar karena lembap",
+    "Alat elektronik rusak (konslet internal) yang menarik arus berlebih",
+    "Instalasi listrik tidak sesuai pembagian grup (satu MCB menangani terlalu banyak titik)",
+    "Tikus atau serangga menggigit kabel sehingga terjadi hubungan pendek"
+   ],
+   "tropical_note": "Kelembapan tinggi di Indonesia mempercepat korosi kontak dan penurunan isolasi kabel, sehingga risiko korsleting lebih tinggi dibanding iklim kering.",
+   "kapan_panggil_ahli": [
+    "MCB tetap jeglek meski beban sudah dikurangi dan semua peralatan dicabut",
+    "Ada percikan api, bau terbakar, atau bagian panel terasa panas",
+    "Terjadi kejutan listrik saat menyentuh peralatan atau stopkontak"
+   ]
+  }
+ },
+ "problem:ruangan-gelap-kurang-cahaya-alami": {
+  "topic": "Ruangan gelap / kurang cahaya alami",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Ruang terasa sumpek meski ventilasi ada",
+    "Warna dinding tampak kusam atau abu-abu sepanjang hari",
+    "Lampu harus menyala terus meski siang hari",
+    "Tanaman hias di dalam ruangan tumbuh tidak sehat atau layu"
+   ],
+   "pencegahan": [
+    "Rencanakan bukaan minimal 20% luas lantai saat desain awal",
+    "Hindari bangunan rapat tanpa jarak antar rumah",
+    "Pilih posisi ruang utama di sisi yang mendapat sinar pagi"
+   ],
+   "solusi_aktif": [
+    "Pasang lampu LED daylight (5000-6500K) di plafon",
+    "Gunakan lampu dinding (wall washer) untuk bias cahaya",
+    "Pasang solar tube atau light pipe dari atap ke plafon",
+    "Buka plafon palsu agar ruang lebih tinggi dan cahaya masuk"
+   ],
+   "solusi_pasif": [
+    "Pasang jendela besar atau pintu kaca di sisi utara-selatan",
+    "Gunakan cat dinding dan lantai warna terang (putih, krem)",
+    "Buat lubang cahaya di atap (skylight) atau genteng kaca",
+    "Tambah cermin besar di dinding seberang jendela"
+   ],
+   "penyebab_umum": [
+    "Bukaan jendela terlalu kecil atau posisi salah",
+    "Terhalang bangunan tetangga atau tembok tinggi",
+    "Overstek atap terlalu panjang menutupi sinar masuk",
+    "Letak ruangan di sisi barat/timur tanpa bukaan timur-barat",
+    "Penggunaan material gelap pada dinding/lantai interior"
+   ],
+   "tropical_note": "Di iklim tropis lembap, hindari bukaan timur-barat langsung tanpa pelindung sinar agar ruang tidak gelap sekaligus panas.",
+   "kapan_panggil_ahli": [
+    "Ruangan tetap gelap total meski sudah buka jendela besar",
+    "Ada retak atau rembes air di sekitar bukaan atap/dinding",
+    "Penghuni mengalami gangguan penglihatan atau sakit kepala terus-menerus"
+   ]
+  }
+ },
+ "problem:nyamuk-banyak-di-dalam-rumah": {
+  "topic": "Nyamuk banyak di dalam rumah",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Sering mendengar dengungan nyamuk di malam hari",
+    "Bekas gigitan gatal pada kulit terutama pagi hari",
+    "Nyamuk terlihat bertengger di dinding atau langit-langit",
+    "Air tergenang di sekitar rumah"
+   ],
+   "pencegahan": [
+    "Kuras tempat penampungan air seminggu sekali",
+    "Tutup rapat tempat penyimpanan air",
+    "Bersihkan lingkungan rumah dari barang yang bisa menampung air"
+   ],
+   "solusi_aktif": [
+    "Gunakan obat nyamuk elektrik atau lotion anti nyamuk",
+    "Semprot insektisida di sudut ruangan secara berkala",
+    "Pasang perangkap nyamuk UV atau perangkap CO2",
+    "Fogging jika populasi sudah sangat tinggi"
+   ],
+   "solusi_pasif": [
+    "Pasang kasa nyamuk pada jendela dan ventilasi",
+    "Tanam tanaman pengusir nyamuk seperti lavender atau serai di sekitar rumah",
+    "Pastikan saluran air lancar dan tidak ada genangan",
+    "Gunakan kelambu di tempat tidur"
+   ],
+   "penyebab_umum": [
+    "Genangan air di pot tanaman, bak mandi, atau talang tersumbat",
+    "Ventilasi tanpa kasa nyamuk",
+    "Tumpukan barang bekas yang menampung air hujan",
+    "Lingkungan lembap dan kurang sinar matahari langsung",
+    "Kebiasaan membuka pintu/jendela tanpa pelindung"
+   ],
+   "tropical_note": "Iklim tropis lembap Indonesia mempercepat perkembangbiakan nyamuk, sehingga pengelolaan genangan air dan ventilasi sangat krusial.",
+   "kapan_panggil_ahli": [
+    "Wabah demam berdarah di lingkungan sekitar",
+    "Populasi nyamuk tidak berkurang meski sudah dilakukan pencegahan mandiri",
+    "Ada anggota rumah yang terkena demam tinggi mendadak"
+   ]
+  }
+ },
+ "problem:rayap-pada-kayu": {
+  "topic": "Rayap pada kayu",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Kayu berlubang kecil dan mengeluarkan serbuk halus seperti pasir",
+    "Muncul jalur-jalur lumpur di permukaan kayu atau dinding",
+    "Suara gemerisik di dalam kayu saat malam hari",
+    "Kayu terasa ringan dan mudah hancur saat ditekan"
+   ],
+   "pencegahan": [
+    "Periksa dan perbaiki kebocoran pipa atau atap secara rutin",
+    "Lapisi fondasi dengan lembaran antirayap saat pembangunan",
+    "Jaga kayu tetap kering dan tidak lembap lebih dari 2 hari"
+   ],
+   "solusi_aktif": [
+    "Oleskan insektisida antirayap pada area yang terinfeksi",
+    "Pasang perangkap umpan rayap di titik strategis",
+    "Ganti kayu yang rusak parah dengan material baru yang tahan rayap",
+    "Semprotkan larutan boraks pada kayu sebagai racun kontak"
+   ],
+   "solusi_pasif": [
+    "Beri celah udara antara kayu dan tanah dengan batu atau beton",
+    "Gunakan kayu yang sudah diawetkan secara alami (misal: jati, ulin)",
+    "Pastikan sirkulasi udara bawah lantai dan loteng lancar",
+    "Hindari menanam pohon besar terlalu dekat dengan dinding rumah"
+   ],
+   "penyebab_umum": [
+    "Kelembapan tinggi akibat ventilasi buruk atau kebocoran",
+    "Kayu langsung menyentuh tanah tanpa penghalang",
+    "Sisa bangunan kayu atau akar pohon di bawah fondasi",
+    "Kebiasaan menumpuk kayu bakar atau material kayu di sekitar rumah",
+    "Kurangnya sinar matahari langsung pada struktur kayu"
+   ],
+   "tropical_note": "Iklim tropis Indonesia yang lembap dan hangat mempercepat perkembangbiakan rayap, sehingga pencegahan dini sangat krusial.",
+   "kapan_panggil_ahli": [
+    "Rayap sudah mencapai rangka atap atau struktur utama rumah",
+    "Terlihat kawanan rayap bersayap keluar dari dinding atau lantai",
+    "Kerusakan meluas ke furnitur atau kusen dalam waktu singkat"
+   ]
+  }
+ },
+ "problem:bau-got-masuk-ke-rumah": {
+  "topic": "Bau got masuk ke rumah",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Bau tidak sedap seperti limbah atau selokan muncul dari lantai atau dinding",
+    "Udara dalam ruangan terasa pengap dan lembap",
+    "Muncul serangga kecil seperti lalat got atau lipas di sekitar saluran",
+    "Suara gemericik air dari pipa pembuangan saat digunakan"
+   ],
+   "pencegahan": [
+    "Siram lantai dan wastafel secara rutin agar trap tidak kering",
+    "Hindari membuang minyak atau sisa makanan ke saluran air",
+    "Periksa dan bersihkan saluran got secara berkala setiap musim hujan"
+   ],
+   "solusi_aktif": [
+    "Bersihkan dan kuras trap secara rutin dengan air bersih",
+    "Perbaiki atau ganti sambungan pipa yang bocor dengan lem pipa khusus",
+    "Pasang kipas exhaust di kamar mandi atau dapur untuk mengeluarkan udara kotor",
+    "Gunakan sealant silikon pada celah sambungan pipa dan lantai"
+   ],
+   "solusi_pasif": [
+    "Pasang penutup saluran air dengan sistem perangkap air (trap) permanen",
+    "Buat jalur ventilasi silang agar udara segar menggantikan udara dalam ruangan",
+    "Gunakan material lantai dan dinding yang mudah dibersihkan dan tidak menyerap bau",
+    "Tempatkan tanaman penyerap bau seperti lidah mertua di dekat sumber"
+   ],
+   "penyebab_umum": [
+    "Trap (sifon) pada lantai atau wastafel kering sehingga gas got naik",
+    "Pipa pembuangan bocor atau retak di bawah lantai/dinding",
+    "Sambungan pipa tidak kedap atau longgar",
+    "Saluran got tersumbat sehingga tekanan gas meningkat",
+    "Ventilasi pipa (vent stack) tersumbat atau tidak ada"
+   ],
+   "tropical_note": "Iklim tropis lembap Indonesia mempercepat penguapan air di trap dan meningkatkan pertumbuhan bakteri penghasil gas got, sehingga perawatan rutin lebih krusial.",
+   "kapan_panggil_ahli": [
+    "Bau tetap muncul meski semua solusi sudah dicoba",
+    "Ada rembesan air atau genangan di lantai tanpa sumber jelas",
+    "Tercium bau gas berbahaya seperti metana atau hidrogen sulfida"
+   ]
+  }
+ },
+ "problem:dinding-retak-struktural": {
+  "topic": "Dinding retak struktural",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Retakan diagonal pada dinding dekat sudut jendela atau pintu",
+    "Retakan vertikal atau horizontal yang melebar seiring waktu",
+    "Dinding terlihat melengkung atau tidak rata",
+    "Pintu/jendela macet saat dibuka atau ditutup"
+   ],
+   "pencegahan": [
+    "Pastikan tanah dipadatkan merata sebelum fondasi",
+    "Hindari beban berlebih pada dinding (misal: gantung benda berat)",
+    "Lakukan perawatan berkala pada saluran air agar tidak rembes"
+   ],
+   "solusi_aktif": [
+    "Injeksi epoksi atau grouting pada retakan struktural",
+    "Pasang angkur atau plat baja pengikat pada dinding retak",
+    "Perkuat fondasi dengan micropile atau cerucuk kayu lokal",
+    "Bongkar dan rekonstruksi bagian dinding yang rusak parah"
+   ],
+   "solusi_pasif": [
+    "Pasang sambungan dilatasi pada dinding panjang",
+    "Gunakan material ringan untuk partisi non-struktural",
+    "Perbaiki drainase tanah sekitar fondasi agar tidak jenuh air"
+   ],
+   "penyebab_umum": [
+    "Penurunan tanah fondasi tidak merata",
+    "Beban struktur berlebih akibat perubahan fungsi ruangan",
+    "Pengerjaan pondasi dangkal tanpa perkuatan tanah",
+    "Retak susut beton atau plesteran yang membesar",
+    "Getaran dari aktivitas sekitar (gempa kecil, konstruksi)"
+   ],
+   "tropical_note": "Iklim tropis lembap Indonesia mempercepat degradasi material dinding akibat siklus basah-kering dan rembesan air hujan, sehingga retakan kecil perlu segera ditangani.",
+   "kapan_panggil_ahli": [
+    "Retakan melebar lebih dari 1 cm dalam waktu singkat",
+    "Dinding terlihat miring atau ambrol sebagian",
+    "Retakan disertai rembesan air atau tanah longsor di sekitar fondasi"
+   ]
+  }
+ },
+ "problem:halaman-banjir-saat-hujan-deras": {
+  "topic": "Halaman banjir saat hujan deras",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Genangan air di halaman saat hujan deras",
+    "Air masuk ke dalam rumah melalui celah pintu atau ventilasi rendah",
+    "Lumpur atau endapan terlihat setelah air surut",
+    "Bau lembap atau tanah basah berkepanjangan"
+   ],
+   "pencegahan": [
+    "Periksa dan bersihkan saluran air setiap musim hujan tiba",
+    "Jaga agar talang dan pipa pembuangan tidak bocor atau mampet",
+    "Hindari menutup seluruh halaman dengan aspal atau beton rapat"
+   ],
+   "solusi_aktif": [
+    "Bersihkan saluran drainase secara rutin dari endapan",
+    "Pasang pompa air otomatis di titik genangan jika perlu",
+    "Tambahkan saluran pembuangan baru atau perbaiki kemiringan lantai",
+    "Gunakan material permeabel untuk area parkir atau jalan setapak"
+   ],
+   "solusi_pasif": [
+    "Buat biopori atau sumur resapan di titik rendah halaman",
+    "Tinggikan muka halaman dengan urugan tanah atau paving berongga",
+    "Arahkan talang air hujan ke saluran pembuangan, bukan ke halaman",
+    "Tanam rumput atau tanaman penyerap air di area terbuka"
+   ],
+   "penyebab_umum": [
+    "Saluran drainase tersumbat sampah atau lumpur",
+    "Ketinggian lantai halaman lebih rendah dari jalan atau saluran umum",
+    "Kurangnya area resapan atau taman di sekitar rumah",
+    "Atap tanpa talang atau talang bocor mengarah ke halaman",
+    "Tanah padat atau kedap air akibat paving penuh"
+   ],
+   "tropical_note": "Di iklim tropis Indonesia dengan curah hujan tinggi dan tanah lembap, drainase permukaan dan resapan harus jadi prioritas utama desain halaman.",
+   "kapan_panggil_ahli": [
+    "Banjir disertai rembesan air dari dinding atau fondasi",
+    "Genangan tidak surut lebih dari 24 jam setelah hujan berhenti",
+    "Muncul retakan atau penurunan tanah di sekitar halaman"
+   ]
+  }
+ },
+ "problem:air-sumur-keruh-atau-berbau": {
+  "topic": "Air sumur keruh atau berbau",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Air sumur berwarna kuning, cokelat, atau keruh saat ditampung",
+    "Bau anyir, tanah, atau belerang menyengat dari air",
+    "Endapan pasir atau lumpur di dasar bak penampung",
+    "Rasa air logam atau pahit saat diminum"
+   ],
+   "pencegahan": [
+    "Jaga jarak sumur minimal 10 meter dari septic tank dan kandang",
+    "Rutin periksa dan bersihkan dinding sumur setahun sekali",
+    "Hindari membuang limbah deterjen atau kimia ke tanah dekat sumur"
+   ],
+   "solusi_aktif": [
+    "Pasang filter karbon aktif dan zeolit untuk bau dan warna",
+    "Gunakan aerator atau shower untuk mengoksidasi besi sebelum filtrasi",
+    "Lakukan shock chlorination untuk membunuh bakteri pencemar",
+    "Perdalam sumur atau bor ulang ke lapisan air bersih"
+   ],
+   "solusi_pasif": [
+    "Buat sumur resapan atau biopori jauh dari sumber pencemar",
+    "Tutup rapat bibir sumur dengan cor beton agar air permukaan tak masuk",
+    "Pasang saringan alami dari ijuk, arang, dan pasir di bak tampung",
+    "Biarkan air mengendap semalaman sebelum digunakan"
+   ],
+   "penyebab_umum": [
+    "Sumur dangkal tercemar limbah rumah tangga atau septic tank rembes",
+    "Kandungan besi dan mangan tinggi dari tanah tropis",
+    "Pipa atau casing sumur bocor/berkarat",
+    "Kurangnya sirkulasi air akibat pemompaan berlebihan",
+    "Lapisan tanah liat atau gambut yang melarutkan zat organik"
+   ],
+   "tropical_note": "Iklim tropis lembap mempercepat pelapukan batuan dan pertumbuhan bakteri, sehingga air sumur rentan keruh dan berbau akibat tingginya kandungan organik dan mineral besi.",
+   "kapan_panggil_ahli": [
+    "Air berbau busuk menyengat dan menyebabkan iritasi kulit",
+    "Warna air berubah drastis setelah hujan deras",
+    "Anggota rumah tangga mengalami diare atau muntah berulang"
+   ]
+  }
+ },
+ "problem:cat-dinding-mengelupas": {
+  "topic": "Cat dinding mengelupas",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Cat terlihat menggelembung lalu terkelupas",
+    "Bercak lembap atau jamur pada dinding",
+    "Serbuk kapur pada permukaan cat saat disentuh",
+    "Retak rambut di permukaan cat sebelum mengelupas"
+   ],
+   "pencegahan": [
+    "Pastikan dinding benar-benar kering sebelum mengecat ulang",
+    "Bersihkan permukaan dinding dari debu, minyak, dan jamur secara rutin",
+    "Lapisi dinding dengan cat dasar (primer) yang sesuai sebelum cat akhir"
+   ],
+   "solusi_aktif": [
+    "Kupas cat yang mengelupas, amplas permukaan, lalu aplikasikan cat dasar anti-lembap",
+    "Perbaiki kebocoran pipa atau retak dinding sebelum mengecat ulang",
+    "Gunakan cat anti-jamur dan anti-lembap khusus iklim tropis",
+    "Pasang exhaust fan di kamar mandi atau dapur untuk mengurangi kelembapan"
+   ],
+   "solusi_pasif": [
+    "Tingkatkan ventilasi silang untuk mengurangi kelembapan ruangan",
+    "Buat overstek atap lebih lebar agar dinding tidak terkena air hujan langsung",
+    "Gunakan material dinding yang lebih tahan lembap seperti bata ringan atau batako",
+    "Pasang talang air dan saluran pembuangan yang menjauhkan air dari dinding"
+   ],
+   "penyebab_umum": [
+    "Kelembapan tinggi akibat rembesan air hujan atau pipa bocor",
+    "Persiapan permukaan dinding tidak bersih atau tidak kering sempurna",
+    "Penggunaan cat berkualitas rendah atau tidak sesuai untuk eksterior/interior",
+    "Dinding baru belum cukup kering sebelum dicat",
+    "Kondensasi akibat perbedaan suhu ruangan dan luar"
+   ],
+   "tropical_note": "Iklim tropis Indonesia yang lembap dan curah hujan tinggi mempercepat pengelupasan cat jika dinding tidak dilindungi dengan baik.",
+   "kapan_panggil_ahli": [
+    "Cat mengelupas disertai rembesan air terus-menerus dari dinding",
+    "Muncul retak struktural atau dinding terasa lembap permanen meski sudah diperbaiki",
+    "Jamur meluas dan tidak hilang meski sudah dibersihkan serta ventilasi diperbaiki"
+   ]
+  }
+ },
+ "problem:atap-genteng-bocor-rembes": {
+  "topic": "Atap genteng bocor / rembes",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Noda basah atau jamur pada plafon",
+    "Air menetes saat hujan deras",
+    "Plafon menggelembung atau retak",
+    "Bau apek di dalam ruangan"
+   ],
+   "pencegahan": [
+    "Periksa atap minimal setahun sekali, terutama sebelum musim hujan",
+    "Pangkas ranting pohon yang menaungi atap agar tidak menahan kelembapan",
+    "Pastikan talang tidak tersumbat dan air hujan lancar mengalir"
+   ],
+   "solusi_aktif": [
+    "Ganti genteng yang retak atau pecah dengan yang baru",
+    "Tutup celah dengan sealant atau mortar khusus atap",
+    "Bersihkan talang dan sela genteng dari kotoran secara rutin",
+    "Pasang lapisan waterproofing tambahan di bawah genteng"
+   ],
+   "solusi_pasif": [
+    "Buat overstek atap lebih lebar untuk menjauhkan air dari dinding",
+    "Pasang talang dengan kemiringan cukup agar air cepat mengalir",
+    "Gunakan genteng dengan sistem interlock untuk mengurangi celah",
+    "Tinggikan plafon agar rembesan tidak langsung mengenai langit-langit"
+   ],
+   "penyebab_umum": [
+    "Genteng retak, pecah, atau bergeser akibat angin/panas",
+    "Sambungan talang atau nok bocor karena lapuk",
+    "Rembesan air dari celah antara genteng dan rangka",
+    "Lapisan waterproofing di bawah genteng rusak",
+    "Debu dan daun menumpuk di sela genteng sehingga menahan air"
+   ],
+   "tropical_note": "Di iklim tropis Indonesia dengan hujan deras dan panas bergantian, genteng cepat memuai-menyusut sehingga celah mudah terbuka dan rembesan sering terjadi.",
+   "kapan_panggil_ahli": [
+    "Kebocoran meluas ke beberapa titik dan tidak ketemu sumbernya",
+    "Rangka atap terlihat melengkung atau lapuk",
+    "Plafon ambrol atau retak besar akibat air tergenang"
+   ]
+  }
+ },
+ "problem:debu-jalanan-masuk-terus": {
+  "topic": "Debu jalanan masuk terus",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Debu terlihat menumpuk di permukaan furnitur dalam waktu singkat",
+    "Lantai terasa kasar meski sudah dipel",
+    "Gangguan pernapasan seperti bersin atau hidung tersumbat",
+    "Bekas debu hitam di dinding dekat jendela atau ventilasi"
+   ],
+   "pencegahan": [
+    "Tutup rapat pintu dan jendela saat lalu lintas padat",
+    "Bersihkan kasa ventilasi secara rutin seminggu sekali",
+    "Gunakan alas kaki khusus di area masuk rumah"
+   ],
+   "solusi_aktif": [
+    "Ganti karet perekat atau weatherstrip pada kusen pintu/jendela",
+    "Pasang exhaust fan dengan filter debu di ruang tamu",
+    "Gunakan air purifier portabel di ruang utama",
+    "Lapisi lantai dengan pelapis anti debu atau cat khusus"
+   ],
+   "solusi_pasif": [
+    "Pasang kasa nyamuk pada ventilasi dan jendela",
+    "Beri tirai atau gorden tebal di sisi yang menghadap jalan",
+    "Gunakan tanaman pagar atau buffer hijau di depan rumah",
+    "Desain teras atau selasar sebagai ruang transisi debu"
+   ],
+   "penyebab_umum": [
+    "Celah di kusen pintu atau jendela tidak rapat",
+    "Ventilasi tanpa saringan atau kasa",
+    "Aktivitas jalanan berdebu di depan rumah",
+    "Material lantai atau dinding yang mudah menyerap debu",
+    "Kebiasaan membuka pintu/jendela lebar tanpa pelindung"
+   ],
+   "tropical_note": "Iklim tropis lembap membuat debu jalanan mudah menempel dan membawa spora jamur, sehingga solusi harus mengutamakan sirkulasi udara tetap terjaga tanpa membuka celah besar.",
+   "kapan_panggil_ahli": [
+    "Debu masuk meskipun semua celah sudah ditutup rapat",
+    "Muncul retakan struktural di dinding atau plafon",
+    "Gangguan pernapasan kronis pada penghuni"
+   ]
+  }
+ },
+ "problem:dinding-lembap-dan-berjamur": {
+  "topic": "Dinding lembap dan berjamur",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Dinding terasa basah atau lembap saat disentuh",
+    "Muncul bercak hitam, hijau, atau putih akibat jamur",
+    "Cat dinding mengelupas atau gelembung",
+    "Bau apek yang menetap di ruangan"
+   ],
+   "pencegahan": [
+    "Jaga sirkulasi udara tetap lancar setiap hari",
+    "Hindari menumpuk barang di dekat dinding luar",
+    "Periksa dan bersihkan talang air secara rutin"
+   ],
+   "solusi_aktif": [
+    "Perbaiki kebocoran pipa dan lapisi ulang dinding dengan waterproofing",
+    "Aplikasikan cat anti-jamur atau cat kedap air pada dinding",
+    "Gunakan exhaust fan di kamar mandi dan dapur untuk mengeluarkan uap",
+    "Pasang dehumidifier portabel di ruangan yang sangat lembap"
+   ],
+   "solusi_pasif": [
+    "Tingkatkan sirkulasi silang dengan jendela dan ventilasi permanen",
+    "Gunakan material dinding berpori seperti bata ekspos atau batako berlubang",
+    "Buat talang dan kemiringan tanah menjauhi dinding",
+    "Pasang kanopi atau overstek lebar untuk melindungi dinding dari hujan"
+   ],
+   "penyebab_umum": [
+    "Kebocoran pipa air di dalam dinding",
+    "Rembesan air hujan dari atap atau dinding luar",
+    "Ventilasi udara buruk sehingga uap air terperangkap",
+    "Dinding langsung bersentuhan dengan tanah tanpa lapisan kedap air",
+    "Kebiasaan menjemur pakaian di dalam ruangan tanpa sirkulasi"
+   ],
+   "tropical_note": "Iklim tropis Indonesia yang panas dan lembap sepanjang tahun mempercepat kondensasi dan pertumbuhan jamur pada dinding, terutama jika ventilasi tidak memadai.",
+   "kapan_panggil_ahli": [
+    "Jamur menyebar luas hingga ke langit-langit atau lantai",
+    "Dinding retak atau mengembang yang menandakan kerusakan struktur",
+    "Bau apek disertai gangguan pernapasan penghuni"
+   ]
+  }
+ },
+ "problem:dinding-retak-rambut": {
+  "topic": "Dinding retak rambut",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Retakan halus seperti rambut pada permukaan dinding",
+    "Retakan menyebar di area plesteran atau cat",
+    "Terkadang terasa sedikit tonjolan atau cekungan di sekitar retak"
+   ],
+   "pencegahan": [
+    "Campur plester dengan serat mikro atau bahan anti-retak",
+    "Beri jeda waktu curing yang cukup sebelum finishing",
+    "Kontrol kelembapan ruangan dengan ventilasi silang yang baik"
+   ],
+   "solusi_aktif": [
+    "Tutup retak dengan dempul elastis atau sealant akrilik",
+    "Aplikasi cat elastomerik yang bisa menutup retak rambut",
+    "Pasang kawat kasa pada area retak sebelum diplester ulang",
+    "Injeksi resin epoksi untuk retak yang lebih dalam"
+   ],
+   "solusi_pasif": [
+    "Berikan celah ekspansi pada dinding panjang atau sambungan material",
+    "Gunakan plesteran tipis berlapis dengan jeda waktu pengeringan",
+    "Pastikan dinding tidak langsung terkena panas matahari berlebih dengan kanopi atau tanaman rambat",
+    "Perbaiki drainase tanah di sekitar fondasi agar tidak lembap terus"
+   ],
+   "penyebab_umum": [
+    "Penyusutan alami material plester atau acian akibat pengeringan",
+    "Gerakan struktur bangunan karena tanah fondasi bergerak",
+    "Perubahan suhu dan kelembapan ekstrem di iklim tropis",
+    "Pemasangan plester terlalu tebal atau campuran semen tidak proporsional",
+    "Getaran dari aktivitas sekitar atau gempa kecil"
+   ],
+   "tropical_note": "Iklim tropis lembap dan panas mempercepat penyusutan plester serta memicu gerakan tanah, sehingga retak rambut lebih sering muncul pada rumah di Indonesia.",
+   "kapan_panggil_ahli": [
+    "Retak melebar lebih dari 1 mm dan terus bertambah",
+    "Retak disertai dinding melengkung atau ambles",
+    "Retak horizontal panjang di dekat plafon atau lantai"
+   ]
+  }
+ },
+ "problem:kamar-mandi-bau": {
+  "topic": "Kamar mandi bau",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Bau tidak sedap menyerupai amonia atau limbah",
+    "Bau muncul terutama saat cuaca panas atau lembap",
+    "Bau bertambah saat closet atau saluran air digunakan",
+    "Ada noda hitam atau jamur di dinding/lantai kamar mandi"
+   ],
+   "pencegahan": [
+    "Buka pintu/jendela kamar mandi setiap selesai mandi",
+    "Bersihkan lantai dan saluran air minimal seminggu sekali",
+    "Hindari membuang rambut atau sisa sabun ke saluran pembuangan"
+   ],
+   "solusi_aktif": [
+    "Bersihkan saluran pembuangan dengan soda kue dan cuka secara rutin",
+    "Pasang exhaust fan untuk sirkulasi udara paksa",
+    "Ganti seal kloset yang bocor atau retak",
+    "Gunakan pengharum ruangan atau karbon aktif penyerap bau"
+   ],
+   "solusi_pasif": [
+    "Pasang ventilasi permanen (lubang angin) di dinding atas",
+    "Buat kemiringan lantai ke arah saluran pembuangan",
+    "Gunakan material anti-jamur pada dinding dan lantai",
+    "Letakkan tanaman penyerap bau seperti lidah mertua di dekat ventilasi"
+   ],
+   "penyebab_umum": [
+    "Saluran pembuangan tersumbat atau tidak memiliki perangkap air (trap)",
+    "Ventilasi buruk sehingga kelembapan tinggi dan jamur tumbuh",
+    "Pipa kotor atau bocor di dinding/lantai",
+    "Kloset tidak terpasang rapat (seal rusak)",
+    "Air genangan di lantai karena kemiringan drainase kurang"
+   ],
+   "tropical_note": "Iklim tropis lembap Indonesia mempercepat pertumbuhan jamur dan bakteri, sehingga ventilasi dan kebersihan kamar mandi harus lebih ketat dibanding daerah subtropis.",
+   "kapan_panggil_ahli": [
+    "Bau tetap ada setelah semua solusi dicoba",
+    "Ada rembesan air atau noda basah di dinding/lantai",
+    "Saluran pembuangan sering tersumbat meski sudah dibersihkan"
+   ]
+  }
+ },
+ "problem:kusen-kayu-memuai-dan-macet": {
+  "topic": "Kusen kayu memuai dan macet",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Pintu atau jendela sulit ditutup atau dibuka",
+    "Bunyi gesekan keras saat membuka atau menutup",
+    "Celah antara kusen dan daun menyempit atau hilang",
+    "Cat atau lapisan kayu mengelupas di area sambungan"
+   ],
+   "pencegahan": [
+    "Pilih kayu dengan tingkat kekeringan dan stabilitas tinggi",
+    "Cat atau lapisi kusen dengan pelapis anti air secara berkala",
+    "Periksa dan perbaiki kebocoran di sekitar kusen sebelum musim hujan"
+   ],
+   "solusi_aktif": [
+    "Ketam atau amplas bagian yang macet hingga pas kembali",
+    "Oleskan pelumas silikon pada rel atau engsel",
+    "Pasang weatherstrip atau karet peredam untuk mengurangi gesekan",
+    "Gunakan dehumidifier atau exhaust fan untuk menurunkan kelembaban"
+   ],
+   "solusi_pasif": [
+    "Beri celah ekspansi di sekeliling kusen saat pemasangan",
+    "Gunakan kayu yang sudah dikeringkan dengan kadar air rendah",
+    "Pasang ventilasi alami untuk mengurangi kelembaban ruang",
+    "Buat overstek atap yang cukup agar kusen tidak terkena air hujan langsung"
+   ],
+   "penyebab_umum": [
+    "Kelembaban tinggi menyebabkan kayu menyerap air dan mengembang",
+    "Pemasangan kusen tanpa celah ekspansi yang cukup",
+    "Kualitas kayu belum kering sempurna (kadar air tinggi)",
+    "Kebocoran air dari atap atau dinding sekitar kusen",
+    "Perubahan suhu ekstrem antara siang dan malam"
+   ],
+   "tropical_note": "Iklim tropis lembab Indonesia mempercepat penyerapan air pada kayu, sehingga pemuaian kusen lebih sering terjadi dibandingkan daerah kering.",
+   "kapan_panggil_ahli": [
+    "Kusen sudah retak atau pecah akibat pemuaian",
+    "Pintu atau jendela tidak bisa ditutup sama sekali",
+    "Ada tanda jamur atau rayap di sekitar kusen"
+   ]
+  }
+ },
+ "problem:lantai-keramik-popping-terangkat": {
+  "topic": "Lantai keramik popping / terangkat",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Lantai keramik mengembung atau terangkat di sebagian area",
+    "Suara kopong saat diinjak",
+    "Retakan pada permukaan keramik atau nat",
+    "Keramik terasa goyang saat dipijak"
+   ],
+   "pencegahan": [
+    "Gunakan perekat keramik yang sesuai untuk iklim tropis (tahan lembap dan ekspansi termal)",
+    "Pasang celah ekspansi setiap 3-4 meter pada area lantai luas",
+    "Kontrol kelembapan ruangan dengan ventilasi silang atau dehumidifier pasif"
+   ],
+   "solusi_aktif": [
+    "Lepas keramik yang terangkat, bersihkan sisa perekat lama, lalu pasang ulang dengan perekat baru",
+    "Injeksi resin epoksi ke rongga bawah keramik untuk merekatkan kembali",
+    "Pasang expansion joint tambahan dengan memotong lantai di area tertentu",
+    "Gunakan alat vakum atau injektor khusus untuk mengangkat dan merekatkan keramik tanpa bongkar total"
+   ],
+   "solusi_pasif": [
+    "Berikan celah ekspansi di sekeliling dinding dan antar ruangan",
+    "Gunakan nat fleksibel berbasis silikon untuk mengakomodasi gerakan",
+    "Pastikan ventilasi ruang bawah lantai (jika ada) lancar untuk mengurangi kelembapan",
+    "Hindari menumpuk beban berat di area yang rawan popping"
+   ],
+   "penyebab_umum": [
+    "Pemasangan tanpa celah ekspansi yang cukup",
+    "Perubahan suhu dan kelembapan ekstrem akibat iklim tropis",
+    "Pondasi atau lantai bawah mengalami pergerakan tanah",
+    "Perekat (semen/lem) tidak merata atau sudah lapuk",
+    "Air merembes dari bawah lantai akibat kebocoran atau rembesan tanah"
+   ],
+   "tropical_note": "Di Indonesia, fluktuasi suhu dan kelembapan tinggi mempercepat ekspansi keramik, sehingga celah ekspansi dan perekat tahan lembap wajib diperhatikan sejak awal pemasangan.",
+   "kapan_panggil_ahli": [
+    "Keramik terangkat di area luas (lebih dari 3 meter persegi) secara bersamaan",
+    "Retakan diikuti dengan genangan air atau bau lembap yang menandakan kebocoran pipa bawah lantai",
+    "Lantai terasa tidak rata atau amblas, mengindikasikan masalah struktur tanah"
+   ]
+  }
+ },
+ "problem:plafon-melendut-atau-bernoda-air": {
+  "topic": "Plafon melendut atau bernoda air",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Plafon terlihat melengkung ke bawah",
+    "Noda air berwarna kekuningan atau kecoklatan",
+    "Cat plafon mengelupas atau melepuh",
+    "Bau apek atau lembap di ruangan"
+   ],
+   "pencegahan": [
+    "Periksa atap dan talang secara rutin setiap musim hujan",
+    "Pastikan ventilasi atap tidak tertutup debu atau sarang",
+    "Segera cat ulang plafon jika mulai bernoda agar tak meluas"
+   ],
+   "solusi_aktif": [
+    "Perbaiki atau ganti genteng yang bocor",
+    "Las atau ganti pipa yang bocor di atas plafon",
+    "Aplikasikan sealant pada sambungan atap atau retakan",
+    "Pasang exhaust fan di kamar mandi atau dapur untuk kurangi kelembapan"
+   ],
+   "solusi_pasif": [
+    "Buka plafon sebagian untuk mengeringkan area basah secara alami",
+    "Tambah ventilasi silang di ruang atap agar uap air keluar",
+    "Gunakan cat anti-jamur dan anti-air pada plafon",
+    "Pasang talang dengan kemiringan cukup agar air lancar"
+   ],
+   "penyebab_umum": [
+    "Kebocoran atap akibat genteng retak atau sambungan rusak",
+    "Pipa air di atas plafon bocor atau korosi",
+    "Kondensasi uap air dari ruang bawah atap yang kurang ventilasi",
+    "Talang air tersumbat sehingga air meluap ke struktur atap",
+    "Rembesan air dari dinding luar akibat retak rambut"
+   ],
+   "tropical_note": "Iklim tropis Indonesia dengan curah hujan tinggi dan kelembapan konstan mempercepat kerusakan plafon akibat bocor dan jamur.",
+   "kapan_panggil_ahli": [
+    "Plafon melendut parah hingga hampir ambruk",
+    "Noda air meluas cepat disertai genangan di lantai",
+    "Bocor berasal dari pipa dalam dinding yang sulit diakses"
+   ]
+  }
+ },
+ "problem:rumah-terasa-panas-di-siang-hari": {
+  "topic": "Rumah terasa panas di siang hari",
+  "topic_type": "problem",
+  "knowledge": {
+   "gejala": [
+    "Suhu ruangan terasa gerah meski di luar tidak terlalu panas",
+    "Lantai dan dinding terasa hangat saat disentuh",
+    "Udara dalam ruangan terasa pengap dan kurang sirkulasi",
+    "Keringat berlebih saat berada di dalam rumah tanpa aktivitas berat"
+   ],
+   "pencegahan": [
+    "Rancang orientasi bangunan dengan sisi panjang menghadap utara-selatan",
+    "Buat overstek atap yang cukup lebar untuk melindungi dinding dan jendela",
+    "Pilih material atap dan dinding dengan reflektivitas tinggi dan kapasitas panas rendah"
+   ],
+   "solusi_aktif": [
+    "Pasang exhaust fan di area atap atau dinding tinggi untuk mengeluarkan udara panas",
+    "Gunakan kaca film reflektif atau double-glazed pada jendela",
+    "Tambahkan insulator pada atap (seperti aluminium foil atau rockwool)",
+    "Pasang kipas angin langit-langit untuk membantu sirkulasi"
+   ],
+   "solusi_pasif": [
+    "Pasang plafon dengan rongga udara dan ventilasi atap",
+    "Buat bukaan silang (jendela dan pintu) untuk aliran udara alami",
+    "Tanam pohon peneduh atau pasang kanopi di sisi barat dan timur",
+    "Gunakan material lantai dan dinding yang tidak menyerap panas (seperti keramik warna terang)"
+   ],
+   "penyebab_umum": [
+    "Atap atau dinding tanpa lapisan isolasi panas",
+    "Ventilasi silang tidak ada atau terhalang",
+    "Material bangunan menyerap dan menyimpan panas (seperti genteng beton, dinding bata tanpa plester)",
+    "Orientasi rumah menghadap barat atau timur tanpa pelindung sinar matahari",
+    "Jendela terlalu sedikit atau kaca tanpa lapisan refleksi panas"
+   ],
+   "tropical_note": "Di iklim tropis lembap Indonesia, panas berlebih sering diperparah oleh kelembapan tinggi yang menghambat penguapan keringat tubuh.",
+   "kapan_panggil_ahli": [
+    "Rumah tetap panas meski sudah menerapkan solusi pasif dan aktif",
+    "Muncul retakan atau kebocoran pada atap yang memicu panas berlebih",
+    "Ada indikasi kerusakan struktur (seperti plafon melengkung) akibat ekspansi panas"
+   ]
+  }
+ },
+ "system:ac-split-vs-cassette": {
+  "topic": "AC split vs cassette",
+  "topic_type": "system",
+  "knowledge": {
+   "fungsi": "Sistem tata udara untuk mendinginkan ruangan dalam bangunan, memastikan kenyamanan termal dan sirkulasi udara.",
+   "perawatan": [
+    "Bersihkan filter udara setiap 2-4 minggu (split dan cassette).",
+    "Periksa dan bersihkan evaporator dan kondensor secara berkala (setiap 6 bulan).",
+    "Pastikan saluran drainase tidak tersumbat untuk mencegah kebocoran air."
+   ],
+   "pertimbangan": [
+    "Luas dan tata letak ruangan: split lebih cocok untuk ruang sempit, cassette untuk ruang luas dengan plafon.",
+    "Kebutuhan estetika: cassette tersembunyi di plafon, split terlihat di dinding.",
+    "Kemudahan instalasi dan perawatan: split lebih mudah diakses, cassette butuh plafon drop dan akses panel.",
+    "Distribusi udara: cassette menyebar ke 4 arah, split terarah ke satu area.",
+    "Kebisingan: cassette biasanya lebih senyap karena unit indoor di plafon."
+   ],
+   "pilihan_umum": [
+    "AC Split: dipilih untuk ruangan kecil hingga sedang (kamar tidur, ruang keluarga) dengan pemasangan mudah dan biaya awal rendah.",
+    "AC Cassette: dipilih untuk ruangan dengan plafon tinggi atau desain interior minimalis (ruang tamu, ruang makan) karena distribusi udara merata dan tidak mengganggu estetika dinding."
+   ],
+   "tropical_note": "Di iklim tropis lembap, pastikan drainase lancar dan gunakan mode dry secara berkala untuk mencegah jamur dan lumut pada unit indoor.",
+   "kesalahan_umum": [
+    "Memasang cassette di plafon rendah tanpa ruang plenum yang cukup, menyebabkan sirkulasi udara buruk.",
+    "Memilih split dengan kapasitas terlalu kecil untuk ruangan besar, membuat AC bekerja keras dan tidak dingin.",
+    "Meletakkan unit outdoor split di tempat tanpa sirkulasi udara (terhalang tembok atau tanaman), menyebabkan overheat.",
+    "Tidak menyediakan akses panel untuk perawatan cassette, sehingga servis jadi sulit dan mahal."
+   ],
+   "kapan_panggil_ahli": [
+    "AC tidak dingin atau bunyi abnormal meski filter sudah dibersihkan.",
+    "Ada kebocoran air dari unit indoor (split atau cassette).",
+    "Muncul bau apek atau jamur yang tidak hilang setelah pembersihan filter."
+   ]
+  }
+ },
+ "system:ventilasi-silang-cross-ventilation": {
+  "topic": "Ventilasi silang (cross ventilation)",
+  "topic_type": "system",
+  "knowledge": {
+   "fungsi": "Memanfaatkan perbedaan tekanan angin untuk mengalirkan udara segar masuk dan udara panas/lembap keluar secara alami, mengurangi ketergantungan pada AC.",
+   "perawatan": [
+    "Bersihkan kasa nyamuk dan kisi-kisi jendela secara rutin dari debu dan sarang laba-laba.",
+    "Lumasi engsel dan rel jendela/jalusi agar tetap mudah dibuka-tutup.",
+    "Periksa segel karet atau weatherstrip pada bukaan untuk mencegah kebocoran udara yang tidak terkendali."
+   ],
+   "pertimbangan": [
+    "Arah dan kecepatan angin dominan di lokasi tapak (musim barat/timur).",
+    "Letak dan ukuran bukaan (jendela/pintu) pada dua sisi ruangan yang saling berhadapan atau bersilangan.",
+    "Keberadaan penghalang (bangunan tetangga, pagar, pohon) yang mengubah aliran udara.",
+    "Kebutuhan privasi dan keamanan (bukaan besar di malam hari vs. risiko masuk serangga/pencuri).",
+    "Ketinggian lantai dan posisi ruang terhadap atap (udara panas cenderung naik)."
+   ],
+   "pilihan_umum": [
+    "Jendela hadap-angin (windward) dan jendela bayang-angin (leeward) di sisi berlawanan ruangan: untuk rumah dengan tapak memanjang dan arah angin dominan jelas.",
+    "Ventilasi diagonal (bukaan di dua dinding yang tidak berseberangan): untuk ruangan yang terkendala denah atau posisi kamar tidur.",
+    "Kombinasi jendela tinggi dan rendah (stack effect): untuk rumah bertingkat atau ruangan dengan plafon tinggi agar udara panas keluar atas.",
+    "Bukaan dengan kisi-kisi tetap (jalusi) di dinding partisi dalam: untuk memungkinkan aliran silang antarruang tanpa pintu terbuka penuh."
+   ],
+   "tropical_note": "Di iklim tropis lembap, ventilasi silang harus dirancang untuk mengeluarkan uap air dan panas tinggi, bukan sekadar memasukkan udara, agar tidak memicu pertumbuhan jamur dan lumut.",
+   "kesalahan_umum": [
+    "Memasang bukaan hanya di satu sisi ruangan sehingga tidak terjadi perbedaan tekanan (hanya ventilasi satu arah).",
+    "Menutup bukaan permanen dengan kaca mati atau lemari besar di depan jendela tanpa jalur aliran.",
+    "Mengandalkan ventilasi silang tanpa mempertimbangkan arah angin musiman (ruangan jadi pengap di musim tertentu).",
+    "Memasang kawat kasa terlalu rapat sehingga menghambat aliran udara meskipun aman dari nyamuk."
+   ],
+   "kapan_panggil_ahli": [
+    "Jika ruangan tetap pengap meskipun bukaan sudah sesuai desain (mungkin ada masalah struktur atau penghalang eksternal).",
+    "Saat ingin memodifikasi dinding struktural atau menambah bukaan baru pada rumah eksisting.",
+    "Bila muncul bau lembap atau jamur persisten yang tidak hilang meski ventilasi sudah dibuka maksimal."
+   ]
+  }
+ },
+ "system:water-heater-listrik-vs-gas-vs-solar": {
+  "topic": "Water heater listrik vs gas vs solar",
+  "topic_type": "system",
+  "knowledge": {
+   "fungsi": "Menyediakan air panas untuk mandi, cuci, dan kebutuhan domestik lain di rumah tinggal.",
+   "perawatan": [
+    "Bersihkan anoda korban (pada pemanas listrik) secara berkala.",
+    "Periksa dan bersihkan burner atau heat exchanger pada pemanas gas.",
+    "Cek kebocoran dan tekanan air pada sistem solar secara rutin."
+   ],
+   "pertimbangan": [
+    "Ketersediaan dan biaya energi (listrik, gas, sinar matahari) di lokasi.",
+    "Volume pemakaian air panas harian dan jumlah penghuni.",
+    "Ketersediaan ruang untuk instalasi tangki atau panel surya.",
+    "Kemudahan perawatan dan ketersediaan teknisi di daerah.",
+    "Keamanan sistem (risiko listrik, kebocoran gas, tekanan air)."
+   ],
+   "pilihan_umum": [
+    "Water heater listrik: cocok untuk rumah dengan daya listrik cukup dan pemakaian terbatas.",
+    "Water heater gas (LPG): cocok untuk rumah dengan pasokan gas stabil dan kebutuhan air panas lebih besar.",
+    "Water heater solar (surya): cocok untuk rumah dengan atap terpapar sinar matahari dan ingin efisiensi energi jangka panjang."
+   ],
+   "tropical_note": "Di iklim tropis lembap, air tanah cenderung hangat sehingga pemanas air lebih sering digunakan untuk kenyamanan mandi, bukan untuk melawan suhu dingin ekstrem.",
+   "kesalahan_umum": [
+    "Memilih kapasitas terlalu kecil sehingga air cepat dingin saat pemakaian bertumpuk.",
+    "Tidak memasang katup pengaman tekanan pada pemanas listrik atau solar.",
+    "Menempatkan pemanas gas di ruang tertutup tanpa ventilasi memadai.",
+    "Mengabaikan isolasi pipa air panas sehingga panas hilang di perjalanan."
+   ],
+   "kapan_panggil_ahli": [
+    "Jika terjadi kebocoran gas atau bau gas dari pemanas.",
+    "Saat elemen pemanas listrik mati atau MCB sering trip.",
+    "Ketika panel surya tidak menghasilkan air panas meski cuaca cerah."
+   ]
+  }
+ },
+ "system:sumur-bor-vs-pdam": {
+  "topic": "Sumur bor vs PDAM",
+  "topic_type": "system",
+  "knowledge": {
+   "fungsi": "Menyediakan pasokan air bersih untuk kebutuhan rumah tangga seperti mandi, cuci, dan masak.",
+   "perawatan": [
+    "Bersihkan tangki air dan filter secara berkala (setiap 3-6 bulan).",
+    "Periksa dan servis pompa air (sumur bor) serta katup otomatis.",
+    "Cek kebocoran pipa dan sambungan secara rutin."
+   ],
+   "pertimbangan": [
+    "Ketersediaan dan kualitas air tanah di lokasi (debit, kedalaman, risiko intrusi air laut).",
+    "Keandalan pasokan PDAM (kontinuitas, tekanan, jadwal aliran).",
+    "Biaya operasional jangka panjang (listrik pompa vs tagihan PDAM).",
+    "Kebutuhan ruang untuk tangki, pompa, atau sumur bor.",
+    "Regulasi setempat terkait izin sumur bor dan sambungan PDAM."
+   ],
+   "pilihan_umum": [
+    "Sumur bor: dipilih jika lokasi memiliki akses air tanah yang cukup dan tidak terkontaminasi, cocok untuk daerah tanpa jaringan PDAM.",
+    "PDAM: dipilih jika jaringan pipa tersedia dan air tanah sulit atau tercemar, lebih praktis untuk rumah di perkotaan.",
+    "Kombinasi sumur bor + PDAM: dipilih untuk cadangan atau menghemat biaya, misal sumur untuk non-konsumsi dan PDAM untuk minum."
+   ],
+   "tropical_note": "Iklim tropis lembap mempercepat korosi pipa dan pertumbuhan lumut di tangki air, sehingga pemilihan material tahan karat dan pembersihan rutin sangat penting.",
+   "kesalahan_umum": [
+    "Memilih sumur bor tanpa uji kualitas air terlebih dahulu, berisiko air keruh atau tercemar.",
+    "Mengandalkan PDAM tanpa tangki cadangan, rawan kekeringan saat pemadaman.",
+    "Tidak memasang filter atau sistem pengolahan air untuk sumur bor di daerah kapur atau rawa.",
+    "Mengabaikan jarak sumur dari septic tank atau sumber polusi lain."
+   ],
+   "kapan_panggil_ahli": [
+    "Debit air sumur menurun drastis atau pompa sering mati sendiri.",
+    "Air PDAM keruh, berbau, atau berasa tidak normal.",
+    "Instalasi baru atau perubahan sistem (misal penambahan tangki, pompa booster)."
+   ]
+  }
+ }
+}

@@ -1,0 +1,177 @@
+name: Deploy Baruma
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: baruma-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        # Pin ke commit SHA, bukan tag mutable (audit CSO #5). SHA = rilis
+        # v1.2.0 appleboy/ssh-action. Perbarui via Dependabot.
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          # Non-root bila secret DEPLOY_USER diisi (buat user deploy di droplet
+          # + chown /opt/baruma) — fallback root agar deploy lama tak putus.
+          username: ${{ secrets.DEPLOY_USER || 'root' }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          command_timeout: 20m
+          script: |
+            set -e
+            GH_TOKEN="${{ secrets.GH_TOKEN }}"
+            APP=/opt/baruma/app
+            # Origin TANPA token (audit CSO #5: dulu token tertanam di URL →
+            # persist di .git/config droplet). Token dikirim via header
+            # per-perintah (-c http.extraheader) yang TIDAK ditulis ke config.
+            REPO="https://github.com/rfq13/baruma.git"
+            AUTHHDR="Authorization: Basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+
+            # First run: convert/clone into a git checkout
+            if [ ! -d "$APP/.git" ]; then
+              echo "=== fresh clone ==="
+              rm -rf "$APP"; mkdir -p /opt/baruma
+              git -c http.extraheader="$AUTHHDR" clone "$REPO" "$APP"
+            fi
+            cd "$APP"
+            git remote set-url origin "$REPO"
+            git -c http.extraheader="$AUTHHDR" fetch origin main
+            git reset --hard origin/main
+            # Sapu bila ada kredensial lama yang pernah tertanam di config.
+            git config --unset-all http.https://github.com/.extraheader 2>/dev/null || true
+
+            # Write runtime env (config inline; secrets injected)
+            echo "=== writing .env.local ==="
+            cat > .env.local << 'ENVEOF'
+            NODE_ENV=production
+            AUTH_SECRET=${{ secrets.AUTH_SECRET }}
+            AUTH_URL=https://baruma.tampil.dev
+            AUTH_TRUST_HOST=true
+            NEXT_PUBLIC_APP_URL=https://baruma.tampil.dev
+            NEXT_PUBLIC_DATA_SOURCE=http
+            NEXT_PUBLIC_API_URL=https://baruma.tampil.dev/api/v1
+            API_URL=https://baruma.tampil.dev/api/v1
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            BARUMA_JWT_SECRET=${{ secrets.BARUMA_JWT_SECRET }}
+            # Agent Lab is the only LLM execution/configuration authority.
+            # This is a product-to-service credential, not a provider LLM key.
+            # Empty KEY disables model-backed paths; deterministic fallbacks remain.
+            AGENT_LAB_URL=https://agentlab.tampil.dev
+            AGENT_LAB_KEY=${{ secrets.AGENT_LAB_KEY }}
+            # Agent Lab issues one API key PER AGENT, not one product-wide key —
+            # this is the dedicated key for the baruma-floorplan-actions agent
+            # (chatJSON). See src/lib/server/agent-lab.ts's SLUG_KEY_ENV map.
+            AGENT_LAB_KEY_FLOORPLAN_ACTIONS=${{ secrets.AGENT_LAB_KEY_FLOORPLAN_ACTIONS }}
+            STORAGE_ENDPOINT=${{ secrets.STORAGE_ENDPOINT }}
+            STORAGE_ACCESS_KEY_ID=${{ secrets.STORAGE_ACCESS_KEY_ID }}
+            STORAGE_SECRET_ACCESS_KEY=${{ secrets.STORAGE_SECRET_ACCESS_KEY }}
+            STORAGE_BUCKET=${{ secrets.STORAGE_BUCKET }}
+            MAYAR_API_BASE_URL=${{ secrets.MAYAR_API_BASE_URL }}
+            MAYAR_API_KEY=${{ secrets.MAYAR_API_KEY }}
+            MAYAR_WEBHOOK_TOKEN=${{ secrets.MAYAR_WEBHOOK_TOKEN }}
+            ADMIN_EMAILS=${{ secrets.ADMIN_EMAILS }}
+            # Supabase SSO (shared with tampil.dev). NEXT_PUBLIC_AUTH_COOKIE_DOMAIN
+            # MUST be NEXT_PUBLIC_ (the browser Supabase client reads it to scope
+            # the session cookie to .tampil.dev). Until these secrets are set they
+            # render empty -> supabaseConfigured() is false -> the app keeps using
+            # the existing auth. Set them before landing the Supabase front-end.
+            NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+            SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+            NEXT_PUBLIC_AUTH_COOKIE_DOMAIN=${{ secrets.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN }}
+            NEXT_PUBLIC_SSO_ORIGIN=${{ secrets.NEXT_PUBLIC_SSO_ORIGIN }}
+            # Cloudflare Turnstile — the shared Supabase project enforces captcha
+            # on password login/signup/recovery. This site key must pair with the
+            # secret configured in Supabase's captcha settings, and its Turnstile
+            # widget must allow the baruma.tampil.dev domain.
+            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+            ENVEOF
+            sed -i 's/^[[:space:]]*//' .env.local
+
+            # Validate required secrets are non-empty
+            for v in AUTH_SECRET DATABASE_URL BARUMA_JWT_SECRET; do
+              if ! grep -qE "^${v}=.+" .env.local; then echo "MISSING secret $v"; exit 1; fi
+            done
+
+            # Build (pnpm 10; next binary directly to dodge the deps-check pre-script)
+            corepack enable || true
+            corepack prepare pnpm@10.32.1 --activate || true
+            echo "verify-deps-before-run=false" > .npmrc
+            pnpm install --config.confirmModulesPurge=false
+
+            # Pull catalog 3D models (GLBs) from object storage — they are NOT
+            # in git (see .gitignore public/models/*.glb). Must run BEFORE build
+            # so Next bundles them as static assets. Reads STORAGE_* from the
+            # .env.local written above; idempotent (skips files already present).
+            node scripts/sync-catalog-models.mjs download
+
+            # Scale down to 1 instance before building — the build's own
+            # --max-old-space-size=3072 heap plus a 2-instance cluster would
+            # otherwise both live in RAM at once on this 4GB droplet (OOM risk).
+            pm2 scale baruma 1 || true
+
+            NODE_OPTIONS=--max-old-space-size=3072 node node_modules/next/dist/bin/next build
+
+            # Apply pending DB migrations (tracked in schema_migrations) before (re)start
+            DATABASE_URL="${{ secrets.DATABASE_URL }}" node scripts/migrate.mjs
+
+            # (Re)start under pm2, cluster mode (2 workers). `reload` is
+            # zero-downtime and cluster-compatible (unlike `restart`, which
+            # drops connections); fall back to `start` on first-ever deploy
+            # when the "baruma" process doesn't exist yet.
+            pm2 reload baruma --update-env || pm2 start node_modules/next/dist/bin/next --name baruma --cwd "$APP" -i 2 --max-memory-restart 1G --interpreter node -- start -p 3000
+            pm2 scale baruma 2 || true
+            pm2 save
+
+            # Ensure nginx reverse-proxy :80 -> :3000 (idempotent — a fresh droplet serves the domain without manual setup)
+            command -v nginx >/dev/null 2>&1 || { apt-get update -y && apt-get install -y nginx; }
+            cat > /etc/nginx/sites-available/baruma << 'NGINXEOF'
+            server {
+              listen 80;
+              server_name baruma.tampil.dev;
+              client_max_body_size 100m;
+              # Chunked Supabase session cookies make request Cookie headers big.
+              large_client_header_buffers 4 32k;
+              gzip on;
+              gzip_types application/json text/css application/javascript application/x-javascript text/javascript image/svg+xml;
+              gzip_min_length 1024;
+              gzip_vary on;
+              location / {
+                proxy_pass http://127.0.0.1:3000;
+                proxy_http_version 1.1;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+                # Supabase session refresh re-emits chunked sb-*-auth-token.0/.1
+                # Set-Cookie headers (~4KB each); nginx's 4k default buffer 502s
+                # with "upstream sent too big header" (hit tampil.dev /sso in prod,
+                # 2026-07-10 — same cookies flow through this vhost).
+                proxy_buffer_size 32k;
+                proxy_buffers 8 32k;
+                proxy_busy_buffers_size 64k;
+                # AI assistant runs a multi-step reasoning loop — allow long requests.
+                proxy_read_timeout 300s;
+                proxy_send_timeout 300s;
+              }
+            }
+            NGINXEOF
+            ln -sf /etc/nginx/sites-available/baruma /etc/nginx/sites-enabled/baruma
+            rm -f /etc/nginx/sites-enabled/default
+            nginx -t && systemctl reload nginx && echo "nginx ok"
+
+            # Smoke (app on :3000 + via nginx :80 with the real Host)
+            sleep 4
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 http://127.0.0.1:3000/ || echo 000)
+            ngx=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 -H 'Host: baruma.tampil.dev' http://127.0.0.1/ || echo 000)
+            echo "local :3000 -> $code | nginx :80 -> $ngx"
+            test "$code" = "200"

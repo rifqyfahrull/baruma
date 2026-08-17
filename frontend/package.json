@@ -1,0 +1,8 @@
+{
+  "name": "baruma-frontend-shim",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "start": "cd /app && exec node_modules/.bin/next dev -p ${PORT:-3000} -H ${HOST:-0.0.0.0}"
+  }
+}

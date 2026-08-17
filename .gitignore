@@ -1,82 +1,92 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# IDE and editors
-.idea/
-.vscode/
-
-# Dependencies
-node_modules/
+# dependencies
 /node_modules
 /.pnp
-.pnp.js
-.yarn/install-state.gz
+.pnp.*
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
 
-# Testing
+# testing
 /coverage
 
-# Next.js
+# next.js
 /.next/
 /out/
-next-env.d.ts
-*.tsbuildinfo
 
-# Production builds
+# production
 /build
-dist/
-dist
 
-# Environment files (comprehensive coverage)
-*token.json*
-*credentials.json*
+# misc
+.DS_Store
+*.pem
 
-# Logs and debug files
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-dump.rdb
 
-# System files
-.DS_Store
-*.pem
+# local dev/debug artifacts (never commit — clutter, may capture request/console output)
+dev-server.log
+*-watch.console.log
+wall-dump-*.txt
 
-# Python
-__pycache__/
-*pyc*
-venv/
-.venv/
+# env files (can opt-in for committing if needed)
+.env*
 
-# Development tools
-chainlit.md
-.chainlit
-.ipynb_checkpoints/
-.ac
-
-# Deployment
+# vercel
 .vercel
 
-# Data and databases
-agenthub/agents/youtube/db
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+.gstack/
 
-# Archive files and large assets
-**/*.zip
-**/*.tar.gz
-**/*.tar
-**/*.tgz
-*.pack
-*.deb
-*.dylib
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
 
-# Build caches
-.cache/
+# playwright auth state
+e2e/.auth/
 
-memory/test_credentials.md
+# secrets / local
+keyplot
+*.tgz
+2026-*-analisa-*.txt
+set-secrets.mjs
+entui.md
 
-# Mobile development
-android-sdk/node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
-node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm64-musl.node
+# 3D model binaries live in object storage, not git (scripts/sync-catalog-models.mjs)
+public/models/*.glb
+
+# Catalog textures live in object storage (same rule as GLBs) — synced at deploy
+public/textures/*.jpg
+
+# hallmark design-skill local artifacts
+.hallmark/
+
+# skill-installer symlinks/config are machine-absolute-path, not portable
+.claude/skills/
+.devin/
+
+# faucet API tokens (secrets) — never commit
+src/components/faucet-check/tokens.txt
+scripts/asset-harvest/out-answer-eval.jsonl
+scripts/test-prod-agent.mjs
+
+# local pnpm content-addressable store (from install)
+.pnpm-store/
+.env
+.env.*
+*.env
+credentials.json
+*.key
+.credentials
+.pnpm-store/v10/files/85/83286c51a0be84b118c52bfa071f4ad19e158c7c6179f304668f36fd956816e2d83d21354005ad6ad2bf317e806c9a0e7b59c8c1dd95b448e1cc76385b12df
+node_modules/.pnpm/@next+swc-linux-arm64-gnu@16.2.9/node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node

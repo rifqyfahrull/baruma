@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(rtk tsc)",
+      "PowerShell(rtk vitest run src/lib/server/editor-assistant.test.ts)",
+      "PowerShell(npx vitest run src/lib/server/editor-assistant.test.ts)",
+      "PowerShell(npx vitest run)",
+      "PowerShell(npx eslint src/lib/assistant src/lib/server/editor-assistant.ts \"src/app/api/v1/projects/[id]/editor/assistant/route.ts\" src/components/assistant src/stores/editor-store.ts \"src/app/app/projects/[projectId]/editor/page.tsx\" src/components/preview-3d/preview-controls.tsx src/lib/data/source.ts src/lib/data/http.ts src/lib/data/index.ts src/lib/mock/index.ts src/lib/api/hooks.ts)",
+      "PowerShell(npx next build)",
+      "PowerShell(npx vitest run src/lib/server/llm.test.ts src/lib/server/editor-assistant.test.ts src/lib/server/enrich-alternatives.test.ts src/lib/server/brief-assistant.test.ts)",
+      "PowerShell(npx vitest run src/lib/geometry/dimensions.test.ts src/lib/format.test.ts)",
+      "PowerShell(npx eslint src/lib/format.ts src/lib/geometry/dimensions.ts src/lib/geometry/dimensions.test.ts src/stores/editor-store.ts src/components/editor/dimension-layer.tsx src/components/editor/plan-canvas.tsx src/components/editor/editor-toolbar.tsx src/lib/format.test.ts)",
+      "PowerShell(npx eslint src/components/editor/plan-canvas.tsx src/components/editor/dimension-layer.tsx src/components/editor/editor-toolbar.tsx src/lib/geometry/dimensions.ts src/lib/format.ts src/stores/editor-store.ts)",
+      "PowerShell(npx eslint src/components/editor/dimension-layer.tsx src/stores/editor-store.ts)",
+      "PowerShell(npx eslint src/lib/assistant/actions.ts src/lib/assistant/apply.ts src/lib/server/editor-assistant.ts src/lib/server/editor-assistant.test.ts src/stores/editor-store.ts)"
+    ]
+  }
+}
