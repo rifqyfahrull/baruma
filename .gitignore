@@ -1,0 +1,76 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+.gstack/
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# playwright auth state
+e2e/.auth/
+
+# secrets / local
+keyplot
+*.tgz
+2026-*-analisa-*.txt
+set-secrets.mjs
+entui.md
+
+# 3D model binaries live in object storage, not git (scripts/sync-catalog-models.mjs)
+public/models/*.glb
+
+# Catalog textures live in object storage (same rule as GLBs) — synced at deploy
+public/textures/*.jpg
+
+# hallmark design-skill local artifacts
+.hallmark/
+
+# skill-installer symlinks/config are machine-absolute-path, not portable
+.claude/skills/
+.devin/
+
+# faucet API tokens (secrets) — never commit
+src/components/faucet-check/tokens.txt
+scripts/asset-harvest/out-answer-eval.jsonl
+scripts/test-prod-agent.mjs

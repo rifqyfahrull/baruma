@@ -1,0 +1,223 @@
+[
+  {
+    "id": "template-gen-1785043336257-0",
+    "title": "Template Modern Tropis Villa 6x12m (1 Lantai)",
+    "style": "Modern Tropis Villa",
+    "site": {
+      "widthM": 6,
+      "depthM": 12
+    },
+    "floorsCount": 1,
+    "reply": "Denah 1 lantai dengan 2 kamar tidur, carport, ruang tamu, dapur, dan kamar mandi. Fasad modern tropis villa dengan atap pelana, material kayu dan batu alam.",
+    "actionsCount": 9,
+    "actions": [
+      {
+        "type": "applyFacadeTemplate",
+        "templateId": "modern_tropis_villa"
+      },
+      {
+        "type": "addRoom",
+        "roomType": "carport",
+        "floorId": "floor-1",
+        "x": 0.28,
+        "y": 13,
+        "width": 5,
+        "depth": 5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "livingRoom",
+        "floorId": "floor-1",
+        "x": 0.28,
+        "y": 8,
+        "width": 5,
+        "depth": 5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "diningRoom",
+        "floorId": "floor-1",
+        "x": 0.28,
+        "y": 3,
+        "width": 5,
+        "depth": 5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "kitchen",
+        "floorId": "floor-1",
+        "x": 5.28,
+        "y": 3,
+        "width": 5,
+        "depth": 5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "masterBedroom",
+        "floorId": "floor-1",
+        "x": 5.28,
+        "y": 8,
+        "width": 5,
+        "depth": 5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "bedroom",
+        "floorId": "floor-1",
+        "x": 5.28,
+        "y": 13,
+        "width": 5,
+        "depth": 5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "bathroom",
+        "floorId": "floor-1",
+        "x": 0.28,
+        "y": 0,
+        "width": 2.5,
+        "depth": 3
+      },
+      {
+        "type": "addRoom",
+        "roomType": "bathroom",
+        "floorId": "floor-1",
+        "x": 7.78,
+        "y": 0,
+        "width": 2.5,
+        "depth": 3
+      }
+    ],
+    "createdAt": "2026-07-26T05:22:16.257Z"
+  },
+  {
+    "id": "template-gen-1785043337468-1",
+    "title": "Template Japandi Natural Wood 7x14m (2 Lantai)",
+    "style": "Japandi Natural Wood",
+    "site": {
+      "widthM": 7,
+      "depthM": 14
+    },
+    "floorsCount": 2,
+    "reply": "Template denah dan fasad rumah modern bergaya Japandi Natural Wood dengan ukuran lahan 7x14m dan 2 lantai. Lantai 1 terdiri dari carport, ruang tamu, ruang keluarga, dapur, kamar tidur utama, kamar mandi, dan area service. Lantai 2 terdiri dari 2 kamar tidur, kamar mandi, ruang keluarga, dan balkon. Fasad menggunakan template Japandi Natural Wood dengan sentuhan kayu alami dan warna netral.",
+    "actionsCount": 14,
+    "actions": [
+      {
+        "type": "addFloor"
+      },
+      {
+        "type": "applyFacadeTemplate",
+        "templateId": "japandi_natural_wood"
+      },
+      {
+        "type": "addRoom",
+        "roomType": "carport",
+        "floorId": "floor-1",
+        "x": 0.28,
+        "y": 13,
+        "width": 5,
+        "depth": 5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "living_room",
+        "floorId": "floor-1",
+        "x": 0.28,
+        "y": 8,
+        "width": 5,
+        "depth": 5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "family_room",
+        "floorId": "floor-1",
+        "x": 5.28,
+        "y": 8,
+        "width": 5,
+        "depth": 5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "kitchen",
+        "floorId": "floor-1",
+        "x": 5.28,
+        "y": 13,
+        "width": 5,
+        "depth": 5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "master_bedroom",
+        "floorId": "floor-1",
+        "x": 0.28,
+        "y": 3,
+        "width": 5,
+        "depth": 5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "bathroom",
+        "floorId": "floor-1",
+        "x": 5.28,
+        "y": 3,
+        "width": 2.5,
+        "depth": 2.5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "service_area",
+        "floorId": "floor-1",
+        "x": 7.78,
+        "y": 3,
+        "width": 2.5,
+        "depth": 2.5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "bedroom",
+        "floorId": "floor-2",
+        "x": 0.28,
+        "y": 8,
+        "width": 5,
+        "depth": 5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "bedroom",
+        "floorId": "floor-2",
+        "x": 5.28,
+        "y": 8,
+        "width": 5,
+        "depth": 5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "bathroom",
+        "floorId": "floor-2",
+        "x": 0.28,
+        "y": 3,
+        "width": 2.5,
+        "depth": 2.5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "family_room",
+        "floorId": "floor-2",
+        "x": 2.78,
+        "y": 3,
+        "width": 5,
+        "depth": 5
+      },
+      {
+        "type": "addRoom",
+        "roomType": "balcony",
+        "floorId": "floor-2",
+        "x": 7.78,
+        "y": 3,
+        "width": 2.5,
+        "depth": 5
+      }
+    ],
+    "createdAt": "2026-07-26T05:22:17.468Z"
+  }
+]

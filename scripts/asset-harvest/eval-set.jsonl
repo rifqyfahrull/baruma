@@ -1,0 +1,460 @@
+{"q":"Meja makan untuk 6 sampai 8 orang yang cocok buat keluarga besar.","expect":"furniture:meja-makan-6-8-kursi","topic":"Meja makan 6-8 kursi","type":"furniture","kind":"natural"}
+{"q":"Keluarga besar sering kumpul makan, butuh meja besar yang muat banyak kursi.","expect":"furniture:meja-makan-6-8-kursi","topic":"Meja makan 6-8 kursi","type":"furniture","kind":"indirect"}
+{"q":"Meja rias yang bagus untuk kamar tidur utama.","expect":"furniture:meja-rias","topic":"Meja rias","type":"furniture","kind":"natural"}
+{"q":"Istri butuh tempat dandan dengan cermin dan laci kecil di kamar.","expect":"furniture:meja-rias","topic":"Meja rias","type":"furniture","kind":"indirect"}
+{"q":"Nakas kecil di samping tempat tidur.","expect":"furniture:nakas-nightstand","topic":"Nakas (nightstand)","type":"furniture","kind":"natural"}
+{"q":"Di samping ranjang butuh meja kecil buat taruh lampu dan HP.","expect":"furniture:nakas-nightstand","topic":"Nakas (nightstand)","type":"furniture","kind":"indirect"}
+{"q":"Pagar dari besi hollow yang kuat dan tidak mudah karat.","expect":"furniture:pagar-besi-hollow","topic":"Pagar besi hollow","type":"furniture","kind":"natural"}
+{"q":"Pagar rumah yang kokoh tapi ringan dan awet kalau kena hujan.","expect":"furniture:pagar-besi-hollow","topic":"Pagar besi hollow","type":"furniture","kind":"indirect"}
+{"q":"Pagar roster atau krawangan untuk sirkulasi udara.","expect":"furniture:pagar-roster-krawangan","topic":"Pagar roster / krawangan","type":"furniture","kind":"natural"}
+{"q":"Pagar yang bolong-bolong biar angin masuk tapi tetap tertutup.","expect":"furniture:pagar-roster-krawangan","topic":"Pagar roster / krawangan","type":"furniture","kind":"indirect"}
+{"q":"Bagaimana cara memilih cooker hood yang bagus?","expect":"furniture:cooker-hood-penghisap-asap","topic":"Cooker hood (penghisap asap)","type":"furniture","kind":"natural"}
+{"q":"Dapur saya sering berasap saat masak, bagaimana solusinya?","expect":"furniture:cooker-hood-penghisap-asap","topic":"Cooker hood (penghisap asap)","type":"furniture","kind":"indirect"}
+{"q":"Apa kelebihan gerbang sliding dibanding yang biasa?","expect":"furniture:gerbang-sliding","topic":"Gerbang sliding","type":"furniture","kind":"natural"}
+{"q":"Halaman depan sempit, mau pasang pintu yang tidak makan tempat.","expect":"furniture:gerbang-sliding","topic":"Gerbang sliding","type":"furniture","kind":"indirect"}
+{"q":"Berapa biaya pasang gerbang swing?","expect":"furniture:gerbang-swing-ayun","topic":"Gerbang swing (ayun)","type":"furniture","kind":"natural"}
+{"q":"Pintu masuk rumah saya mau diganti yang model buka tutup biasa.","expect":"furniture:gerbang-swing-ayun","topic":"Gerbang swing (ayun)","type":"furniture","kind":"indirect"}
+{"q":"Kabinet atas dapur sebaiknya dari bahan apa?","expect":"furniture:kabinet-atas-dapur","topic":"Kabinet atas dapur","type":"furniture","kind":"natural"}
+{"q":"Dapur saya butuh tempat penyimpanan di atas, biar tidak berantakan.","expect":"furniture:kabinet-atas-dapur","topic":"Kabinet atas dapur","type":"furniture","kind":"indirect"}
+{"q":"Ukuran standar kabinet bawah dapur berapa?","expect":"furniture:kabinet-bawah-dapur","topic":"Kabinet bawah dapur","type":"furniture","kind":"natural"}
+{"q":"Bagian bawah dapur saya kosong, ingin dipasang lemari untuk simpan panci.","expect":"furniture:kabinet-bawah-dapur","topic":"Kabinet bawah dapur","type":"furniture","kind":"indirect"}
+{"q":"Mending carport terbuka atau tertutup?","expect":"exterior:carport-terbuka-vs-tertutup","topic":"Carport terbuka vs tertutup","type":"exterior","kind":"natural"}
+{"q":"Mobil saya kena panas dan hujan, lebih baik dibuat atap atau dibiarkan terbuka?","expect":"exterior:carport-terbuka-vs-tertutup","topic":"Carport terbuka vs tertutup","type":"exterior","kind":"indirect"}
+{"q":"Cat eksterior yang tahan cuaca apa ya?","expect":"exterior:cat-eksterior-weathershield","topic":"Cat eksterior (weathershield)","type":"exterior","kind":"natural"}
+{"q":"Dinding luar rumah cepat pudar dan mengelupas, ada cat yang lebih awet?","expect":"exterior:cat-eksterior-weathershield","topic":"Cat eksterior (weathershield)","type":"exterior","kind":"indirect"}
+{"q":"Batu alam untuk cladding dinding luar bagus nggak?","expect":"exterior:cladding-batu-alam","topic":"Cladding batu alam","type":"exterior","kind":"natural"}
+{"q":"Saya ingin dinding rumah tampak lebih mewah dan alami, pakai batu tempel bagaimana?","expect":"exterior:cladding-batu-alam","topic":"Cladding batu alam","type":"exterior","kind":"indirect"}
+{"q":"Cladding kayu atau WPC untuk fasad lebih awet?","expect":"exterior:cladding-kayu-wpc-untuk-fasad","topic":"Cladding kayu / WPC untuk fasad","type":"exterior","kind":"natural"}
+{"q":"Saya suka tampilan kayu di dinding luar, tapi takut rayap dan lapuk. Ada alternatif?","expect":"exterior:cladding-kayu-wpc-untuk-fasad","topic":"Cladding kayu / WPC untuk fasad","type":"exterior","kind":"indirect"}
+{"q":"Dinding pembatas rumah yang bagus seperti apa?","expect":"exterior:dinding-pembatas-boundary-wall","topic":"Dinding pembatas (boundary wall)","type":"exterior","kind":"natural"}
+{"q":"Biar privasi dan aman, batas rumah dengan tetangga pakai tembok setinggi apa?","expect":"exterior:dinding-pembatas-boundary-wall","topic":"Dinding pembatas (boundary wall)","type":"exterior","kind":"indirect"}
+{"q":"Bagaimana cara mendesain fasad rumah untuk lahan sempit memanjang?","expect":"exterior:fasad-rumah-lebar-sempit-tipe-kavling-kecil","topic":"Fasad rumah lebar sempit (tipe kavling kecil)","type":"exterior","kind":"natural"}
+{"q":"Rumah saya lebar tanahnya cuma 6 meter, biar kelihatan luas gimana?","expect":"exterior:fasad-rumah-lebar-sempit-tipe-kavling-kecil","topic":"Fasad rumah lebar sempit (tipe kavling kecil)","type":"exterior","kind":"indirect"}
+{"q":"Apa kelebihan kanopi carport pakai rangka besi?","expect":"exterior:kanopi-carport-rangka-besi","topic":"Kanopi carport rangka besi","type":"exterior","kind":"natural"}
+{"q":"Mau bikin carport tapi kuat dan tahan lama, besi cocok nggak?","expect":"exterior:kanopi-carport-rangka-besi","topic":"Kanopi carport rangka besi","type":"exterior","kind":"indirect"}
+{"q":"Apakah kanopi kaca tahan terhadap hujan dan panas?","expect":"exterior:kanopi-kaca","topic":"Kanopi kaca","type":"exterior","kind":"natural"}
+{"q":"Pengen atap teras transparan biar terang, tapi kuat nggak kalau hujan?","expect":"exterior:kanopi-kaca","topic":"Kanopi kaca","type":"exterior","kind":"indirect"}
+{"q":"Apa fungsi kisi-kisi kayu sirip vertikal di fasad rumah?","expect":"exterior:kisi-kisi-kayu-sirip-vertikal","topic":"Kisi-kisi kayu (sirip vertikal)","type":"exterior","kind":"natural"}
+{"q":"Dinding rumah saya polos, pengen ditambah aksen kayu tegak biar cantik.","expect":"exterior:kisi-kisi-kayu-sirip-vertikal","topic":"Kisi-kisi kayu (sirip vertikal)","type":"exterior","kind":"indirect"}
+{"q":"Apakah louver aluminium bisa mengurangi panas di rumah?","expect":"exterior:louver-aluminium","topic":"Louver aluminium","type":"exterior","kind":"natural"}
+{"q":"Rumah saya panas, pengen pasang semacam sirip di jendela biar teduh.","expect":"exterior:louver-aluminium","topic":"Louver aluminium","type":"exterior","kind":"indirect"}
+{"q":"Apa itu secondary skin fasad dan fungsinya?","expect":"exterior:secondary-skin-fasad","topic":"Secondary skin fasad","type":"exterior","kind":"natural"}
+{"q":"Bagaimana cara membuat tampilan rumah lebih teduh tanpa menutup jendela?","expect":"exterior:secondary-skin-fasad","topic":"Secondary skin fasad","type":"exterior","kind":"indirect"}
+{"q":"Apakah overstek atap bisa melindungi teras dari hujan?","expect":"exterior:teras-dan-overstek-sebagai-peneduh","topic":"Teras dan overstek sebagai peneduh","type":"exterior","kind":"natural"}
+{"q":"Teras rumah sering kepanasan dan kehujanan, bagaimana solusinya?","expect":"exterior:teras-dan-overstek-sebagai-peneduh","topic":"Teras dan overstek sebagai peneduh","type":"exterior","kind":"indirect"}
+{"q":"Apa kelebihan bathtub freestanding dibanding yang built-in?","expect":"furniture:bathtub-freestanding","topic":"Bathtub freestanding","type":"furniture","kind":"natural"}
+{"q":"Saya ingin bak mandi yang bisa dipindah-pindah, ada rekomendasi?","expect":"furniture:bathtub-freestanding","topic":"Bathtub freestanding","type":"furniture","kind":"indirect"}
+{"q":"Fungsi buffet sideboard di ruang makan apa saja?","expect":"furniture:buffet-sideboard","topic":"Buffet / sideboard","type":"furniture","kind":"natural"}
+{"q":"Butuh meja panjang untuk menyimpan piring dan peralatan makan.","expect":"furniture:buffet-sideboard","topic":"Buffet / sideboard","type":"furniture","kind":"indirect"}
+{"q":"Berapa ukuran ideal coffee table untuk ruang tamu?","expect":"furniture:coffee-table","topic":"Coffee table","type":"furniture","kind":"natural"}
+{"q":"Meja kecil di depan sofa sering kurang pas, bagaimana memilihnya?","expect":"furniture:coffee-table","topic":"Coffee table","type":"furniture","kind":"indirect"}
+{"q":"Pagar depan seperti apa yang bagus untuk keamanan rumah?","expect":"exterior:pagar-depan-dan-keamanan","topic":"Pagar depan dan keamanan","type":"exterior","kind":"natural"}
+{"q":"Rumah saya sering kemalingan, gimana cara bikin pagar yang aman tapi tetap bagus?","expect":"exterior:pagar-depan-dan-keamanan","topic":"Pagar depan dan keamanan","type":"exterior","kind":"indirect"}
+{"q":"Lantai carport pakai paving block apa yang kuat dan tidak licin?","expect":"exterior:paving-dan-carport-flooring","topic":"Paving dan carport flooring","type":"exterior","kind":"natural"}
+{"q":"Mobil saya sering parkir di halaman, tanahnya becek kalau hujan, solusinya apa?","expect":"exterior:paving-dan-carport-flooring","topic":"Paving dan carport flooring","type":"exterior","kind":"indirect"}
+{"q":"Lampu apa yang cocok untuk menerangi tampak depan rumah malam hari?","expect":"exterior:pencahayaan-fasad-malam-hari","topic":"Pencahayaan fasad malam hari","type":"exterior","kind":"natural"}
+{"q":"Rumah saya gelap kalau malam, biar kelihatan cantik dari luar pasang lampu bagaimana?","expect":"exterior:pencahayaan-fasad-malam-hari","topic":"Pencahayaan fasad malam hari","type":"exterior","kind":"indirect"}
+{"q":"Railing balkon dari besi atau stainless, mana yang lebih awet?","expect":"exterior:railing-balkon","topic":"Railing balkon","type":"exterior","kind":"natural"}
+{"q":"Balkon lantai atas saya belum ada pagar, anak kecil main di situ takut jatuh, harus pasang apa?","expect":"exterior:railing-balkon","topic":"Railing balkon","type":"exterior","kind":"indirect"}
+{"q":"Roster untuk dinding depan rumah, motif apa yang lagi trendi?","expect":"exterior:roster-sebagai-elemen-fasad","topic":"Roster sebagai elemen fasad","type":"exterior","kind":"natural"}
+{"q":"Dinding rumah saya polos banget, pengen dikasih lubang-lubang biar ada angin masuk tapi tetap privasi, gimana?","expect":"exterior:roster-sebagai-elemen-fasad","topic":"Roster sebagai elemen fasad","type":"exterior","kind":"indirect"}
+{"q":"Berapa biaya buat kanopi carport sederhana?","expect":"furniture:kanopi-carport","topic":"Kanopi carport","type":"furniture","kind":"natural"}
+{"q":"Mobil saya kepanasan dan kehujanan, bagaimana cara melindunginya di depan rumah?","expect":"furniture:kanopi-carport","topic":"Kanopi carport","type":"furniture","kind":"indirect"}
+{"q":"Apa kelebihan kitchen island untuk dapur kecil?","expect":"furniture:kitchen-island","topic":"Kitchen island","type":"furniture","kind":"natural"}
+{"q":"Saya ingin meja tambahan di tengah dapur untuk memasak dan makan.","expect":"furniture:kitchen-island","topic":"Kitchen island","type":"furniture","kind":"indirect"}
+{"q":"Bagaimana desain kitchen set bentuk L yang praktis?","expect":"furniture:kitchen-set-bentuk-l","topic":"Kitchen set bentuk L","type":"furniture","kind":"natural"}
+{"q":"Dapur saya sudut, bagaimana memanfaatkan dua dinding yang bertemu?","expect":"furniture:kitchen-set-bentuk-l","topic":"Kitchen set bentuk L","type":"furniture","kind":"indirect"}
+{"q":"Apakah kitchen set bentuk U cocok untuk dapur sempit?","expect":"furniture:kitchen-set-bentuk-u","topic":"Kitchen set bentuk U","type":"furniture","kind":"natural"}
+{"q":"Saya ingin lemari dapur yang mengelilingi tiga sisi ruangan.","expect":"furniture:kitchen-set-bentuk-u","topic":"Kitchen set bentuk U","type":"furniture","kind":"indirect"}
+{"q":"Berapa ukuran kitchen set lurus minimalis?","expect":"furniture:kitchen-set-lurus-single-line","topic":"Kitchen set lurus (single line)","type":"furniture","kind":"natural"}
+{"q":"Dapur saya memanjang dan sempit, bagaimana menata lemari di satu sisi?","expect":"furniture:kitchen-set-lurus-single-line","topic":"Kitchen set lurus (single line)","type":"furniture","kind":"indirect"}
+{"q":"Lebih baik pilih wastafel dapur dua lubang atau satu lubang?","expect":"furniture:kitchen-sink-double-bowl-vs-single-bowl","topic":"Kitchen sink double bowl vs single bowl","type":"furniture","kind":"natural"}
+{"q":"Saya sering masak, cuci piring banyak, wastafelnya gimana biar muat?","expect":"furniture:kitchen-sink-double-bowl-vs-single-bowl","topic":"Kitchen sink double bowl vs single bowl","type":"furniture","kind":"indirect"}
+{"q":"Apa bedanya kloset duduk one-piece sama yang biasa?","expect":"furniture:kloset-duduk-one-piece","topic":"Kloset duduk one-piece","type":"furniture","kind":"natural"}
+{"q":"Toilet saya susah dibersihkan, ada yang modelnya tanpa sela-sela?","expect":"furniture:kloset-duduk-one-piece","topic":"Kloset duduk one-piece","type":"furniture","kind":"indirect"}
+{"q":"Bagaimana cara buat kolam renang kecil di halaman belakang?","expect":"furniture:kolam-renang-plunge-kecil","topic":"Kolam renang plunge kecil","type":"furniture","kind":"natural"}
+{"q":"Halaman saya sempit, tapi ingin punya kolam buat berendam saja.","expect":"furniture:kolam-renang-plunge-kecil","topic":"Kolam renang plunge kecil","type":"furniture","kind":"indirect"}
+{"q":"Meja kerja yang cocok untuk ruangan sempit seperti apa?","expect":"furniture:meja-kerja-workspace","topic":"Meja kerja / workspace","type":"furniture","kind":"natural"}
+{"q":"Saya kerja dari rumah, butuh meja yang muat laptop dan buku.","expect":"furniture:meja-kerja-workspace","topic":"Meja kerja / workspace","type":"furniture","kind":"indirect"}
+{"q":"Bentuk meja makan untuk 4 orang yang paling pas?","expect":"furniture:meja-makan-4-kursi","topic":"Meja makan 4 kursi","type":"furniture","kind":"natural"}
+{"q":"Keluarga kecil, butuh meja makan yang muat di ruang terbatas.","expect":"furniture:meja-makan-4-kursi","topic":"Meja makan 4 kursi","type":"furniture","kind":"indirect"}
+{"q":"Apa kelebihan pagar tembok kombinasi besi dibandingkan pagar biasa?","expect":"furniture:pagar-tembok-kombinasi-besi","topic":"Pagar tembok kombinasi besi","type":"furniture","kind":"natural"}
+{"q":"Saya ingin pagar yang kokoh tapi tetap ada bagian yang transparan.","expect":"furniture:pagar-tembok-kombinasi-besi","topic":"Pagar tembok kombinasi besi","type":"furniture","kind":"indirect"}
+{"q":"Bagaimana cara mendesain pantry mini bar yang fungsional?","expect":"furniture:pantry-mini-bar","topic":"Pantry / mini bar","type":"furniture","kind":"natural"}
+{"q":"Saya ingin area kecil di dapur untuk menyajikan minuman dan makanan ringan.","expect":"furniture:pantry-mini-bar","topic":"Pantry / mini bar","type":"furniture","kind":"indirect"}
+{"q":"Berapa biaya bikin pergola kayu di halaman belakang?","expect":"furniture:pergola-kayu","topic":"Pergola kayu","type":"furniture","kind":"natural"}
+{"q":"Saya ingin tempat teduh di taman untuk bersantai, tapi tidak mau atap permanen.","expect":"furniture:pergola-kayu","topic":"Pergola kayu","type":"furniture","kind":"indirect"}
+{"q":"Kenapa perlu pintu pedestrian terpisah di samping pintu gerbang?","expect":"furniture:pintu-pedestrian-terpisah","topic":"Pintu pedestrian terpisah","type":"furniture","kind":"natural"}
+{"q":"Saya ingin ada pintu kecil di samping pagar supaya tidak perlu buka pintu besar setiap kali masuk.","expect":"furniture:pintu-pedestrian-terpisah","topic":"Pintu pedestrian terpisah","type":"furniture","kind":"indirect"}
+{"q":"Model railing besi minimalis apa yang lagi tren?","expect":"furniture:railing-besi-minimalis","topic":"Railing besi minimalis","type":"furniture","kind":"natural"}
+{"q":"Saya ingin pagar tangga yang simpel dan tidak terlalu ramai.","expect":"furniture:railing-besi-minimalis","topic":"Railing besi minimalis","type":"furniture","kind":"indirect"}
+{"q":"Berapa ukuran partisi kaca untuk shower area?","expect":"furniture:shower-area-dengan-partisi-kaca","topic":"Shower area dengan partisi kaca","type":"furniture","kind":"natural"}
+{"q":"Mandi airnya nyiprat ke mana-mana, gimana biar nggak basahi toilet?","expect":"furniture:shower-area-dengan-partisi-kaca","topic":"Shower area dengan partisi kaca","type":"furniture","kind":"indirect"}
+{"q":"Sofa 2-3 dudukan yang cocok untuk ruang tamu kecil apa?","expect":"furniture:sofa-2-3-dudukan","topic":"Sofa 2-3 dudukan","type":"furniture","kind":"natural"}
+{"q":"Ruang tamu sempit, butuh sofa yang muat dua sampai tiga orang.","expect":"furniture:sofa-2-3-dudukan","topic":"Sofa 2-3 dudukan","type":"furniture","kind":"indirect"}
+{"q":"Berapa harga sofa L sectional yang bagus?","expect":"furniture:sofa-l-sectional","topic":"Sofa L (sectional)","type":"furniture","kind":"natural"}
+{"q":"Keluarga besar sering kumpul, butuh sofa panjang bentuk L.","expect":"furniture:sofa-l-sectional","topic":"Sofa L (sectional)","type":"furniture","kind":"indirect"}
+{"q":"TV cabinet duduk dengan laci apa yang awet?","expect":"furniture:tv-cabinet-duduk","topic":"TV cabinet duduk","type":"furniture","kind":"natural"}
+{"q":"TV di atas meja, tapi perlu tempat nyimpen remote dan kabel.","expect":"furniture:tv-cabinet-duduk","topic":"TV cabinet duduk","type":"furniture","kind":"indirect"}
+{"q":"TV cabinet gantung untuk TV 50 inch kuat nggak?","expect":"furniture:tv-cabinet-gantung-floating","topic":"TV cabinet gantung (floating)","type":"furniture","kind":"natural"}
+{"q":"TV besar ditempel di dinding, tapi takut jatuh kalau nggak ada penyangga.","expect":"furniture:tv-cabinet-gantung-floating","topic":"TV cabinet gantung (floating)","type":"furniture","kind":"indirect"}
+{"q":"Apakah walk-in closet butuh ruangan khusus?","expect":"furniture:walk-in-closet","topic":"Walk-in closet","type":"furniture","kind":"natural"}
+{"q":"Saya mau punya ruang khusus untuk menyimpan baju dan aksesoris, bagaimana desainnya?","expect":"furniture:walk-in-closet","topic":"Walk-in closet","type":"furniture","kind":"indirect"}
+{"q":"Berapa biaya bikin wardrobe built-in?","expect":"furniture:wardrobe-built-in","topic":"Wardrobe built-in","type":"furniture","kind":"natural"}
+{"q":"Saya ingin lemari yang menyatu dengan dinding kamar, apa saja yang perlu dipertimbangkan?","expect":"furniture:wardrobe-built-in","topic":"Wardrobe built-in","type":"furniture","kind":"indirect"}
+{"q":"Apakah wardrobe lepas cocok untuk kamar kecil?","expect":"furniture:wardrobe-lepas-freestanding","topic":"Wardrobe lepas (freestanding)","type":"furniture","kind":"natural"}
+{"q":"Saya butuh lemari yang bisa dipindah-pindah, bagaimana cara memilih yang tepat?","expect":"furniture:wardrobe-lepas-freestanding","topic":"Wardrobe lepas (freestanding)","type":"furniture","kind":"indirect"}
+{"q":"Bagaimana cara membersihkan wastafel countertop?","expect":"furniture:wastafel-kamar-mandi-meja-countertop","topic":"Wastafel kamar mandi meja (countertop)","type":"furniture","kind":"natural"}
+{"q":"Saya ingin wastafel kamar mandi yang diletakkan di atas meja, apa kelebihan dan kekurangannya?","expect":"furniture:wastafel-kamar-mandi-meja-countertop","topic":"Wastafel kamar mandi meja (countertop)","type":"furniture","kind":"indirect"}
+{"q":"Apakah kusen aluminium lebih awet dari kayu?","expect":"material:aluminium-kusen","topic":"Aluminium (kusen)","type":"material","kind":"natural"}
+{"q":"Saya ingin jendela dan pintu yang tidak mudah lapuk, material apa yang bagus?","expect":"material:aluminium-kusen","topic":"Aluminium (kusen)","type":"material","kind":"indirect"}
+{"q":"Apa kelebihan granit alam dibanding granit buatan?","expect":"material:granit-alam","topic":"Granit alam","type":"material","kind":"natural"}
+{"q":"Lantai rumah saya ingin yang kuat dan mewah, tapi bingung pilih batu alam apa.","expect":"material:granit-alam","topic":"Granit alam","type":"material","kind":"indirect"}
+{"q":"Apakah HPL tahan air untuk lemari dapur?","expect":"material:hpl","topic":"HPL","type":"material","kind":"natural"}
+{"q":"Saya mau bikin kitchen set, tapi takut lapisannya rusak kena cipratan air.","expect":"material:hpl","topic":"HPL","type":"material","kind":"indirect"}
+{"q":"Apa bedanya homogeneous tile dengan keramik biasa?","expect":"material:homogeneous-tile","topic":"Homogeneous tile","type":"material","kind":"natural"}
+{"q":"Lantai garasi sering basah dan licin, cari yang anti slip dan kuat.","expect":"material:homogeneous-tile","topic":"Homogeneous tile","type":"material","kind":"indirect"}
+{"q":"Kaca laminated itu apa dan aman dipakai di jendela?","expect":"material:kaca-laminated","topic":"Kaca laminated","type":"material","kind":"natural"}
+{"q":"Jendela rumah saya di lantai dua, takut pecah dan jatuh ke bawah.","expect":"material:kaca-laminated","topic":"Kaca laminated","type":"material","kind":"indirect"}
+{"q":"Apakah kaca tempered lebih kuat dari kaca biasa?","expect":"material:kaca-tempered","topic":"Kaca tempered","type":"material","kind":"natural"}
+{"q":"Pintu kaca kamar mandi saya sering terbentur, mudah pecah tidak ya?","expect":"material:kaca-tempered","topic":"Kaca tempered","type":"material","kind":"indirect"}
+{"q":"Railing kaca untuk balkon, aman gak buat anak kecil?","expect":"furniture:railing-kaca","topic":"Railing kaca","type":"furniture","kind":"natural"}
+{"q":"Biar pemandangan dari balkon nggak terhalang tapi tetap aman, gimana?","expect":"furniture:railing-kaca","topic":"Railing kaca","type":"furniture","kind":"indirect"}
+{"q":"Rak buku tinggi sampai plafon, bagaimana cara ambil buku di atas?","expect":"furniture:rak-buku-tinggi","topic":"Rak buku tinggi","type":"furniture","kind":"natural"}
+{"q":"Biar buku banyak tersimpan, tapi susah jangkau yang di atas, ada solusi?","expect":"furniture:rak-buku-tinggi","topic":"Rak buku tinggi","type":"furniture","kind":"indirect"}
+{"q":"Rak dinding terbuka, biar rapi dan mudah dibersihkan, gimana?","expect":"furniture:rak-dinding-terbuka","topic":"Rak dinding terbuka","type":"furniture","kind":"natural"}
+{"q":"Pengen pajangan di dinding, tapi takut debu dan kelihatan berantakan.","expect":"furniture:rak-dinding-terbuka","topic":"Rak dinding terbuka","type":"furniture","kind":"indirect"}
+{"q":"Ranjang dengan laci penyimpanan, cocok untuk kamar sempit?","expect":"furniture:ranjang-dengan-laci-penyimpanan","topic":"Ranjang dengan laci penyimpanan","type":"furniture","kind":"natural"}
+{"q":"Kamar kecil, butuh tempat tidur yang bisa nyimpen barang di bawahnya.","expect":"furniture:ranjang-dengan-laci-penyimpanan","topic":"Ranjang dengan laci penyimpanan","type":"furniture","kind":"indirect"}
+{"q":"Ranjang tingkat untuk anak, yang penting aman dan kuat. Rekomendasi?","expect":"furniture:ranjang-tingkat-bunk-bed","topic":"Ranjang tingkat (bunk bed)","type":"furniture","kind":"natural"}
+{"q":"Dua anak satu kamar, biar tempat tidur muat tanpa makan banyak ruang.","expect":"furniture:ranjang-tingkat-bunk-bed","topic":"Ranjang tingkat (bunk bed)","type":"furniture","kind":"indirect"}
+{"q":"Batu palimanan cocok untuk dinding luar rumah?","expect":"material:batu-palimanan","topic":"Batu palimanan","type":"material","kind":"natural"}
+{"q":"Saya mau dinding taman pakai batu alam yang warnanya krem, apa bagus?","expect":"material:batu-palimanan","topic":"Batu palimanan","type":"material","kind":"indirect"}
+{"q":"Besi hollow kuat untuk kanopi teras?","expect":"material:besi-hollow","topic":"Besi hollow","type":"material","kind":"natural"}
+{"q":"Saya mau bikin atap teras dari besi, yang ringan tapi kokoh, pakai apa?","expect":"material:besi-hollow","topic":"Besi hollow","type":"material","kind":"indirect"}
+{"q":"Blockboard bagus untuk lemari dapur?","expect":"material:blockboard","topic":"Blockboard","type":"material","kind":"natural"}
+{"q":"Saya mau bikin lemari dapur dari kayu lapis, yang kuat dan tidak mudah melengkung, pilih yang mana?","expect":"material:blockboard","topic":"Blockboard","type":"material","kind":"indirect"}
+{"q":"Cat duco untuk kusen kayu tahan lama?","expect":"material:duco-cat-semprot","topic":"Duco (cat semprot)","type":"material","kind":"natural"}
+{"q":"Saya mau cat kusen jendela dengan hasil halus dan mengkilap, pakai cat apa ya?","expect":"material:duco-cat-semprot","topic":"Duco (cat semprot)","type":"material","kind":"indirect"}
+{"q":"GRC board tahan air untuk plafon kamar mandi?","expect":"material:grc-board","topic":"GRC board","type":"material","kind":"natural"}
+{"q":"Saya mau pasang plafon di kamar mandi yang anti lembab dan tidak mudah rusak, bahan apa yang cocok?","expect":"material:grc-board","topic":"GRC board","type":"material","kind":"indirect"}
+{"q":"Apa kelebihan baja ringan untuk rangka atap?","expect":"material:baja-ringan","topic":"Baja ringan","type":"material","kind":"natural"}
+{"q":"Saya mau ganti atap, tapi khawatir kena rayap, ada alternatif yang lebih ringan?","expect":"material:baja-ringan","topic":"Baja ringan","type":"material","kind":"indirect"}
+{"q":"Apakah bata ekspos perlu diplester atau dicat?","expect":"material:bata-ekspos","topic":"Bata ekspos","type":"material","kind":"natural"}
+{"q":"Dinding bata merahnya kelihatan bagus, saya ingin biarkan alami, tapi takut bocor, bagaimana?","expect":"material:bata-ekspos","topic":"Bata ekspos","type":"material","kind":"indirect"}
+{"q":"Apa beda bata ringan dengan bata merah biasa?","expect":"material:bata-ringan-hebel","topic":"Bata ringan (hebel)","type":"material","kind":"natural"}
+{"q":"Saya mau bangun tembok cepat, tapi tidak mau terlalu berat, ada bahan yang lebih praktis?","expect":"material:bata-ringan-hebel","topic":"Bata ringan (hebel)","type":"material","kind":"indirect"}
+{"q":"Apakah batu andesit cocok untuk lantai teras?","expect":"material:batu-andesit","topic":"Batu andesit","type":"material","kind":"natural"}
+{"q":"Lantai teras saya sering licin kalau hujan, cari batu yang tidak licin dan kuat.","expect":"material:batu-andesit","topic":"Batu andesit","type":"material","kind":"indirect"}
+{"q":"Bagaimana cara merawat lantai batu koral sikat?","expect":"material:batu-koral-sikat","topic":"Batu koral sikat","type":"material","kind":"natural"}
+{"q":"Lantai taman saya dari batu-batuan kecil, mudah kotor, bagaimana membersihkannya?","expect":"material:batu-koral-sikat","topic":"Batu koral sikat","type":"material","kind":"indirect"}
+{"q":"Bagaimana cara membuat taman kering di halaman rumah?","expect":"furniture:taman-kering-dry-garden","topic":"Taman kering (dry garden)","type":"furniture","kind":"natural"}
+{"q":"Halaman saya jarang disiram, tanaman mati. Ada saran?","expect":"furniture:taman-kering-dry-garden","topic":"Taman kering (dry garden)","type":"furniture","kind":"indirect"}
+{"q":"Apa kelebihan tangga L dibanding bentuk lain?","expect":"furniture:tangga-bentuk-l","topic":"Tangga bentuk L","type":"furniture","kind":"natural"}
+{"q":"Ruang tangga saya sempit, butuh solusi yang tidak makan tempat.","expect":"furniture:tangga-bentuk-l","topic":"Tangga bentuk L","type":"furniture","kind":"indirect"}
+{"q":"Kapan sebaiknya memilih tangga bentuk U?","expect":"furniture:tangga-bentuk-u","topic":"Tangga bentuk U","type":"furniture","kind":"natural"}
+{"q":"Saya ingin tangga yang aman untuk anak, tidak terlalu curam.","expect":"furniture:tangga-bentuk-u","topic":"Tangga bentuk U","type":"furniture","kind":"indirect"}
+{"q":"Apakah tangga lurus cocok untuk rumah minimalis?","expect":"furniture:tangga-lurus","topic":"Tangga lurus","type":"furniture","kind":"natural"}
+{"q":"Rumah saya kecil, butuh tangga yang simpel dan hemat tempat.","expect":"furniture:tangga-lurus","topic":"Tangga lurus","type":"furniture","kind":"indirect"}
+{"q":"Bagaimana cara membuat vertical garden di dinding rumah?","expect":"furniture:vertical-garden","topic":"Vertical garden","type":"furniture","kind":"natural"}
+{"q":"Saya ingin tanaman di dinding, tapi tidak punya lahan untuk taman.","expect":"furniture:vertical-garden","topic":"Vertical garden","type":"furniture","kind":"indirect"}
+{"q":"Apa kelebihan kalsiboard dibanding triplek?","expect":"material:kalsiboard","topic":"Kalsiboard","type":"material","kind":"natural"}
+{"q":"Dinding rumah saya lembab, ada bahan yang tahan air buat partisi?","expect":"material:kalsiboard","topic":"Kalsiboard","type":"material","kind":"indirect"}
+{"q":"Apakah kayu ulin cocok untuk lantai teras?","expect":"material:kayu-ulin-outdoor","topic":"Kayu ulin (outdoor)","type":"material","kind":"natural"}
+{"q":"Saya butuh kayu yang kuat buat di luar rumah, tahan hujan dan panas.","expect":"material:kayu-ulin-outdoor","topic":"Kayu ulin (outdoor)","type":"material","kind":"indirect"}
+{"q":"Keramik motif kayu apa yang bagus untuk ruang tamu?","expect":"material:keramik","topic":"Keramik","type":"material","kind":"natural"}
+{"q":"Lantai rumah sering basah, cari yang gampang dibersihkan dan tidak licin.","expect":"material:keramik","topic":"Keramik","type":"material","kind":"indirect"}
+{"q":"Apakah MDF bisa dicat sendiri di rumah?","expect":"material:mdf","topic":"MDF","type":"material","kind":"natural"}
+{"q":"Saya mau bikin lemari murah, bahannya ringan tapi mudah dibentuk.","expect":"material:mdf","topic":"MDF","type":"material","kind":"indirect"}
+{"q":"Berapa biaya pasang marmer per meter?","expect":"material:marmer","topic":"Marmer","type":"material","kind":"natural"}
+{"q":"Lantai rumah ingin mewah dan dingin, tapi takut mahal perawatannya.","expect":"material:marmer","topic":"Marmer","type":"material","kind":"indirect"}
+{"q":"Apakah melamine tahan air untuk lemari dapur?","expect":"material:melamine","topic":"Melamine","type":"material","kind":"natural"}
+{"q":"Saya mau bikin lemari dapur, bahannya harus yang gampang dibersihkan dan tidak mudah rusak karena air.","expect":"material:melamine","topic":"Melamine","type":"material","kind":"indirect"}
+{"q":"Apakah PVC sheet bisa untuk plafon kamar mandi?","expect":"material:pvc-sheet","topic":"PVC sheet","type":"material","kind":"natural"}
+{"q":"Langit-langit kamar mandi saya sering lembab dan berjamur, ada bahan yang tahan air?","expect":"material:pvc-sheet","topic":"PVC sheet","type":"material","kind":"indirect"}
+{"q":"Apakah parket kayu mudah tergores dan bagaimana merawatnya?","expect":"material:parket-kayu","topic":"Parket kayu","type":"material","kind":"natural"}
+{"q":"Lantai rumah saya ingin yang hangat dan alami, tapi kuat untuk dilewati anak-anak.","expect":"material:parket-kayu","topic":"Parket kayu","type":"material","kind":"indirect"}
+{"q":"Apakah particle board kuat untuk rak buku?","expect":"material:particle-board","topic":"Particle board","type":"material","kind":"natural"}
+{"q":"Saya mau bikin rak buku besar, tapi budget terbatas. Ada bahan yang murah dan cukup kuat?","expect":"material:particle-board","topic":"Particle board","type":"material","kind":"indirect"}
+{"q":"Apakah multipleks bisa dicat langsung tanpa dempul?","expect":"material:plywood-multipleks","topic":"Plywood (multipleks)","type":"material","kind":"natural"}
+{"q":"Saya mau bikin furnitur sendiri, bahannya yang mudah dipotong dan permukaannya halus.","expect":"material:plywood-multipleks","topic":"Plywood (multipleks)","type":"material","kind":"indirect"}
+{"q":"Polished concrete itu cocok untuk lantai rumah?","expect":"material:polished-concrete-aci-ekspos","topic":"Polished concrete (aci ekspos)","type":"material","kind":"natural"}
+{"q":"Lantai rumah saya ingin yang halus mengkilap tapi kuat, pakai apa ya?","expect":"material:polished-concrete-aci-ekspos","topic":"Polished concrete (aci ekspos)","type":"material","kind":"indirect"}
+{"q":"Apa kelebihan meja dapur dari quartz?","expect":"material:quartz-meja-dapur","topic":"Quartz (meja dapur)","type":"material","kind":"natural"}
+{"q":"Meja dapur saya sering kena noda dan baret, ada bahan yang tahan lama?","expect":"material:quartz-meja-dapur","topic":"Quartz (meja dapur)","type":"material","kind":"indirect"}
+{"q":"Roster beton bagus untuk ventilasi rumah?","expect":"material:roster-beton","topic":"Roster beton","type":"material","kind":"natural"}
+{"q":"Dinding rumah saya pengin berlubang biar angin masuk tapi tetap privasi.","expect":"material:roster-beton","topic":"Roster beton","type":"material","kind":"indirect"}
+{"q":"Rotan sintetis tahan lama tidak untuk outdoor?","expect":"material:rotan-sintetis","topic":"Rotan sintetis","type":"material","kind":"natural"}
+{"q":"Saya mau kursi taman yang tidak mudah rusak kena hujan dan panas.","expect":"material:rotan-sintetis","topic":"Rotan sintetis","type":"material","kind":"indirect"}
+{"q":"SPC flooring cocok untuk lantai kamar mandi?","expect":"material:spc-flooring","topic":"SPC flooring","type":"material","kind":"natural"}
+{"q":"Lantai rumah saya sering lembab, cari yang anti air dan mudah dibersihkan.","expect":"material:spc-flooring","topic":"SPC flooring","type":"material","kind":"indirect"}
+{"q":"Kenapa cat dinding rumah saya mengelupas?","expect":"problem:cat-dinding-mengelupas","topic":"Cat dinding mengelupas","type":"problem","kind":"natural"}
+{"q":"Dinding rumah saya catnya terkelupas setelah beberapa bulan, apa penyebabnya?","expect":"problem:cat-dinding-mengelupas","topic":"Cat dinding mengelupas","type":"problem","kind":"indirect"}
+{"q":"Bagaimana cara memperbaiki dak beton yang bocor?","expect":"problem:dak-beton-bocor","topic":"Dak beton bocor","type":"problem","kind":"natural"}
+{"q":"Atap cor rumah saya rembes kalau hujan deras, harus diapain?","expect":"problem:dak-beton-bocor","topic":"Dak beton bocor","type":"problem","kind":"indirect"}
+{"q":"Debu dari jalanan masuk terus ke rumah, bagaimana solusinya?","expect":"problem:debu-jalanan-masuk-terus","topic":"Debu jalanan masuk terus","type":"problem","kind":"natural"}
+{"q":"Rumah saya cepat berdebu karena dekat jalan, ada cara mengurangi debu?","expect":"problem:debu-jalanan-masuk-terus","topic":"Debu jalanan masuk terus","type":"problem","kind":"indirect"}
+{"q":"Dinding rumah lembap dan berjamur, apa yang harus dilakukan?","expect":"problem:dinding-lembap-dan-berjamur","topic":"Dinding lembap dan berjamur","type":"problem","kind":"natural"}
+{"q":"Tembok rumah saya basah dan muncul bercak hitam, bagaimana mengatasinya?","expect":"problem:dinding-lembap-dan-berjamur","topic":"Dinding lembap dan berjamur","type":"problem","kind":"indirect"}
+{"q":"Dinding rumah retak rambut, apakah berbahaya?","expect":"problem:dinding-retak-rambut","topic":"Dinding retak rambut","type":"problem","kind":"natural"}
+{"q":"Ada retakan halus di dinding, apakah perlu dikhawatirkan?","expect":"problem:dinding-retak-rambut","topic":"Dinding retak rambut","type":"problem","kind":"indirect"}
+{"q":"Dinding retak struktural, apa yang harus saya lakukan?","expect":"problem:dinding-retak-struktural","topic":"Dinding retak struktural","type":"problem","kind":"natural"}
+{"q":"Tembok rumah saya retak besar dan makin lebar, apakah berbahaya?","expect":"problem:dinding-retak-struktural","topic":"Dinding retak struktural","type":"problem","kind":"indirect"}
+{"q":"Halaman banjir saat hujan deras, bagaimana cara mengatasinya?","expect":"problem:halaman-banjir-saat-hujan-deras","topic":"Halaman banjir saat hujan deras","type":"problem","kind":"natural"}
+{"q":"Setiap hujan lebat, halaman rumah saya tergenang air sampai masuk ke dalam.","expect":"problem:halaman-banjir-saat-hujan-deras","topic":"Halaman banjir saat hujan deras","type":"problem","kind":"indirect"}
+{"q":"Kamar mandi bau, apa penyebab dan solusinya?","expect":"problem:kamar-mandi-bau","topic":"Kamar mandi bau","type":"problem","kind":"natural"}
+{"q":"Setiap kali masuk kamar mandi, ada bau tidak sedap dari saluran pembuangan.","expect":"problem:kamar-mandi-bau","topic":"Kamar mandi bau","type":"problem","kind":"indirect"}
+{"q":"Kusen kayu memuai dan macet, bagaimana cara memperbaikinya?","expect":"problem:kusen-kayu-memuai-dan-macet","topic":"Kusen kayu memuai dan macet","type":"problem","kind":"natural"}
+{"q":"Pintu rumah saya susah ditutup karena kayu kusennya mengembang terkena air.","expect":"problem:kusen-kayu-memuai-dan-macet","topic":"Kusen kayu memuai dan macet","type":"problem","kind":"indirect"}
+{"q":"Lantai keramik popping atau terangkat, apa yang harus dilakukan?","expect":"problem:lantai-keramik-popping-terangkat","topic":"Lantai keramik popping / terangkat","type":"problem","kind":"natural"}
+{"q":"Beberapa ubin di lantai rumah saya menggelembung dan retak, bagaimana cara memperbaikinya?","expect":"problem:lantai-keramik-popping-terangkat","topic":"Lantai keramik popping / terangkat","type":"problem","kind":"indirect"}
+{"q":"Vinyl flooring itu awet tidak untuk lantai rumah?","expect":"material:vinyl-flooring","topic":"Vinyl flooring","type":"material","kind":"natural"}
+{"q":"Lantai rumah saya sering kena air, tapi ingin yang murah dan bagus.","expect":"material:vinyl-flooring","topic":"Vinyl flooring","type":"material","kind":"indirect"}
+{"q":"WPC itu kuat tidak untuk pagar rumah?","expect":"material:wpc-wood-plastic-composite","topic":"WPC (wood plastic composite)","type":"material","kind":"natural"}
+{"q":"Saya mau pagar yang tahan rayap dan tidak perlu dicat ulang.","expect":"material:wpc-wood-plastic-composite","topic":"WPC (wood plastic composite)","type":"material","kind":"indirect"}
+{"q":"Air sumur saya keruh dan bau, bagaimana cara menjernihkannya?","expect":"problem:air-sumur-keruh-atau-berbau","topic":"Air sumur keruh atau berbau","type":"problem","kind":"natural"}
+{"q":"Air dari sumur di rumah kok warnanya kuning dan baunya kurang sedap.","expect":"problem:air-sumur-keruh-atau-berbau","topic":"Air sumur keruh atau berbau","type":"problem","kind":"indirect"}
+{"q":"Atap genteng bocor saat hujan lebat, bagaimana cara memperbaikinya?","expect":"problem:atap-genteng-bocor-rembes","topic":"Atap genteng bocor / rembes","type":"problem","kind":"natural"}
+{"q":"Setiap hujan deras, langit-langit rumah saya basah dan menetes.","expect":"problem:atap-genteng-bocor-rembes","topic":"Atap genteng bocor / rembes","type":"problem","kind":"indirect"}
+{"q":"Bau got masuk ke dalam rumah, bagaimana cara mengatasinya?","expect":"problem:bau-got-masuk-ke-rumah","topic":"Bau got masuk ke rumah","type":"problem","kind":"natural"}
+{"q":"Rumah saya sering tercium bau tidak sedap dari saluran pembuangan.","expect":"problem:bau-got-masuk-ke-rumah","topic":"Bau got masuk ke rumah","type":"problem","kind":"indirect"}
+{"q":"Apakah solid wood jati cocok untuk furniture outdoor?","expect":"material:solid-wood-jati","topic":"Solid wood jati","type":"material","kind":"natural"}
+{"q":"Saya ingin meja taman yang tahan lama dan tidak mudah lapuk, bahan apa yang bagus?","expect":"material:solid-wood-jati","topic":"Solid wood jati","type":"material","kind":"indirect"}
+{"q":"Apa kelebihan solid wood sungkai dibandingkan kayu lainnya?","expect":"material:solid-wood-sungkai","topic":"Solid wood sungkai","type":"material","kind":"natural"}
+{"q":"Saya mencari kayu yang kuat tapi tidak terlalu mahal untuk lemari, ada rekomendasi?","expect":"material:solid-wood-sungkai","topic":"Solid wood sungkai","type":"material","kind":"indirect"}
+{"q":"Apakah terrazzo tahan lama untuk lantai rumah?","expect":"material:terrazzo","topic":"Terrazzo","type":"material","kind":"natural"}
+{"q":"Lantai saya sering kotor dan susah dibersihkan, ada material yang lebih praktis?","expect":"material:terrazzo","topic":"Terrazzo","type":"material","kind":"indirect"}
+{"q":"Apakah UPVC tahan terhadap cuaca panas dan hujan?","expect":"material:upvc-kusen","topic":"UPVC (kusen)","type":"material","kind":"natural"}
+{"q":"Kusen kayu saya mulai lapuk, ada alternatif yang tidak perlu dicat ulang?","expect":"material:upvc-kusen","topic":"UPVC (kusen)","type":"material","kind":"indirect"}
+{"q":"Apakah veneer kayu mudah rusak jika terkena air?","expect":"material:veneer-kayu","topic":"Veneer kayu","type":"material","kind":"natural"}
+{"q":"Saya suka tampilan kayu tapi budget terbatas, ada material yang mirip?","expect":"material:veneer-kayu","topic":"Veneer kayu","type":"material","kind":"indirect"}
+{"q":"Bagaimana cara mengurangi kebisingan dari jalan raya di rumah?","expect":"problem:rumah-bising-dari-jalan-raya","topic":"Rumah bising dari jalan raya","type":"problem","kind":"natural"}
+{"q":"Rumah saya dekat jalan besar, suara kendaraan sangat mengganggu tidur.","expect":"problem:rumah-bising-dari-jalan-raya","topic":"Rumah bising dari jalan raya","type":"problem","kind":"indirect"}
+{"q":"Apa yang harus dilakukan agar rumah tidak pengap dan udaranya segar?","expect":"problem:rumah-pengap-sirkulasi-udara-buruk","topic":"Rumah pengap / sirkulasi udara buruk","type":"problem","kind":"natural"}
+{"q":"Di dalam rumah terasa sumpek dan gerah, padahal sudah buka jendela.","expect":"problem:rumah-pengap-sirkulasi-udara-buruk","topic":"Rumah pengap / sirkulasi udara buruk","type":"problem","kind":"indirect"}
+{"q":"Bagaimana cara membuat rumah lebih sejuk di siang hari?","expect":"problem:rumah-terasa-panas-di-siang-hari","topic":"Rumah terasa panas di siang hari","type":"problem","kind":"natural"}
+{"q":"Rumah saya seperti oven saat siang, meski sudah pakai kipas angin.","expect":"problem:rumah-terasa-panas-di-siang-hari","topic":"Rumah terasa panas di siang hari","type":"problem","kind":"indirect"}
+{"q":"Kenapa rumah luas tapi terasa sempit? Bagaimana solusinya?","expect":"problem:rumah-terasa-sempit-padahal-luas","topic":"Rumah terasa sempit padahal luas","type":"problem","kind":"natural"}
+{"q":"Rumah saya ukurannya besar tapi kok rasanya sumpek dan tidak lega.","expect":"problem:rumah-terasa-sempit-padahal-luas","topic":"Rumah terasa sempit padahal luas","type":"problem","kind":"indirect"}
+{"q":"Apa penyebab saluran air mampet dan cara mengatasinya?","expect":"problem:saluran-air-mampet","topic":"Saluran air mampet","type":"problem","kind":"natural"}
+{"q":"Air di wastafel dapur tidak mau turun, sudah disedot tapi masih tersumbat.","expect":"problem:saluran-air-mampet","topic":"Saluran air mampet","type":"problem","kind":"indirect"}
+{"q":"Listrik di rumah sering turun, MCB jeglek terus. Apa penyebabnya?","expect":"problem:listrik-sering-turun-mcb-jeglek","topic":"Listrik sering turun (MCB jeglek)","type":"problem","kind":"natural"}
+{"q":"Setiap kali nyalain AC sama mesin cuci bareng, listrik langsung mati. Kenapa ya?","expect":"problem:listrik-sering-turun-mcb-jeglek","topic":"Listrik sering turun (MCB jeglek)","type":"problem","kind":"indirect"}
+{"q":"Kenapa nyamuk banyak di dalam rumah? Bagaimana cara mengusirnya?","expect":"problem:nyamuk-banyak-di-dalam-rumah","topic":"Nyamuk banyak di dalam rumah","type":"problem","kind":"natural"}
+{"q":"Setiap sore banyak nyamuk masuk rumah, padahal pintu sudah ditutup. Ada solusi?","expect":"problem:nyamuk-banyak-di-dalam-rumah","topic":"Nyamuk banyak di dalam rumah","type":"problem","kind":"indirect"}
+{"q":"Plafon rumah saya melendut dan ada noda air. Apa yang harus dilakukan?","expect":"problem:plafon-melendut-atau-bernoda-air","topic":"Plafon melendut atau bernoda air","type":"problem","kind":"natural"}
+{"q":"Langit-langit kamar ada bercak kuning dan sedikit menggelembung, takut ambruk.","expect":"problem:plafon-melendut-atau-bernoda-air","topic":"Plafon melendut atau bernoda air","type":"problem","kind":"indirect"}
+{"q":"Ada rayap di kusen pintu dan lemari. Bagaimana cara membasminya?","expect":"problem:rayap-pada-kayu","topic":"Rayap pada kayu","type":"problem","kind":"natural"}
+{"q":"Kusen kayu rumah mulai berlubang kecil dan ada serbuk kayu berserakan.","expect":"problem:rayap-pada-kayu","topic":"Rayap pada kayu","type":"problem","kind":"indirect"}
+{"q":"Ruangan dalam rumah gelap, kurang cahaya matahari. Bagaimana solusinya?","expect":"problem:ruangan-gelap-kurang-cahaya-alami","topic":"Ruangan gelap / kurang cahaya alami","type":"problem","kind":"natural"}
+{"q":"Siang hari saja ruang tengah tetap redup, harus nyalain lampu terus.","expect":"problem:ruangan-gelap-kurang-cahaya-alami","topic":"Ruangan gelap / kurang cahaya alami","type":"problem","kind":"indirect"}
+{"q":"Bagaimana cara mengatasi silau matahari sore di ruang keluarga?","expect":"problem:silau-matahari-sore-ke-ruang-keluarga","topic":"Silau matahari sore ke ruang keluarga","type":"problem","kind":"natural"}
+{"q":"Ruang keluarga saya panas dan silau saat sore, apa solusinya?","expect":"problem:silau-matahari-sore-ke-ruang-keluarga","topic":"Silau matahari sore ke ruang keluarga","type":"problem","kind":"indirect"}
+{"q":"Kalau budget kurang, bagian mana yang harus dipangkas dulu?","expect":"process:apa-yang-dipangkas-dulu-bila-budget-kurang","topic":"Apa yang dipangkas dulu bila budget kurang","type":"process","kind":"natural"}
+{"q":"Dana terbatas, apa yang bisa ditunda agar rumah tetap jadi?","expect":"process:apa-yang-dipangkas-dulu-bila-budget-kurang","topic":"Apa yang dipangkas dulu bila budget kurang","type":"process","kind":"indirect"}
+{"q":"Apa saja biaya tersembunyi yang sering terlewat saat bangun rumah?","expect":"process:biaya-tersembunyi-yang-sering-terlewat-saat-bangun-rumah","topic":"Biaya tersembunyi yang sering terlewat saat bangun rumah","type":"process","kind":"natural"}
+{"q":"Saya khawatir ada pengeluaran tak terduga, apa yang sering lupa dianggarkan?","expect":"process:biaya-tersembunyi-yang-sering-terlewat-saat-bangun-rumah","topic":"Biaya tersembunyi yang sering terlewat saat bangun rumah","type":"process","kind":"indirect"}
+{"q":"Bagaimana cara memilih kontraktor yang benar dan terpercaya?","expect":"process:cara-memilih-kontraktor-yang-benar","topic":"Cara memilih kontraktor yang benar","type":"process","kind":"natural"}
+{"q":"Bagaimana memastikan tukang bangunan yang saya pilih tidak mengecewakan?","expect":"process:cara-memilih-kontraktor-yang-benar","topic":"Cara memilih kontraktor yang benar","type":"process","kind":"indirect"}
+{"q":"Apa saja yang perlu diperhatikan saat membandingkan proposal kontraktor?","expect":"process:checklist-membandingkan-proposal-kontraktor","topic":"Checklist membandingkan proposal kontraktor","type":"process","kind":"natural"}
+{"q":"Saya punya beberapa penawaran dari kontraktor, bagaimana cara memilih yang terbaik?","expect":"process:checklist-membandingkan-proposal-kontraktor","topic":"Checklist membandingkan proposal kontraktor","type":"process","kind":"indirect"}
+{"q":"Apa saja tanda bahaya dalam proposal kontraktor yang harus saya waspadai?","expect":"process:tanda-bahaya-red-flag-proposal-kontraktor","topic":"Tanda bahaya (red flag) proposal kontraktor","type":"process","kind":"natural"}
+{"q":"Proposal kontraktor saya terlalu murah, apa ada yang disembunyikan?","expect":"process:tanda-bahaya-red-flag-proposal-kontraktor","topic":"Tanda bahaya (red flag) proposal kontraktor","type":"process","kind":"indirect"}
+{"q":"Bagaimana cara mengatur termin pembayaran kontraktor yang aman?","expect":"process:termin-pembayaran-kontraktor-yang-aman","topic":"Termin pembayaran kontraktor yang aman","type":"process","kind":"natural"}
+{"q":"Saya takut bayar penuh dulu, bagaimana cara cicil pembayaran sesuai progres?","expect":"process:termin-pembayaran-kontraktor-yang-aman","topic":"Termin pembayaran kontraktor yang aman","type":"process","kind":"indirect"}
+{"q":"Apa urutan tahapan membangun rumah dari nol yang benar?","expect":"process:urutan-tahapan-membangun-rumah-dari-nol","topic":"Urutan tahapan membangun rumah dari nol","type":"process","kind":"natural"}
+{"q":"Saya bingung mulai dari mana, pondasi dulu atau izin dulu?","expect":"process:urutan-tahapan-membangun-rumah-dari-nol","topic":"Urutan tahapan membangun rumah dari nol","type":"process","kind":"indirect"}
+{"q":"Bagaimana cara menyeimbangkan versi impian rumah dengan budget yang ada?","expect":"process:versi-impian-vs-versi-masuk-budget","topic":"Versi impian vs versi masuk budget","type":"process","kind":"natural"}
+{"q":"Rumah impian saya mahal, mana yang bisa dikurangi tanpa merusak desain?","expect":"process:versi-impian-vs-versi-masuk-budget","topic":"Versi impian vs versi masuk budget","type":"process","kind":"indirect"}
+{"q":"Apa saja yang perlu diperhatikan dalam mendesain area laundry?","expect":"room:area-laundry","topic":"Area laundry","type":"room","kind":"natural"}
+{"q":"Rumah saya sempit, bagaimana bikin tempat cuci dan jemur yang rapi?","expect":"room:area-laundry","topic":"Area laundry","type":"room","kind":"indirect"}
+{"q":"Bagaimana cara membuat balkon lebih nyaman dan aman?","expect":"room:balkon","topic":"Balkon","type":"room","kind":"natural"}
+{"q":"Saya ingin punya tempat duduk di luar rumah yang teduh dan tidak licin.","expect":"room:balkon","topic":"Balkon","type":"room","kind":"indirect"}
+{"q":"Apa yang perlu diperhatikan saat membangun carport?","expect":"room:carport","topic":"Carport","type":"room","kind":"natural"}
+{"q":"Mobil saya kepanasan dan kehujanan, perlu tempat parkir yang terlindung.","expect":"room:carport","topic":"Carport","type":"room","kind":"indirect"}
+{"q":"Bagaimana desain dapur yang praktis dan rapi?","expect":"room:dapur","topic":"Dapur","type":"room","kind":"natural"}
+{"q":"Saya sering masak, tapi dapur terasa sempit dan berantakan.","expect":"room:dapur","topic":"Dapur","type":"room","kind":"indirect"}
+{"q":"Apa fungsi dapur kotor dan bagaimana membuatnya?","expect":"room:dapur-kotor","topic":"Dapur kotor","type":"room","kind":"natural"}
+{"q":"Saya perlu tempat khusus untuk cuci piring dan olah bahan makanan yang kotor.","expect":"room:dapur-kotor","topic":"Dapur kotor","type":"room","kind":"indirect"}
+{"q":"Bagaimana cara membuat area masuk rumah yang menarik?","expect":"room:foyer-ruang-transisi-masuk","topic":"Foyer / ruang transisi masuk","type":"room","kind":"natural"}
+{"q":"Pintu depan rumah langsung ke ruang tamu, ingin ada penyekat atau ruang sambutan.","expect":"room:foyer-ruang-transisi-masuk","topic":"Foyer / ruang transisi masuk","type":"room","kind":"indirect"}
+{"q":"Bagaimana desain kamar tidur utama yang nyaman dan luas?","expect":"room:kamar-tidur-utama","topic":"Kamar tidur utama","type":"room","kind":"natural"}
+{"q":"Kamar saya terasa sempit dan sumpek, bagaimana cara membuatnya lebih lega?","expect":"room:kamar-tidur-utama","topic":"Kamar tidur utama","type":"room","kind":"indirect"}
+{"q":"Bagaimana cara membuat musholla di dalam rumah yang tenang?","expect":"room:musholla-dalam-rumah","topic":"Musholla dalam rumah","type":"room","kind":"natural"}
+{"q":"Saya ingin tempat sholat di rumah yang tidak bising dan terpisah dari ruang lain.","expect":"room:musholla-dalam-rumah","topic":"Musholla dalam rumah","type":"room","kind":"indirect"}
+{"q":"Bagaimana mendesain rooftop di atas dak yang fungsional?","expect":"room:rooftop-dak-atas","topic":"Rooftop / dak atas","type":"room","kind":"natural"}
+{"q":"Atap rumah saya datar dan ingin dijadikan tempat santai, apa yang perlu diperhatikan?","expect":"room:rooftop-dak-atas","topic":"Rooftop / dak atas","type":"room","kind":"indirect"}
+{"q":"Apa ide ruang bermain anak yang aman dan menarik?","expect":"room:ruang-bermain-anak","topic":"Ruang bermain anak","type":"room","kind":"natural"}
+{"q":"Anak saya suka bermain di rumah tapi barang mudah rusak, bagaimana mengaturnya?","expect":"room:ruang-bermain-anak","topic":"Ruang bermain anak","type":"room","kind":"indirect"}
+{"q":"Bagaimana mendesain ruang cuci jemur yang efisien?","expect":"room:ruang-cuci-jemur","topic":"Ruang cuci jemur","type":"room","kind":"natural"}
+{"q":"Tempat jemuran saya sempit dan bau lembab, bagaimana solusinya?","expect":"room:ruang-cuci-jemur","topic":"Ruang cuci jemur","type":"room","kind":"indirect"}
+{"q":"Bagaimana cara mengawasi pembangunan rumah dari jarak jauh?","expect":"process:mengawasi-pembangunan-dari-jarak-jauh","topic":"Mengawasi pembangunan dari jarak jauh","type":"process","kind":"natural"}
+{"q":"Saya kerja di luar kota, bagaimana cara tahu progres bangunan tanpa bolak-balik?","expect":"process:mengawasi-pembangunan-dari-jarak-jauh","topic":"Mengawasi pembangunan dari jarak jauh","type":"process","kind":"indirect"}
+{"q":"Apa saja yang harus disiapkan sebelum bertemu arsitek?","expect":"process:menyusun-brief-kebutuhan-sebelum-bertemu-arsitek","topic":"Menyusun brief kebutuhan sebelum bertemu arsitek","type":"process","kind":"natural"}
+{"q":"Saya mau ke arsitek tapi bingung harus siapin data apa aja.","expect":"process:menyusun-brief-kebutuhan-sebelum-bertemu-arsitek","topic":"Menyusun brief kebutuhan sebelum bertemu arsitek","type":"process","kind":"indirect"}
+{"q":"Kapan kita perlu arsitek, kontraktor, atau cukup tukang?","expect":"process:perlu-arsitek-kontraktor-atau-cukup-tukang","topic":"Perlu arsitek, kontraktor, atau cukup tukang","type":"process","kind":"natural"}
+{"q":"Rumah saya sederhana, apa perlu pakai arsitek atau langsung tukang aja?","expect":"process:perlu-arsitek-kontraktor-atau-cukup-tukang","topic":"Perlu arsitek, kontraktor, atau cukup tukang","type":"process","kind":"indirect"}
+{"q":"Apa yang harus diperiksa saat serah terima rumah?","expect":"process:serah-terima-rumah-dan-garansi-pekerjaan","topic":"Serah terima rumah dan garansi pekerjaan","type":"process","kind":"natural"}
+{"q":"Rumah baru saya mau diserahterimakan, apa saja yang harus dicek biar tidak ada masalah?","expect":"process:serah-terima-rumah-dan-garansi-pekerjaan","topic":"Serah terima rumah dan garansi pekerjaan","type":"process","kind":"indirect"}
+{"q":"Bagaimana cara menentukan budget bangun rumah yang realistis?","expect":"process:skenario-budget-hemat-vs-target-vs-aman","topic":"Skenario budget hemat vs target vs aman","type":"process","kind":"natural"}
+{"q":"Saya punya dana terbatas, bagaimana cara membagi anggaran biar tidak boncos?","expect":"process:skenario-budget-hemat-vs-target-vs-aman","topic":"Skenario budget hemat vs target vs aman","type":"process","kind":"indirect"}
+{"q":"Apa dampak perubahan desain di tengah pembangunan?","expect":"process:dampak-perubahan-desain-di-tengah-pembangunan-change-order","topic":"Dampak perubahan desain di tengah pembangunan (change order)","type":"process","kind":"natural"}
+{"q":"Saya mau ubah rencana rumah pas lagi dibangun, apa yang harus saya siapkan?","expect":"process:dampak-perubahan-desain-di-tengah-pembangunan-change-order","topic":"Dampak perubahan desain di tengah pembangunan (change order)","type":"process","kind":"indirect"}
+{"q":"Desain dulu atau hitung RAB dulu?","expect":"process:desain-dulu-atau-hitung-rab-dulu","topic":"Desain dulu atau hitung RAB dulu","type":"process","kind":"natural"}
+{"q":"Saya bingung, gambar rumah dulu atau hitung biaya dulu?","expect":"process:desain-dulu-atau-hitung-rab-dulu","topic":"Desain dulu atau hitung RAB dulu","type":"process","kind":"indirect"}
+{"q":"Kapan PBG diurus dalam urutan membangun?","expect":"process:kapan-pbg-diurus-dalam-urutan-membangun","topic":"Kapan PBG diurus dalam urutan membangun","type":"process","kind":"natural"}
+{"q":"Saya mau bangun rumah, kapan harus urus izin bangunannya?","expect":"process:kapan-pbg-diurus-dalam-urutan-membangun","topic":"Kapan PBG diurus dalam urutan membangun","type":"process","kind":"indirect"}
+{"q":"Bagaimana cara membangun rumah bertahap?","expect":"process:membangun-rumah-bertahap-rumah-tumbuh","topic":"Membangun rumah bertahap (rumah tumbuh)","type":"process","kind":"natural"}
+{"q":"Saya mau bangun rumah sedikit demi sedikit, bagaimana caranya?","expect":"process:membangun-rumah-bertahap-rumah-tumbuh","topic":"Membangun rumah bertahap (rumah tumbuh)","type":"process","kind":"indirect"}
+{"q":"Bagaimana menerjemahkan referensi Pinterest jadi kebutuhan ruang?","expect":"process:menerjemahkan-referensi-pinterest-jadi-kebutuhan-ruang","topic":"Menerjemahkan referensi Pinterest jadi kebutuhan ruang","type":"process","kind":"natural"}
+{"q":"Saya punya banyak foto rumah dari Pinterest, tapi bingung cara wujudkan.","expect":"process:menerjemahkan-referensi-pinterest-jadi-kebutuhan-ruang","topic":"Menerjemahkan referensi Pinterest jadi kebutuhan ruang","type":"process","kind":"indirect"}
+{"q":"Bagaimana cara mendesain gudang yang rapi dan fungsional?","expect":"room:gudang","topic":"Gudang","type":"room","kind":"natural"}
+{"q":"Saya punya banyak barang yang tidak terpakai, bagaimana cara menyimpannya dengan rapi?","expect":"room:gudang","topic":"Gudang","type":"room","kind":"indirect"}
+{"q":"Apa saja yang perlu diperhatikan untuk kamar asisten rumah tangga?","expect":"room:kamar-asisten-rumah-tangga","topic":"Kamar asisten rumah tangga","type":"room","kind":"natural"}
+{"q":"Saya butuh ruang untuk pembantu tinggal di rumah, bagaimana desainnya yang nyaman?","expect":"room:kamar-asisten-rumah-tangga","topic":"Kamar asisten rumah tangga","type":"room","kind":"indirect"}
+{"q":"Bagaimana cara membuat kamar mandi kecil terlihat luas?","expect":"room:kamar-mandi","topic":"Kamar mandi","type":"room","kind":"natural"}
+{"q":"Kamar mandi saya sempit, bagaimana biar tidak terasa pengap?","expect":"room:kamar-mandi","topic":"Kamar mandi","type":"room","kind":"indirect"}
+{"q":"Apa perbedaan kamar mandi tamu dengan kamar mandi utama?","expect":"room:kamar-mandi-tamu","topic":"Kamar mandi tamu","type":"room","kind":"natural"}
+{"q":"Saya sering menerima tamu, bagaimana desain kamar mandi yang praktis untuk mereka?","expect":"room:kamar-mandi-tamu","topic":"Kamar mandi tamu","type":"room","kind":"indirect"}
+{"q":"Bagaimana mendesain kamar tidur anak yang aman dan menyenangkan?","expect":"room:kamar-tidur-anak","topic":"Kamar tidur anak","type":"room","kind":"natural"}
+{"q":"Anak saya suka bermain di kamar, bagaimana biar kamarnya tetap rapi dan aman?","expect":"room:kamar-tidur-anak","topic":"Kamar tidur anak","type":"room","kind":"indirect"}
+{"q":"Bagaimana cara membuat ruang keluarga lebih nyaman?","expect":"room:ruang-keluarga","topic":"Ruang keluarga","type":"room","kind":"natural"}
+{"q":"Kami sering kumpul di ruang tengah, tapi terasa sempit dan panas.","expect":"room:ruang-keluarga","topic":"Ruang keluarga","type":"room","kind":"indirect"}
+{"q":"Bagaimana desain ruang kerja di rumah yang minimalis?","expect":"room:ruang-kerja-di-rumah","topic":"Ruang kerja di rumah","type":"room","kind":"natural"}
+{"q":"Saya kerja dari rumah, butuh tempat yang tenang dan tidak mengganggu aktivitas keluarga.","expect":"room:ruang-kerja-di-rumah","topic":"Ruang kerja di rumah","type":"room","kind":"indirect"}
+{"q":"Apa tips mendekorasi ruang makan yang sederhana?","expect":"room:ruang-makan","topic":"Ruang makan","type":"room","kind":"natural"}
+{"q":"Keluarga saya sering makan bersama, tapi meja makannya terasa kurang pas.","expect":"room:ruang-makan","topic":"Ruang makan","type":"room","kind":"indirect"}
+{"q":"Bagaimana cara membuat ruang serbaguna yang fungsional?","expect":"room:ruang-serbaguna","topic":"Ruang serbaguna","type":"room","kind":"natural"}
+{"q":"Saya punya ruang kosong yang ingin dipakai untuk berbagai kegiatan.","expect":"room:ruang-serbaguna","topic":"Ruang serbaguna","type":"room","kind":"indirect"}
+{"q":"Apa ide desain ruang tamu yang modern?","expect":"room:ruang-tamu","topic":"Ruang tamu","type":"room","kind":"natural"}
+{"q":"Ruang tamu saya terlihat kosong, ingin ada yang menarik tapi tetap sederhana.","expect":"room:ruang-tamu","topic":"Ruang tamu","type":"room","kind":"indirect"}
+{"q":"Bagaimana cara mendesain taman belakang yang asri dan mudah dirawat?","expect":"room:taman-belakang","topic":"Taman belakang","type":"room","kind":"natural"}
+{"q":"Halaman belakang rumah saya gersang, ingin dibuat hijau tapi takut repot merawat.","expect":"room:taman-belakang","topic":"Taman belakang","type":"room","kind":"indirect"}
+{"q":"Apa saja ide untuk teras depan rumah minimalis yang cantik?","expect":"room:teras-depan","topic":"Teras depan","type":"room","kind":"natural"}
+{"q":"Depan rumah saya kosong, ingin ada tempat duduk santai tapi bingung mulai dari mana.","expect":"room:teras-depan","topic":"Teras depan","type":"room","kind":"indirect"}
+{"q":"Bagaimana memanfaatkan void di ruang keluarga agar lebih fungsional?","expect":"room:void-ruang-keluarga","topic":"Void ruang keluarga","type":"room","kind":"natural"}
+{"q":"Ruang keluarga saya plafonnya tinggi sekali, terasa seperti ruang kosong yang sia-sia.","expect":"room:void-ruang-keluarga","topic":"Void ruang keluarga","type":"room","kind":"indirect"}
+{"q":"Apakah atap bitumen/aspal cocok untuk rumah tropis seperti di Indonesia?","expect":"structure:atap-bitumen-aspal","topic":"Atap bitumen / aspal","type":"structure","kind":"natural"}
+{"q":"Saya ingin ganti atap yang ringan dan tidak berisik saat hujan, apa pilihannya?","expect":"structure:atap-bitumen-aspal","topic":"Atap bitumen / aspal","type":"structure","kind":"indirect"}
+{"q":"Bagaimana cara mencegah atap datar/dak beton bocor saat musim hujan?","expect":"structure:atap-datar-dak-beton","topic":"Atap datar / dak beton","type":"structure","kind":"natural"}
+{"q":"Atap cor rumah saya rembes kalau hujan deras, harus diapain?","expect":"structure:atap-datar-dak-beton","topic":"Atap datar / dak beton","type":"structure","kind":"indirect"}
+{"q":"Apakah kolom struktural rumah saya cukup kuat?","expect":"structure:kolom-struktural","topic":"Kolom struktural","type":"structure","kind":"natural"}
+{"q":"Rumah saya retak di tiang penyangga, apa perlu diperbaiki?","expect":"structure:kolom-struktural","topic":"Kolom struktural","type":"structure","kind":"indirect"}
+{"q":"Bagaimana cara merawat plat lantai beton agar awet?","expect":"structure:plat-lantai-beton","topic":"Plat lantai beton","type":"structure","kind":"natural"}
+{"q":"Lantai atas rumah saya sering bergemericik saat diinjak, bagaimana solusinya?","expect":"structure:plat-lantai-beton","topic":"Plat lantai beton","type":"structure","kind":"indirect"}
+{"q":"Apa beda plesteran dan acian pada dinding?","expect":"structure:plesteran-dan-acian","topic":"Plesteran dan acian","type":"structure","kind":"natural"}
+{"q":"Dinding rumah saya kusam dan retak halus, apa yang harus dilakukan?","expect":"structure:plesteran-dan-acian","topic":"Plesteran dan acian","type":"structure","kind":"indirect"}
+{"q":"Apakah pondasi batu kali masih bagus untuk rumah saya?","expect":"structure:pondasi-batu-kali","topic":"Pondasi batu kali","type":"structure","kind":"natural"}
+{"q":"Rumah saya mulai miring, apakah pondasi perlu diperkuat?","expect":"structure:pondasi-batu-kali","topic":"Pondasi batu kali","type":"structure","kind":"indirect"}
+{"q":"Kapan sebaiknya menggunakan pondasi bore pile?","expect":"structure:pondasi-bore-pile","topic":"Pondasi bore pile","type":"structure","kind":"natural"}
+{"q":"Tanah di lokasi rumah saya labil, pondasi apa yang cocok?","expect":"structure:pondasi-bore-pile","topic":"Pondasi bore pile","type":"structure","kind":"indirect"}
+{"q":"Apa kelebihan atap limasan untuk rumah saya?","expect":"structure:atap-limasan","topic":"Atap limasan","type":"structure","kind":"natural"}
+{"q":"Biar rumah adem dan tampak klasik, atap model apa yang cocok?","expect":"structure:atap-limasan","topic":"Atap limasan","type":"structure","kind":"indirect"}
+{"q":"Apakah atap pelana lebih murah dari jenis lain?","expect":"structure:atap-pelana","topic":"Atap pelana","type":"structure","kind":"natural"}
+{"q":"Saya mau atap sederhana dan tidak bocor, model apa yang bagus?","expect":"structure:atap-pelana","topic":"Atap pelana","type":"structure","kind":"indirect"}
+{"q":"Bagaimana cara membuat atap skillion yang benar?","expect":"structure:atap-skillion-miring-sebelah","topic":"Atap skillion (miring sebelah)","type":"structure","kind":"natural"}
+{"q":"Rumah saya mau atap miring satu sisi, apa perlu perhitungan khusus?","expect":"structure:atap-skillion-miring-sebelah","topic":"Atap skillion (miring sebelah)","type":"structure","kind":"indirect"}
+{"q":"Apa fungsi balok dan sloof pada pondasi?","expect":"structure:balok-dan-sloof","topic":"Balok dan sloof","type":"structure","kind":"natural"}
+{"q":"Rumah saya retak, apakah karena kurang kuat struktur bawahnya?","expect":"structure:balok-dan-sloof","topic":"Balok dan sloof","type":"structure","kind":"indirect"}
+{"q":"Kapan perlu menggunakan dilatasi bangunan?","expect":"structure:dilatasi-bangunan","topic":"Dilatasi bangunan","type":"structure","kind":"natural"}
+{"q":"Rumah saya panjang, bagaimana agar tidak retak di tengah?","expect":"structure:dilatasi-bangunan","topic":"Dilatasi bangunan","type":"structure","kind":"indirect"}
+{"q":"Mana yang lebih awet, tangga beton atau tangga besi?","expect":"structure:tangga-beton-vs-tangga-besi","topic":"Tangga beton vs tangga besi","type":"structure","kind":"natural"}
+{"q":"Saya bingung pilih tangga yang kuat dan tidak berisik, ada saran?","expect":"structure:tangga-beton-vs-tangga-besi","topic":"Tangga beton vs tangga besi","type":"structure","kind":"indirect"}
+{"q":"Bagaimana cara waterproofing dak beton yang benar?","expect":"structure:waterproofing-dak-beton","topic":"Waterproofing dak beton","type":"structure","kind":"natural"}
+{"q":"Atap cor rumah saya rembes kalau hujan deras, harus diapain?","expect":"structure:waterproofing-dak-beton","topic":"Waterproofing dak beton","type":"structure","kind":"indirect"}
+{"q":"Apa pentingnya waterproofing di kamar mandi?","expect":"structure:waterproofing-kamar-mandi","topic":"Waterproofing kamar mandi","type":"structure","kind":"natural"}
+{"q":"Lantai kamar mandi saya sering lembab dan bau, bagaimana solusinya?","expect":"structure:waterproofing-kamar-mandi","topic":"Waterproofing kamar mandi","type":"structure","kind":"indirect"}
+{"q":"Apa ciri khas desain bohemian?","expect":"style:bohemian","topic":"Bohemian","type":"style","kind":"natural"}
+{"q":"Saya suka suasana rumah yang santai, warna-warni, dan penuh tanaman, gaya apa itu?","expect":"style:bohemian","topic":"Bohemian","type":"style","kind":"indirect"}
+{"q":"Gimana cara membuat rumah bergaya industrial?","expect":"style:industrial","topic":"Industrial","type":"style","kind":"natural"}
+{"q":"Saya ingin rumah terlihat seperti pabrik yang keren, bagaimana caranya?","expect":"style:industrial","topic":"Industrial","type":"style","kind":"indirect"}
+{"q":"Gimana cara bikin rumah bergaya Japandi?","expect":"style:japandi","topic":"Japandi","type":"style","kind":"natural"}
+{"q":"Saya suka suasana rumah yang tenang, alami, dan rapi tanpa banyak barang.","expect":"style:japandi","topic":"Japandi","type":"style","kind":"indirect"}
+{"q":"Apa ciri khas desain klasik kontemporer?","expect":"style:klasik-kontemporer","topic":"Klasik kontemporer","type":"style","kind":"natural"}
+{"q":"Saya ingin rumah terlihat mewah klasik tapi tetap modern dan tidak kuno.","expect":"style:klasik-kontemporer","topic":"Klasik kontemporer","type":"style","kind":"indirect"}
+{"q":"Bagaimana menerapkan gaya mid-century modern?","expect":"style:mid-century-modern","topic":"Mid-century modern","type":"style","kind":"natural"}
+{"q":"Saya suka furnitur kayu simpel dengan kaki ramping dan warna-warna hangat.","expect":"style:mid-century-modern","topic":"Mid-century modern","type":"style","kind":"indirect"}
+{"q":"Apa beda minimalis modern dengan minimalis biasa?","expect":"style:minimalis-modern","topic":"Minimalis modern","type":"style","kind":"natural"}
+{"q":"Saya ingin rumah bersih, fungsional, tanpa hiasan berlebihan.","expect":"style:minimalis-modern","topic":"Minimalis modern","type":"style","kind":"indirect"}
+{"q":"Bagaimana menciptakan kesan modern luxury?","expect":"style:modern-luxury","topic":"Modern luxury","type":"style","kind":"natural"}
+{"q":"Saya ingin rumah terlihat elegan dan mewah dengan bahan berkualitas tinggi.","expect":"style:modern-luxury","topic":"Modern luxury","type":"style","kind":"indirect"}
+{"q":"Apa beda dinding bata merah sama hebel?","expect":"structure:dinding-bata-vs-hebel","topic":"Dinding bata vs hebel","type":"structure","kind":"natural"}
+{"q":"Dinding rumah saya pakai bata merah, tapi tetangga pakai yang ringan. Mana yang lebih bagus?","expect":"structure:dinding-bata-vs-hebel","topic":"Dinding bata vs hebel","type":"structure","kind":"indirect"}
+{"q":"Genteng beton itu kuat nggak?","expect":"structure:genteng-beton","topic":"Genteng beton","type":"structure","kind":"natural"}
+{"q":"Atap rumah saya mau ganti, yang modelnya seperti genteng biasa tapi dari beton, tahan lama?","expect":"structure:genteng-beton","topic":"Genteng beton","type":"structure","kind":"indirect"}
+{"q":"Genteng metal apakah berisik saat hujan?","expect":"structure:genteng-metal","topic":"Genteng metal","type":"structure","kind":"natural"}
+{"q":"Atap rumah saya pakai yang metal, tapi pas hujan deras suaranya keras sekali, apa bisa diatasi?","expect":"structure:genteng-metal","topic":"Genteng metal","type":"structure","kind":"indirect"}
+{"q":"Genteng tanah liat mudah pecah nggak?","expect":"structure:genteng-tanah-liat","topic":"Genteng tanah liat","type":"structure","kind":"natural"}
+{"q":"Genteng atap rumah saya dari tanah liat, ada yang retak. Apakah harus diganti semua?","expect":"structure:genteng-tanah-liat","topic":"Genteng tanah liat","type":"structure","kind":"indirect"}
+{"q":"Apa itu kolom praktis dan fungsinya?","expect":"structure:kolom-praktis","topic":"Kolom praktis","type":"structure","kind":"natural"}
+{"q":"Tembok rumah saya panjang, ada retak rambut. Apakah perlu ditambah tiang kecil di tengah?","expect":"structure:kolom-praktis","topic":"Kolom praktis","type":"structure","kind":"indirect"}
+{"q":"Apakah pondasi footplat cocok untuk rumah saya?","expect":"structure:pondasi-footplat","topic":"Pondasi footplat","type":"structure","kind":"natural"}
+{"q":"Rumah saya mau dibangun di tanah yang agak lunak, pondasinya harus bagaimana?","expect":"structure:pondasi-footplat","topic":"Pondasi footplat","type":"structure","kind":"indirect"}
+{"q":"Apakah rangka atap baja ringan tahan lama?","expect":"structure:rangka-atap-baja-ringan","topic":"Rangka atap baja ringan","type":"structure","kind":"natural"}
+{"q":"Saya ingin atap yang ringan tapi kuat, tidak mudah rusak, pilih apa ya?","expect":"structure:rangka-atap-baja-ringan","topic":"Rangka atap baja ringan","type":"structure","kind":"indirect"}
+{"q":"Apakah rangka atap kayu masih bagus digunakan?","expect":"structure:rangka-atap-kayu","topic":"Rangka atap kayu","type":"structure","kind":"natural"}
+{"q":"Saya suka tampilan kayu, tapi khawatir rayap, bagaimana solusinya?","expect":"structure:rangka-atap-kayu","topic":"Rangka atap kayu","type":"structure","kind":"indirect"}
+{"q":"Apakah struktur rumah 2 lantai harus kuat?","expect":"structure:struktur-rumah-2-lantai","topic":"Struktur rumah 2 lantai","type":"structure","kind":"natural"}
+{"q":"Saya mau bangun rumah dua lantai, biar aman strukturnya bagaimana?","expect":"structure:struktur-rumah-2-lantai","topic":"Struktur rumah 2 lantai","type":"structure","kind":"indirect"}
+{"q":"Apakah dak beton rooftop bisa untuk kumpul keluarga?","expect":"structure:struktur-untuk-rooftop-dak-yang-dipakai","topic":"Struktur untuk rooftop / dak yang dipakai","type":"structure","kind":"natural"}
+{"q":"Saya ingin atap datar dijadikan tempat santai, tapi khawatir bocor, bagaimana?","expect":"structure:struktur-untuk-rooftop-dak-yang-dipakai","topic":"Struktur untuk rooftop / dak yang dipakai","type":"structure","kind":"indirect"}
+{"q":"Bagaimana cara membuat drainase halaman yang baik?","expect":"system:drainase-halaman","topic":"Drainase halaman","type":"system","kind":"natural"}
+{"q":"Halaman saya sering banjir saat hujan deras, bagaimana solusinya?","expect":"system:drainase-halaman","topic":"Drainase halaman","type":"system","kind":"indirect"}
+{"q":"Apa fungsi exhaust fan di kamar mandi?","expect":"system:exhaust-fan-kamar-mandi","topic":"Exhaust fan kamar mandi","type":"system","kind":"natural"}
+{"q":"Kamar mandi saya lembab dan bau, apa yang perlu dipasang?","expect":"system:exhaust-fan-kamar-mandi","topic":"Exhaust fan kamar mandi","type":"system","kind":"indirect"}
+{"q":"Apa itu grease trap untuk dapur?","expect":"system:grease-trap-dapur","topic":"Grease trap dapur","type":"system","kind":"natural"}
+{"q":"Saluran dapur saya sering mampet karena lemak, bagaimana mengatasinya?","expect":"system:grease-trap-dapur","topic":"Grease trap dapur","type":"system","kind":"indirect"}
+{"q":"Kenapa grounding listrik penting di rumah?","expect":"system:grounding-pembumian-listrik","topic":"Grounding / pembumian listrik","type":"system","kind":"natural"}
+{"q":"Saya sering kesetrum saat pegang kulkas, apa yang salah?","expect":"system:grounding-pembumian-listrik","topic":"Grounding / pembumian listrik","type":"system","kind":"indirect"}
+{"q":"Bagaimana instalasi internet di rumah baru?","expect":"system:instalasi-internet-jalur-kabel-data","topic":"Instalasi internet & jalur kabel data","type":"system","kind":"natural"}
+{"q":"Saya ingin semua ruangan bisa akses internet kabel, bagaimana caranya?","expect":"system:instalasi-internet-jalur-kabel-data","topic":"Instalasi internet & jalur kabel data","type":"system","kind":"indirect"}
+{"q":"Bagaimana ciri rumah modern tropis?","expect":"style:modern-tropis","topic":"Modern tropis","type":"style","kind":"natural"}
+{"q":"Saya ingin rumah yang sejuk dan terbuka, tapi tetap terlihat modern.","expect":"style:modern-tropis","topic":"Modern tropis","type":"style","kind":"indirect"}
+{"q":"Apa yang dimaksud gaya rustic?","expect":"style:rustic","topic":"Rustic","type":"style","kind":"natural"}
+{"q":"Saya suka tampilan rumah yang alami dan hangat, seperti pedesaan.","expect":"style:rustic","topic":"Rustic","type":"style","kind":"indirect"}
+{"q":"Gaya Skandinavian itu seperti apa?","expect":"style:skandinavian","topic":"Skandinavian","type":"style","kind":"natural"}
+{"q":"Rumah saya ingin terlihat bersih, minimalis, dan terang.","expect":"style:skandinavian","topic":"Skandinavian","type":"style","kind":"indirect"}
+{"q":"Mana yang lebih baik, AC split atau cassette?","expect":"system:ac-split-vs-cassette","topic":"AC split vs cassette","type":"system","kind":"natural"}
+{"q":"Saya bingung pilih AC yang dipasang di dinding atau yang di plafon.","expect":"system:ac-split-vs-cassette","topic":"AC split vs cassette","type":"system","kind":"indirect"}
+{"q":"Berapa daya listrik yang cukup untuk rumah?","expect":"system:daya-listrik-pln-untuk-rumah-tinggal","topic":"Daya listrik PLN untuk rumah tinggal","type":"system","kind":"natural"}
+{"q":"Saya khawatir listrik rumah sering mati kalau pakai AC dan mesin cuci bersamaan.","expect":"system:daya-listrik-pln-untuk-rumah-tinggal","topic":"Daya listrik PLN untuk rumah tinggal","type":"system","kind":"indirect"}
+{"q":"Pasang panel surya di rumah, butuh berapa biaya dan apa saja syaratnya?","expect":"system:panel-surya-rumah-tinggal","topic":"Panel surya rumah tinggal","type":"system","kind":"natural"}
+{"q":"Listrik saya mahal, adakah cara pakai sinar matahari untuk kurangi tagihan?","expect":"system:panel-surya-rumah-tinggal","topic":"Panel surya rumah tinggal","type":"system","kind":"indirect"}
+{"q":"Bagaimana cara memasang lampu taman yang bagus dan tidak boros listrik?","expect":"system:pencahayaan-taman-eksterior","topic":"Pencahayaan taman / eksterior","type":"system","kind":"natural"}
+{"q":"Halaman rumah gelap kalau malam, ingin terang tapi tidak ribet pasangnya.","expect":"system:pencahayaan-taman-eksterior","topic":"Pencahayaan taman / eksterior","type":"system","kind":"indirect"}
+{"q":"Di mana tempat yang tepat untuk meletakkan unit outdoor AC?","expect":"system:penempatan-outdoor-unit-ac","topic":"Penempatan outdoor unit AC","type":"system","kind":"natural"}
+{"q":"AC outdoor saya kepanasan dan sering mati, mungkin salah posisi.","expect":"system:penempatan-outdoor-unit-ac","topic":"Penempatan outdoor unit AC","type":"system","kind":"indirect"}
+{"q":"Pompa air rumah saya sering mati sendiri, apa penyebabnya?","expect":"system:pompa-air-rumah-tangga","topic":"Pompa air rumah tangga","type":"system","kind":"natural"}
+{"q":"Air dari keran kecil sekali, padahal sudah pasang mesin pompa.","expect":"system:pompa-air-rumah-tangga","topic":"Pompa air rumah tangga","type":"system","kind":"indirect"}
+{"q":"Apa manfaat memasang insulasi atap untuk rumah?","expect":"system:roof-insulation-insulasi-atap","topic":"Roof insulation (insulasi atap)","type":"system","kind":"natural"}
+{"q":"Rumah saya lantai atas panas sekali, adakah cara agar adem tanpa AC?","expect":"system:roof-insulation-insulasi-atap","topic":"Roof insulation (insulasi atap)","type":"system","kind":"indirect"}
+{"q":"Bagaimana cara menentukan ukuran MCB yang tepat untuk rumah saya?","expect":"system:instalasi-listrik-rumah-dan-mcb","topic":"Instalasi listrik rumah dan MCB","type":"system","kind":"natural"}
+{"q":"Listrik di rumah sering mati sendiri kalau saya pakai AC dan mesin cuci bersamaan.","expect":"system:instalasi-listrik-rumah-dan-mcb","topic":"Instalasi listrik rumah dan MCB","type":"system","kind":"indirect"}
+{"q":"Pipa air bersih jenis apa yang bagus dan tahan lama?","expect":"system:instalasi-pipa-air-bersih","topic":"Instalasi pipa air bersih","type":"system","kind":"natural"}
+{"q":"Air dari keran kadang bau dan berkarat, mungkin karena pipanya sudah tua.","expect":"system:instalasi-pipa-air-bersih","topic":"Instalasi pipa air bersih","type":"system","kind":"indirect"}
+{"q":"Bagaimana cara memasang pipa air kotor yang benar agar tidak mampet?","expect":"system:instalasi-pipa-air-kotor","topic":"Instalasi pipa air kotor","type":"system","kind":"natural"}
+{"q":"Saluran pembuangan kamar mandi sering tersumbat dan air menggenang.","expect":"system:instalasi-pipa-air-kotor","topic":"Instalasi pipa air kotor","type":"system","kind":"indirect"}
+{"q":"Perbedaan lampu downlight, spot, dan gantung untuk ruang tamu?","expect":"system:jenis-lampu-downlight-spot-gantung","topic":"Jenis lampu (downlight, spot, gantung)","type":"system","kind":"natural"}
+{"q":"Saya ingin ruang tamu terang tapi tidak silau, lampu apa yang cocok?","expect":"system:jenis-lampu-downlight-spot-gantung","topic":"Jenis lampu (downlight, spot, gantung)","type":"system","kind":"indirect"}
+{"q":"Kanopi atau overstek lebih efektif untuk melindungi teras dari hujan?","expect":"system:kanopi-dan-overstek-sebagai-peneduh","topic":"Kanopi dan overstek sebagai peneduh","type":"system","kind":"natural"}
+{"q":"Teras rumah saya basah kena hujan, ingin ada pelindung di atasnya.","expect":"system:kanopi-dan-overstek-sebagai-peneduh","topic":"Kanopi dan overstek sebagai peneduh","type":"system","kind":"indirect"}
+{"q":"Saklar dan stop kontak yang bagus itu seperti apa?","expect":"system:saklar-dan-stop-kontak","topic":"Saklar dan stop kontak","type":"system","kind":"natural"}
+{"q":"Saya sering colok charger di kamar, tapi stop kontaknya cuma satu, gimana ya?","expect":"system:saklar-dan-stop-kontak","topic":"Saklar dan stop kontak","type":"system","kind":"indirect"}
+{"q":"Septic tank harus dibersihkan berapa tahun sekali?","expect":"system:septic-tank-dan-resapan","topic":"Septic tank dan resapan","type":"system","kind":"natural"}
+{"q":"WC saya sering mampet dan bau, apa karena septic tank penuh?","expect":"system:septic-tank-dan-resapan","topic":"Septic tank dan resapan","type":"system","kind":"indirect"}
+{"q":"Skylight di atap rumah apakah bisa bocor?","expect":"system:skylight-pencahayaan-atap","topic":"Skylight / pencahayaan atap","type":"system","kind":"natural"}
+{"q":"Rumah saya gelap di siang hari, ada cara biar sinar matahari masuk dari atas?","expect":"system:skylight-pencahayaan-atap","topic":"Skylight / pencahayaan atap","type":"system","kind":"indirect"}
+{"q":"Mana yang lebih murah, sumur bor atau PDAM?","expect":"system:sumur-bor-vs-pdam","topic":"Sumur bor vs PDAM","type":"system","kind":"natural"}
+{"q":"Tagihan air saya mahal, apa sebaiknya bikin sumur sendiri?","expect":"system:sumur-bor-vs-pdam","topic":"Sumur bor vs PDAM","type":"system","kind":"indirect"}
+{"q":"Sumur resapan air hujan gunanya apa?","expect":"system:sumur-resapan-air-hujan","topic":"Sumur resapan air hujan","type":"system","kind":"natural"}
+{"q":"Halaman saya sering banjir kalau hujan deras, gimana cara mengatasinya?","expect":"system:sumur-resapan-air-hujan","topic":"Sumur resapan air hujan","type":"system","kind":"indirect"}
+{"q":"Talang air hujan yang bagus itu seperti apa?","expect":"system:talang-air-hujan","topic":"Talang air hujan","type":"system","kind":"natural"}
+{"q":"Air hujan dari atap sering menggenang di teras, bagaimana solusinya?","expect":"system:talang-air-hujan","topic":"Talang air hujan","type":"system","kind":"indirect"}
+{"q":"Berapa titik lampu yang ideal untuk ruang tamu?","expect":"system:titik-lampu-dan-penempatannya","topic":"Titik lampu dan penempatannya","type":"system","kind":"natural"}
+{"q":"Ruang keluarga saya terasa gelap meski ada lampu, apa yang kurang?","expect":"system:titik-lampu-dan-penempatannya","topic":"Titik lampu dan penempatannya","type":"system","kind":"indirect"}
+{"q":"Tandon air yang tidak mudah kotor itu bagaimana?","expect":"system:toren-tandon-air","topic":"Toren / tandon air","type":"system","kind":"natural"}
+{"q":"Air dari bak penampung sering bau, bagaimana cara mengatasinya?","expect":"system:toren-tandon-air","topic":"Toren / tandon air","type":"system","kind":"indirect"}
+{"q":"Ventilasi silang itu penting tidak untuk rumah?","expect":"system:ventilasi-silang-cross-ventilation","topic":"Ventilasi silang (cross ventilation)","type":"system","kind":"natural"}
+{"q":"Rumah saya pengap meski ada jendela, bagaimana biar udaranya segar?","expect":"system:ventilasi-silang-cross-ventilation","topic":"Ventilasi silang (cross ventilation)","type":"system","kind":"indirect"}
+{"q":"Water heater mana yang lebih irit antara listrik dan gas?","expect":"system:water-heater-listrik-vs-gas-vs-solar","topic":"Water heater listrik vs gas vs solar","type":"system","kind":"natural"}
+{"q":"Saya ingin air panas di kamar mandi, tapi takut tagihan listrik membengkak.","expect":"system:water-heater-listrik-vs-gas-vs-solar","topic":"Water heater listrik vs gas vs solar","type":"system","kind":"indirect"}

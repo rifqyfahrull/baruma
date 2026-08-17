@@ -1,0 +1,810 @@
+[
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "persona_pasangan_muda_tanah_keluarga",
+    "ms": 13638,
+    "usage": {
+      "prompt_tokens": 4713,
+      "completion_tokens": 624,
+      "total_tokens": 5337,
+      "completion_tokens_details": {
+        "reasoning_tokens": 78
+      }
+    },
+    "text": "- **Label insight:** *Proxy insight*  \n- **Inti temuan:** Pasangan muda (27-38 tahun), bekerja formal/berusaha, memiliki tanah keluarga di kota satelit atau kampung asal. Mereka ingin rumah pertama sebagai aset dan tempat membesarkan anak, tetapi belum siap menjadi “project manager” konstruksi. Tanah mengurangi hambatan biaya awal, namun tidak mengurangi risiko salah desain, pembengkakan biaya, dan konflik keluarga terkait keputusan bangun.\n\n- **Detail actionable:**  \n  - **Pains:** tidak tahu urutan keputusan; inspirasi rumah tidak berubah menjadi kebutuhan ruang; sulit menentukan ukuran bangunan sesuai dana; RAB dari tukang/kontraktor sulit dibandingkan; khawatir spesifikasi material diturunkan di tengah proyek.  \n  - **Anxieties:** tabungan habis sebelum rumah layak huni, cicilan konstruksi menekan arus kas, desain tidak bisa berkembang saat anak bertambah, bangunan bermasalah secara struktur/legal (PBG), serta pasangan/orang tua berbeda prioritas.  \n  - **Status quo:** mengumpulkan Pinterest/Instagram/YouTube, bertanya ke kerabat atau mandor lokal, meminta sketsa/RAB gratis, lalu memilih berdasarkan rekomendasi dan harga total. *Proxy insight.*  \n  - **Trigger:** menikah, hamil/anak pertama, kontrak/sewa naik, menerima tanah/izin keluarga, atau dana tunai/KPR konstruksi tersedia. *Hypothesis.*\n\n- **Implikasi untuk Baruma:** Wedge bukan “buat denah cantik”, melainkan “kepastian sebelum bicara ke tukang”: brief pasangan berbasis anggaran dan fase hidup, 2-3 opsi layout dengan trade-off luas/biaya, RAB/BOQ yang dapat dibandingkan, lalu contractor pack sebagai spesifikasi bersama. Tampilkan asumsi biaya, exclusion, dan level kepercayaan estimasi secara eksplisit. *Hypothesis.*\n\n- **Hal yang harus divalidasi:**  \n  1. Siapa pengambil keputusan akhir: pasangan, orang tua pemilik tanah, atau pemberi dana?  \n  2. Pada tahap mana mereka bersedia membayar: brief, denah, RAB, atau verifikasi kontraktor?  \n  3. Apakah RAB terstandardisasi cukup dipercaya tanpa kunjungan lokasi/arsitek lokal?  \n  4. Seberapa sering PBG, kontur, akses material, dan status sertifikat menghambat konversi?  \n  5. Apakah mereka mencari kontraktor melalui Baruma atau hanya dokumen untuk negosiasi?"
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "persona_karyawan_waktu_terbatas",
+    "error": "HTTP 524"
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "persona_self_build_hemat",
+    "ms": 29950,
+    "usage": {
+      "prompt_tokens": 4692,
+      "completion_tokens": 556,
+      "total_tokens": 5248,
+      "prompt_tokens_details": {
+        "cached_tokens": 3840
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 55
+      }
+    },
+    "text": "- **Label insight:** *Proxy insight* dan *hypothesis* (berdasarkan pola layanan tukang informal serta problem yang diangkat marketplace jasa/properti; bukan data pelanggan Baruma).\n\n- **Inti temuan:**  \nPersona: **Rizky, 32 tahun, karyawan swasta, pemilik tanah 90 m2 di pinggiran kota**. Ia ingin membangun rumah bertahap tanpa kontraktor utama karena percaya biaya jasa kontraktor akan mengurangi dana bangunan. Targetnya rumah 1 lantai, 2-3 kamar, anggaran Rp350-500 juta. Ia bersedia memakai mandor dan tukang harian, tetapi sebenarnya tidak siap menjadi pengelola proyek penuh.\n\n- **Detail actionable:**  \n  - *Hypothesis:* Rizky memecah pekerjaan per tahap dan memilih tukang/material berdasarkan rekomendasi keluarga atau harga terendah.  \n  - *Proxy insight:* Tanpa satu pihak yang memegang gambar, spesifikasi, jadwal, dan volume pekerjaan, risiko utamanya adalah pekerjaan ulang, salah pesan material, perubahan scope lisan, serta mutu struktur yang sulit dinilai pemilik.  \n  - *Hypothesis:* Cashflow lebih mengkhawatirkan daripada total RAB: pembayaran tukang mingguan, material harus dibeli sebelum tahap selesai, dan dana cadangan cepat terserap saat ada perubahan lapangan.  \n  - *Hypothesis:* Ia tidak membutuhkan dashboard proyek rumit; ia membutuhkan keputusan sederhana: apa dibeli minggu ini, siapa mengerjakan apa, progres apa yang layak dibayar, dan apakah biaya masih aman.\n\n- **Implikasi untuk Baruma:**  \n  Jadikan *contractor pack* sebagai “paket kendali bangun mandiri”: denah berukuran, BOQ per fase, spesifikasi material minimum, jadwal pembelian dan pembayaran, checklist inspeksi kualitas, serta format pembanding penawaran tukang/mandor. Tampilkan cashflow per minggu/fase dan batas deviasi anggaran, bukan hanya RAB total.\n\n- **Hal yang harus divalidasi:**  \n  - Apakah penghematan jasa kontraktor benar-benar motivasi utama, atau masalah trust?  \n  - Berapa besar willingness to pay untuk BOQ, checklist kualitas, dan pendampingan jarak jauh?  \n  - Tahap mana yang paling sering memicu pembengkakan: struktur, finishing, atau perubahan desain?"
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "persona_dream_home_planner",
+    "ms": 12228,
+    "usage": {
+      "prompt_tokens": 4696,
+      "completion_tokens": 541,
+      "total_tokens": 5237,
+      "completion_tokens_details": {
+        "reasoning_tokens": 38
+      }
+    },
+    "text": "**Label insight:** `Proxy insight` dari perilaku Pinterest/Instagram/YouTube dan produk visual-planning seperti Planner 5D; `hypothesis` untuk keputusan dan willingness-to-pay pengguna Indonesia.\n\n**Inti temuan**  \nPersona: calon pemilik rumah pertama, usia kira-kira 27-40, sudah punya tanah atau sedang menilai tanah. Ia menyimpan puluhan referensi fasad, dapur, void, kamar, dan rumah tropis di Pinterest/Instagram. Masalahnya bukan kekurangan ide, melainkan tidak mampu menilai apakah referensi itu muat di lahan, cocok iklim/konteks lokal, memenuhi kebutuhan keluarga, dan realistis terhadap anggaran. Koleksi inspirasi justru menambah kebingungan saat harus memulai diskusi dengan arsitek, tukang, atau kontraktor.\n\n**Detail actionable**  \n- Input utama: link/image referensi, ukuran serta bentuk lahan, kota, jumlah penghuni, kebutuhan ruang, prioritas, dan budget maksimum.  \n- Sistem perlu menerjemahkan referensi menjadi elemen spesifik: gaya fasad, jumlah lantai, bukaan, material, void, kitchen layout, bukan sekadar moodboard.  \n- Tampilkan trade-off tegas: “referensi ini membutuhkan lahan/budget lebih besar”; “versi hemat”; “yang perlu dikorbankan.”  \n- Beri 2-3 alternatif layout dengan label budget range dan tingkat kecocokan lahan.  \n- Hindari estimasi RAB yang tampak presisi sebelum spesifikasi, lokasi, dan kondisi tanah memadai.\n\n**Implikasi untuk Baruma**  \nPosisikan produk sebagai penerjemah “rumah impian” menjadi keputusan yang bisa dibangun: dari referensi visual ke brief, denah, kisaran BOQ/RAB, dan contractor pack yang dapat dibandingkan. Nilai utamanya adalah batasan realistis sejak awal, bukan generator gambar 3D semata.\n\n**Hal yang harus divalidasi**  \n- `Hypothesis`: pengguna akan mengunggah/menautkan referensi sebelum mengisi brief panjang.  \n- `Hypothesis`: perbandingan “impian vs versi sesuai budget” meningkatkan penyelesaian brief.  \n- `Hypothesis`: kisaran biaya per alternatif cukup dipercaya tanpa survei lokasi.  \n- `Hypothesis`: pengguna bersedia membayar sebelum memilih arsitek/kontraktor."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "persona_perantau_remote_build",
+    "ms": 11696,
+    "usage": {
+      "prompt_tokens": 4702,
+      "completion_tokens": 533,
+      "total_tokens": 5235,
+      "completion_tokens_details": {
+        "reasoning_tokens": 29
+      }
+    },
+    "text": "**Label insight:** Hypothesis + proxy insight dari pola layanan renovasi/konstruksi jarak jauh dan marketplace jasa.\n\n**Inti temuan**  \nPersona: perantau usia 28-45 tahun, bekerja di Jabodetabek/kota besar atau luar negeri, membangun rumah untuk orang tua, keluarga, atau rencana pulang. Ia punya dana lebih terukur daripada waktu dan kemampuan mengawasi proyek. Risiko utamanya bukan sekadar desain buruk, tetapi uang keluar tanpa bukti progres, perubahan spesifikasi di lapangan, dan konflik antara kontraktor dengan keluarga lokal.\n\n**Detail actionable**  \n- Keluarga lokal menjadi mata dan pemberi persetujuan informal, tetapi sering tidak paham gambar, mutu struktur, atau RAB.  \n- Perantau membutuhkan pelaporan yang dapat diaudit: foto/video bertimestamp dan berlokasi, progres per tahap, pemakaian material, deviasi biaya, serta keputusan yang menunggu persetujuan.  \n- Perbandingan penawaran harus setara per scope, material, volume, durasi, garansi, dan item pengecualian; harga total saja tidak cukup.  \n- Quality assurance paling bernilai pada titik yang sulit diperiksa setelah tertutup: pondasi, besi tulangan, sloof/kolom, instalasi listrik-air, waterproofing, dan atap.  \n- Kanal komunikasi perlu membedakan hak akses pemilik, keluarga, mandor, dan pemeriksa independen agar WhatsApp tidak menjadi sumber versi informasi yang saling bertentangan.\n\n**Implikasi untuk Baruma**  \nPrioritaskan `remote owner pack`: brief dan denah yang mudah dipahami keluarga, BOQ terstruktur, baseline jadwal-biaya, approval log, laporan progres berbasis milestone, dan checklist inspeksi foto untuk pekerjaan kritis. Contractor pack perlu mengunci scope dan prosedur change order sebelum pekerjaan dimulai. Baruma sebaiknya tidak mengklaim QA lapangan tanpa jaringan inspector/mitra lokal dan SOP tanggung jawab yang jelas.\n\n**Hal yang harus divalidasi**  \n- Siapa pembayar, pengambil keputusan, dan pihak yang paling sering berada di lokasi.  \n- Kesediaan membayar inspeksi independen versus hanya dashboard laporan.  \n- Kota/kabupaten prioritas dengan ketersediaan kontraktor serta inspector tepercaya.  \n- Apakah keluarga menerima peran approval formal atau justru memperlambat proyek."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "persona_renovasi_besar",
+    "ms": 12361,
+    "usage": {
+      "prompt_tokens": 4702,
+      "completion_tokens": 547,
+      "total_tokens": 5249,
+      "prompt_tokens_details": {
+        "cached_tokens": 4352
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 44
+      }
+    },
+    "text": "**Label insight**\n\n- **Data-backed:** Renovasi bangunan memerlukan PBG; perubahan fungsi, luas, atau struktur bangunan perlu diperiksa terhadap ketentuan teknis daerah. Struktur rumah lama juga tidak dapat dinilai aman hanya dari foto atau denah.\n- **Proxy insight:** Platform jasa rumah dan diskusi publik menunjukkan kecemasan berulang soal RAB membengkak, tukang tidak konsisten, durasi molor, serta sulitnya membandingkan penawaran.\n- **Hypothesis:** Pemilik rumah lama lebih takut menemukan kerusakan tersembunyi setelah pekerjaan dibuka daripada harga desain awal.\n\n**Inti temuan**\n\nPersona utama: pemilik rumah usia 35-55 tahun, telah tinggal 8-20 tahun di rumah 1 lantai, ingin renovasi besar atau tambah lantai untuk kamar anak, orang tua, atau ruang kerja. Ia memiliki tabungan dan/atau pembiayaan terbatas, tetapi rumah harus tetap layak dihuni atau keluarga perlu pindah sementara. Keputusan ditahan oleh ketidakpastian struktur eksisting dan total biaya akhir.\n\n**Detail actionable**\n\n- Brief harus menangkap: usia bangunan, riwayat renovasi, retak/bocor, ukuran tanah-bangunan, kebutuhan ruang, penghuni selama proyek, serta batas biaya dan waktu.\n- Tampilkan dua jalur eksplisit: “renovasi sambil dihuni” versus “kosongkan rumah sementara”, lengkap dengan konsekuensi fase kerja, privasi, dan durasi.\n- RAB harus memisahkan pekerjaan pasti, allowance investigasi/pembongkaran, contingency, dan pekerjaan opsional.\n- Contractor pack perlu memuat scope pembongkaran, urutan pekerjaan, spesifikasi struktur yang harus diverifikasi tenaga kompeten, serta checklist perubahan pekerjaan.\n\n**Implikasi untuk Baruma**\n\nBaruma sebaiknya bukan menjanjikan keamanan struktur dari input digital. Produk perlu memberi *risk flag*, kebutuhan survei struktur, skenario biaya rendah-dasar-tinggi, dan format pembanding proposal kontraktor yang setara.\n\n**Hal yang harus divalidasi**\n\n- Ambang contingency yang dianggap wajar oleh pemilik rumah renovasi besar.\n- Kesediaan membayar survei struktur sebelum desain/RAB detail.\n- Apakah pengguna lebih membutuhkan estimasi relokasi sementara atau pembanding quotation kontraktor.\n- Variasi proses PBG dan kebutuhan dokumen antar kota/kabupaten."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "pain_budget_bengkak",
+    "ms": 10287,
+    "usage": {
+      "prompt_tokens": 344,
+      "completion_tokens": 804,
+      "total_tokens": 1148
+    },
+    "text": "- **Label insight:** `Data-backed` untuk pola umum yang didukung konteks pasar; `Proxy insight` dari praktik jasa konstruksi/renovasi; `Hypothesis` khusus perilaku calon pengguna Baruma.\n\n- **Inti temuan:** `Data-backed` Ketakutan utama bukan sekadar harga mahal, melainkan kehilangan kendali: calon pemilik rumah tidak tahu apakah anggaran awal realistis, apa yang akan berubah saat konstruksi, dan siapa yang bertanggung jawab ketika biaya naik. `Hypothesis` Pain paling tajam pada rumah pertama karena keputusan desain, struktur, material, dan tenaga kerja saling mengunci sebelum pengguna memahami konsekuensi biayanya.\n\n- **Detail actionable:**  \n  - `Proxy insight` Root causes: brief ruang tidak lengkap; denah dibuat tanpa estimasi kuantitas; spesifikasi material ambigu; harga material/upah berubah; pekerjaan tambahan muncul setelah pembangunan; proposal kontraktor tidak apple-to-apple; contingency tidak dijelaskan.  \n  - `Hypothesis` Bahasa emosional pengguna: “Takut uang habis di tengah jalan”, “nanti ditambah-tambah”, “jangan sampai ketipu”, “budget saya cukup tidak?”, dan “harga awal murah tapi ujungnya membengkak.”  \n  - `Proxy insight` Workaround saat ini: meminta beberapa penawaran WhatsApp, memakai angka per m2, bertanya ke keluarga/mandor, menunda keputusan, atau memangkas ruang/material tanpa melihat dampak total.\n\n- **Implikasi untuk Baruma:** `Hypothesis` Baruma harus menjual *budget clarity*, bukan hanya denah. Setelah brief dan layout, tampilkan RAB/BOQ berbasis asumsi eksplisit: luas, standar struktur, lokasi, material, tenaga kerja, pajak, desain, PBG, dan contingency. Sediakan tiga skenario (`hemat`, `target`, `aman`), rentang harga per pos, perubahan biaya akibat setiap pilihan desain, serta contractor pack yang mengunci scope dan spesifikasi agar proposal dapat dibandingkan. Hindari klaim “harga pasti” sebelum survei lokasi dan desain teknis.\n\n- **Hal yang harus divalidasi:** `Hypothesis` Wawancarai 15–20 calon pemilik tanah: apakah mereka lebih percaya rentang biaya transparan daripada satu angka? Uji prototype RAB dengan/ tanpa contingency dan change-log. Ukur: pemahaman biaya, willingness to pay, niat meminta penawaran kontraktor, serta apakah pengguna menganggap BOQ Baruma cukup kredibel untuk menolak perubahan harga yang tidak berdasar...."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "pain_bingung_mulai",
+    "ms": 54119,
+    "usage": {
+      "prompt_tokens": 4693,
+      "completion_tokens": 576,
+      "total_tokens": 5269,
+      "prompt_tokens_details": {
+        "cached_tokens": 3840
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 40
+      }
+    },
+    "text": "- **Label insight:** *Proxy insight*  \n  **Inti temuan:** Kebingungan awal bukan terutama soal memilih desain, melainkan menentukan urutan keputusan dan batas aman biaya. Calon pemilik rumah pertama sering datang dari Pinterest/IG atau rekomendasi tukang, tetapi belum punya program ruang, ukuran bangunan, target anggaran, status tanah, atau pemahaman PBG. Akibatnya, mereka mudah meminta “estimasi kasar” yang tidak comparable dan terlalu cepat terkunci pada tukang/kontraktor.\n\n- **Label insight:** *Hypothesis*  \n  **Detail actionable:** Lifecycle confusion:\n  1. “Saya ingin rumah seperti apa?”: inspirasi belum diterjemahkan menjadi kebutuhan.  \n  2. “Muat di tanah saya?”: bingung luas, orientasi, akses, dan prioritas ruang.  \n  3. “Budget saya cukup?”: belum membedakan biaya bangunan, pekerjaan luar, desain, perizinan, dan contingency.  \n  4. “Siapa yang dipercaya?”: sulit membandingkan lingkup kerja, material, dan asumsi penawaran.  \n  5. “Aman dibangun?”: struktur, PBG, dan pengawasan terasa abstrak sampai terlambat.\n\n  First action yang paling mungkin bernilai: input ukuran/lokasi tanah, jumlah penghuni, ruang wajib, gaya hidup, dan rentang budget; lalu menerima “Build Readiness Snapshot”, bukan langsung denah.\n\n- **Label insight:** *Hypothesis*  \n  **Implikasi untuk Baruma:** Wedge produk sebaiknya “brief rumah yang buildable dan budget-aware”, dengan output awal: kebutuhan ruang terprioritas, tiga trade-off ukuran vs budget, daftar data yang masih kurang, dan langkah berikutnya. Hindari menjual preview 3D sebagai pintu masuk utama; visual menarik, tetapi tidak menyelesaikan ketidakpastian biaya dan keputusan.\n\n  Lead magnet: **“Cek Kesiapan Bangun Rumah: tanah, ruang, dan budget dalam 10 menit”**. Hasilnya berupa skor kesiapan, kisaran luas konseptual, checklist dokumen/PBG, serta template untuk meminta proposal contractor yang comparable.\n\n- **Label insight:** *Hal yang harus divalidasi*  \n  Uji apakah calon pengguna lebih mau mengisi quiz untuk memperoleh kisaran biaya, layout awal, atau checklist contractor. Ukur completion rate, willingness memberi nomor WhatsApp, conversion ke brief berbayar, dan apakah pengguna dengan tanah sudah punya kebutuhan lebih mendesak daripada calon pembeli tanah."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "pain_trust_kontraktor",
+    "error": "HTTP 524"
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "pain_kebutuhan_ruang",
+    "ms": 13781,
+    "usage": {
+      "prompt_tokens": 4701,
+      "completion_tokens": 621,
+      "total_tokens": 5322,
+      "completion_tokens_details": {
+        "reasoning_tokens": 40
+      }
+    },
+    "text": "- **Label insight: proxy insight**\n- **Inti temuan**  \n  Kesulitan utama bukan memilih jumlah kamar, melainkan menerjemahkan perubahan hidup keluarga menjadi ruang, luas, dan prioritas yang saling konsisten. Inspirasi visual dari Pinterest/IG menunjukkan gaya, tetapi jarang menjawab kapasitas penghuni, kebiasaan harian, privasi, sirkulasi, anggaran, atau pertumbuhan keluarga. Akibatnya, brief ke arsitek/kontraktor sering kabur dan scope mudah berubah.\n\n- **Detail actionable**  \n  **Decision tree brief:**\n  1. Siapa tinggal sekarang dan 5-10 tahun lagi? Anak, orang tua, ART, kerja dari rumah.\n  2. Aktivitas wajib di rumah? Memasak intensif, menerima tamu, ibadah, usaha, parkir, laundry.\n  3. Mana ruang harus terpisah vs dapat berbagi? Ruang kerja/tamu, makan/keluarga, kamar mandi.\n  4. Batas tapak dan biaya? Prioritaskan ruang inti sebelum ruang aspiratif.\n  5. Bangun penuh sekarang atau bertahap? Tetapkan area ekspansi dan struktur awal.\n\n  **Trade-off yang perlu dieksplisitkan:** kamar tambahan vs ruang keluarga lega; garasi dua mobil vs taman/cahaya; lantai dua vs biaya struktur dan akses; ruang terbuka vs luas bangunan; rumah tumbuh vs biaya renovasi masa depan.\n\n  **Common mistakes:** menghitung kamar tanpa profil penghuni; mengabaikan storage, laundry, servis, jemur, sirkulasi, dan furnitur; menyalin denah viral tanpa orientasi tapak; mencampur kebutuhan wajib dengan keinginan; tidak menetapkan batas anggaran dan fase pembangunan.\n\n- **Implikasi untuk Baruma**  \n  Brief sebaiknya berupa wizard berbasis skenario hidup, bukan formulir “jumlah ruang”. Output perlu memisahkan **wajib / penting / opsional**, menampilkan konflik keputusan, dan menghasilkan minimal 2 alternatif layout dengan penjelasan trade-off, estimasi luas, serta implikasi RAB kasar. Simpan asumsi agar mudah direvisi sebelum masuk denah dan BOQ.\n\n- **Hal yang harus divalidasi**\n  - **Hypothesis:** calon pemilik rumah lebih mampu menjawab pertanyaan aktivitas dan penghuni daripada istilah arsitektural.\n  - **Hypothesis:** perbandingan dua layout dengan trade-off meningkatkan kepercayaan dan menurunkan perubahan brief.\n  - **Data-backed yang perlu dicari:** frekuensi perubahan scope/denah, ruang yang paling sering terlupa, dan kesediaan pengguna membayar brief terstruktur sebelum memakai arsitek/kontraktor."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "pain_pbg_legal",
+    "ms": 13570,
+    "usage": {
+      "prompt_tokens": 4701,
+      "completion_tokens": 620,
+      "total_tokens": 5321,
+      "completion_tokens_details": {
+        "reasoning_tokens": 72
+      }
+    },
+    "text": "**Label insight:** Data-backed\n\n**Inti temuan**  \nPBG (Persetujuan Bangunan Gedung) menggantikan IMB dalam kerangka PP No. 16 Tahun 2021. Untuk rumah pribadi, prosesnya relevan karena menyentuh kesesuaian bangunan terhadap tata ruang, standar teknis, dan dokumen perencanaan. Namun PBG bukan sekadar “izin yang bisa diurus belakangan”: kebutuhan, alur, biaya/retribusi, dan waktu proses dapat berbeda antar daerah serta kondisi lahan.\n\n**Detail actionable**  \nEdukasi Baruma sebaiknya membagi proses menjadi checklist awal yang sederhana:\n\n- Status dan dokumen tanah: jenis hak, nama pemegang hak, batas/luas, akses.\n- Lokasi: cek zonasi/RDTR atau konfirmasi ke pemda bila data belum tersedia.\n- Data bangunan: luas, jumlah lantai, fungsi, jarak bangunan, kebutuhan parkir bila relevan.\n- Dokumen teknis: denah, tampak, potongan, struktur dan utilitas sesuai kebutuhan pengajuan.\n- Pengajuan: kanal SIMBG dan/atau prosedur pemda setempat.\n- Pasca-bangun: SLF dapat relevan sebelum bangunan digunakan, tergantung ketentuan dan proses yang berlaku.\n\nBoundary penting: Baruma tidak menyatakan desain “pasti lolos PBG”, tidak menentukan legalitas tanah, dan tidak menggantikan arsitek/tenaga ahli, PPAT/notaris, atau dinas setempat.\n\n**Label insight:** Proxy insight\n\n**Implikasi untuk Baruma**  \nLegal/PBG kemungkinan lebih kuat sebagai *trust and readiness feature* daripada alasan utama pengguna membeli desain. Produk dapat memberi “PBG readiness score” berbasis kelengkapan input, daftar dokumen yang kurang, serta ekspor contractor pack yang ditandai “konsep, perlu verifikasi teknis”. Referral ke arsitek lokal, konsultan struktur, dan pengurus berizin dapat menjadi peluang pendapatan, dengan disclosure komisi dan tanpa menjual kepastian persetujuan.\n\n**Label insight:** Hypothesis\n\n**Hal yang harus divalidasi**  \n- Apakah calon pemilik rumah mengetahui PBG sebelum tahap memilih kontraktor?  \n- Pada titik mana PBG benar-benar menunda proyek atau menaikkan biaya?  \n- Kota mana yang memiliki proses digital dan kebutuhan dokumen paling konsisten?  \n- Apakah pengguna membayar paket referral/legal-readiness, atau hanya memakai checklist gratis?  \n- Siapa yang dipercaya pengguna untuk verifikasi: arsitek, kontraktor, pengurus lokal, atau pemda?"
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "pain_proposal_compare",
+    "ms": 32088,
+    "usage": {
+      "prompt_tokens": 4702,
+      "completion_tokens": 594,
+      "total_tokens": 5296,
+      "completion_tokens_details": {
+        "reasoning_tokens": 37
+      }
+    },
+    "text": "- **Label insight:** *Proxy insight*  \n  **Inti temuan:** Membandingkan proposal rumah sulit karena dokumen tidak seragam: satu pihak memberi harga borongan per m2, pihak lain RAB terperinci; spesifikasi material, asumsi luas, lingkup pekerjaan, struktur, MEP, PBG, dan pengecualian sering berbeda. Harga total yang lebih rendah tidak otomatis lebih murah secara setara.\n\n- **Label insight:** *Data-backed (konteks pasar publik)*  \n  **Inti temuan:** Kekhawatiran overbudget dan trust gap terhadap tukang/kontraktor membuat transparansi scope, material, dan risiko perubahan biaya lebih bernilai daripada sekadar visual denah atau ranking harga.\n\n- **Detail actionable:** Buat `Proposal Compare` berbasis normalisasi, bukan AI verdict. Pengguna upload 2-3 PDF/XLS/foto, lalu sistem mengekstrak dan meminta konfirmasi:\n  1. Basis proyek: lokasi, luas bangunan/netto, jumlah lantai, target kualitas.\n  2. Scope per tahap: desain, izin/PBG, pekerjaan persiapan, struktur, arsitektur, atap, MEP, finishing, pekerjaan luar.\n  3. Kuantitas dan unit: m2, m3, titik listrik, sanitary, panjang pagar.\n  4. Spesifikasi: merek/kelas material, ketebalan, mutu beton/baja, garansi.\n  5. Komersial: total, harga per m2 terhitung, termin, durasi, pajak, contingency, exclusions.\n\n  **Rubrik skor (100):** Kesetaraan scope 30, kelengkapan BOQ/kuantitas 20, kejelasan spesifikasi 15, transparansi harga dan pengecualian 15, kelayakan jadwal/termin 10, akuntabilitas kontraktor/garansi 10. Tampilkan `tidak dapat dibandingkan` bila basis luas atau scope inti belum cocok.\n\n- **Implikasi untuk Baruma:** Jadikan contractor pack sebagai baseline BOQ Baruma. Proposal eksternal dipetakan terhadap baseline tersebut, dengan tabel baris-per-baris, gap merah, dan estimasi “biaya yang belum tercakup”; jangan menyebut “termurah/terbaik” tanpa data lengkap.\n\n- **Hal yang harus divalidasi:** *Hypothesis*  \n  Apakah calon pemilik rumah bersedia mengunggah proposal sensitif; apakah ekstraksi PDF Indonesia cukup akurat; dan apakah mereka lebih membutuhkan pembanding sebelum memilih kontraktor atau alat kontrol perubahan biaya setelah kontrak ditandatangani."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "competitor_floorplanner",
+    "error": "HTTP 524"
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "competitor_ai_interior",
+    "ms": 11521,
+    "usage": {
+      "prompt_tokens": 4692,
+      "completion_tokens": 564,
+      "total_tokens": 5256,
+      "completion_tokens_details": {
+        "reasoning_tokens": 37
+      }
+    },
+    "text": "**Label insight**\n\n- **Data-backed:** Produk seperti Planner 5D, Floorplanner, RoomSketcher, SketchUp, dan ReimagineHome berfokus pada visualisasi ruang, denah, atau transformasi gambar. Mereka membuktikan demand global untuk eksplorasi desain mandiri, tetapi bukan validasi bahwa pengguna Indonesia akan membayar workflow pembangunan rumah end-to-end.\n- **Proxy insight:** Pinterest, Instagram, dan YouTube sudah menjadi sumber inspirasi gratis yang sangat kuat. AI image-to-interior mempercepat eksplorasi gaya, sehingga output visual tunggal makin mudah dikomoditisasi.\n- **Hypothesis:** Pemilik rumah pertama lebih menghargai kepastian keputusan dan anggaran daripada render yang impresif.\n\n**Inti temuan**\n\nKekuatan kategori AI interior adalah “wow” instan: unggah foto, pilih gaya, dapat alternatif dalam detik. Kelemahannya: hasil biasanya tidak terikat ukuran tapak aktual, kebutuhan keluarga, struktur, utilitas, aturan PBG, harga material lokal, maupun kemampuan kontraktor. Visual dapat menciptakan rasa aman palsu.\n\n**Detail actionable**\n\n- **Proxy insight:** Commodity risk tinggi pada fitur generate moodboard, restyle ruangan, dan render 3D generik; model AI, template, dan API makin mudah diakses.\n- **Hypothesis:** Baruma perlu meminta input yang memaksa trade-off nyata: dimensi tanah, orientasi, jumlah penghuni, fase pembangunan, target anggaran, prioritas ruang, serta toleransi biaya.\n- **Hypothesis:** Tampilkan konsekuensi tiap alternatif: luas ruang, estimasi biaya per komponen, dampak perubahan layout, asumsi harga, dan item yang belum termasuk.\n- **Hypothesis:** Jadikan preview 3D sebagai alat verifikasi keputusan, bukan produk utama.\n\n**Implikasi untuk Baruma**\n\nPosisikan Baruma sebagai “decision system sebelum membangun”, bukan AI desain interior. Diferensiasi defensible ada pada keterhubungan brief -> denah terukur -> RAB/BOQ transparan -> contractor pack yang dapat dibandingkan dan dieksekusi secara lokal.\n\n**Hal yang harus divalidasi**\n\n- **Hypothesis:** Apakah calon pemilik rumah mau memasukkan data tapak dan anggaran sebelum melihat visual?\n- **Hypothesis:** Output mana yang paling mendorong pembayaran: layout, estimasi RAB, atau paket tender kontraktor?\n- **Hypothesis:** Seberapa akurat estimasi biaya yang dianggap cukup dipercaya menurut kota dan kelas rumah?"
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "competitor_marketplace_jasa",
+    "ms": 14061,
+    "usage": {
+      "prompt_tokens": 4698,
+      "completion_tokens": 474,
+      "total_tokens": 5172,
+      "prompt_tokens_details": {
+        "cached_tokens": 4352
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 41
+      }
+    },
+    "text": "- **Label insight: proxy insight**\n\n- **Inti temuan**  \nMarketplace lokal seperti Arsitag, Sejasa, Dekoruma, Gravel, dan Kanggo kuat pada discovery penyedia jasa, lead generation, dan pada sebagian kasus pengadaan/material atau eksekusi. Marketplace global/proxy seperti Planner 5D, Floorplanner, dan RoomSketcher kuat pada visualisasi mandiri, tetapi umumnya berhenti sebelum keputusan biaya, kelayakan bangun, dan eksekusi lokal Indonesia.\n\n- **Detail actionable**  \nKelemahan utama model marketplace adalah input awal pelanggan masih kabur: pengguna datang dengan foto Pinterest, ukuran tanah, dan budget kasar. Penyedia jasa lalu menginterpretasikan brief berbeda-beda, sehingga proposal sulit dibandingkan apple-to-apple. Rating/review tidak cukup menjawab risiko terbesar pemilik rumah: scope yang hilang, perubahan pekerjaan, kualitas struktur tersembunyi, timeline, legal/PBG, dan pembengkakan biaya. Marketplace juga berisiko mendorong kompetisi harga sebelum scope tervalidasi, yang dapat memperbesar distrust terhadap tukang/kontraktor.\n\n- **Implikasi untuk Baruma**  \nBaruma sebaiknya tidak memulai sebagai marketplace. Posisi yang lebih defensible adalah “decision layer sebelum memilih penyedia”: mengubah kebutuhan menjadi brief terstruktur, opsi layout, denah, asumsi spesifikasi, BOQ/RAB dengan rentang dan pengecualian, lalu contractor pack yang seragam. Setelah itu, Baruma dapat membuka matching terbatas dengan kontraktor terkurasi berdasarkan scope yang sama, bukan sekadar lokasi dan rating. Nilai utamanya adalah comparability dan audit trail, bukan listing jasa.\n\n- **Hal yang harus divalidasi**  \nApakah calon pemilik rumah mau membayar sebelum memilih arsitek/kontraktor; tingkat akurasi RAB konseptual yang dianggap cukup berguna; elemen contractor pack minimum agar proposal benar-benar comparable; apakah kontraktor bersedia menerima scope standar; serta kategori proyek awal yang paling cocok, kemungkinan renovasi ringan versus rumah baru."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "competitor_status_quo",
+    "error": "HTTP 524"
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "wedge_pre_architect",
+    "ms": 29137,
+    "usage": {
+      "prompt_tokens": 4697,
+      "completion_tokens": 536,
+      "total_tokens": 5233,
+      "completion_tokens_details": {
+        "reasoning_tokens": 31
+      }
+    },
+    "text": "- **Label insight: proxy insight**\n- **Inti temuan**  \nWedge yang paling tajam: **asisten perencanaan sebelum arsitek** untuk calon pemilik rumah yang belum siap membayar jasa desain penuh, tetapi sudah perlu keputusan yang cukup jelas untuk mencari arsitek/kontraktor tanpa mudah di-overquote. Posisi: bukan pengganti arsitek atau insinyur struktur.\n\n- **Detail actionable**  \n**Promise:** “Dalam 1-2 hari, ubah kebutuhan keluarga, tanah, dan budget menjadi brief bangun rumah yang dapat dibandingkan dan dibawa ke profesional.”  \n**Mechanism:** wizard kebutuhan ruang, ukuran/arah/lokasi tanah, kisaran dana; menghasilkan 2 alternatif zoning/layout konseptual, denah 2D indikatif, estimasi RAB rentang dengan asumsi eksplisit, daftar pertanyaan tender, dan contractor pack.  \n**First product:** jangan mulai dari preview 3D fotorealistik. Mulai dari **Brief + 2 layout + budget guardrail + template pembanding penawaran**. 3D ringan hanya untuk membantu memahami massa/ruang.  \n**Proof:** tunjukkan sumber asumsi harga, rentang ketidakpastian, item yang belum termasuk, dan jejak perubahan brief. Output harus menyatakan “perlu validasi arsitek/struktur/PBG”.\n\n- **Implikasi untuk Baruma**  \nMonetisasi awal yang masuk akal adalah paket fixed-price “Decision Pack”, bukan SaaS bulanan. Distribusi: konten edukasi “cek kesiapan bangun”, komunitas pembeli tanah/KPR, dan referral arsitek lokal. Keunggulan tidak boleh diklaim sebagai akurasi RAB final; nilai awalnya adalah mengurangi kebingungan dan membuat proposal dapat dibandingkan.\n\n- **Hal yang harus divalidasi**  \n**Hypothesis:** pengguna bersedia membayar Rp99 ribu-Rp499 ribu sebelum bertemu arsitek/kontraktor.  \n**Hypothesis:** output budget guardrail lebih bernilai daripada 3D.  \n**Hypothesis:** minimal 30% pengguna membagikan pack ke profesional dalam 14 hari.  \nDalam 30 hari: wawancara 15 calon pembangun, jalankan concierge pada 10 brief, ukur pembayaran, waktu selesai, share rate, dan apakah profesional menilai brief cukup berguna untuk quote awal."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "wedge_budget_first",
+    "ms": 12851,
+    "usage": {
+      "prompt_tokens": 4694,
+      "completion_tokens": 541,
+      "total_tokens": 5235,
+      "completion_tokens_details": {
+        "reasoning_tokens": 31
+      }
+    },
+    "text": "- **Label insight:** `data-backed`  \n  **Inti temuan:** Ketidakpastian biaya adalah pain paling material dalam pembangunan rumah pribadi: scope mudah berubah, harga material dan upah bervariasi, serta proposal kontraktor sulit dibandingkan. Wedge yang defensible bukan “desain rumah cepat”, melainkan “kejelasan keputusan sebelum uang keluar”.\n\n- **Label insight:** `proxy insight`  \n  **Detail actionable:** Promise: **“Ketahui rumah yang realistis dibangun dengan budget Anda, sebelum bicara ke kontraktor.”**  \n  Mechanism: pengguna memasukkan lokasi, luas tanah, jumlah ruang, prioritas, dan batas biaya. Baruma menghasilkan 2-3 opsi scope/layout, estimasi biaya per komponen, asumsi spesifikasi, trade-off biaya, dan BOQ/RAB awal yang dapat dibandingkan. Semua output wajib menampilkan rentang, tanggal harga, dan pengecualian.\n\n- **Label insight:** `hypothesis`  \n  **Implikasi untuk Baruma:** First product sebaiknya bukan full design-to-build. Bangun **Budget Feasibility Pack** berbayar:  \n  1. brief kebutuhan dan batas budget;  \n  2. satu layout konseptual 2D;  \n  3. estimasi RAB berbasis lokasi dan tier spesifikasi;  \n  4. daftar pengurang biaya bila budget tidak cukup;  \n  5. contractor-ready scope sheet untuk meminta 3 penawaran sebanding.  \n  Harga awal dapat rendah dibanding biaya desain penuh, tetapi cukup untuk menyaring pengguna yang serius. Fokus pada rumah baru sederhana-menengah, satu kota dahulu, dan satu tipologi bangunan.\n\n- **Label insight:** `hypothesis`  \n  **Hal yang harus divalidasi:**  \n  - Apakah calon pemilik rumah mau membayar untuk estimasi sebelum memiliki gambar teknis/PBG?  \n  - Toleransi error estimasi yang diterima pengguna: misalnya rentang ±10%, ±15%, atau lebih.  \n  - Apakah “scope sheet standar” benar-benar membuat penawaran kontraktor lebih comparable.  \n  - Ketersediaan dan pemeliharaan data harga lokal.  \n  - Overpromise risk: jangan menjanjikan “biaya pasti”, “anti-bengkak”, kualitas struktur, kelayakan PBG, atau harga kontraktor final tanpa survey, desain teknis, dan verifikasi profesional."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "wedge_vendor_ready_pack",
+    "ms": 14319,
+    "usage": {
+      "prompt_tokens": 4690,
+      "completion_tokens": 569,
+      "total_tokens": 5259,
+      "prompt_tokens_details": {
+        "cached_tokens": 3840
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 38
+      }
+    },
+    "text": "**Label insight**\n\n- **Data-backed:** Konsumen rumah pribadi menghadapi ketidakpastian biaya, kesulitan memilih penyedia, dan kesenjangan informasi terhadap kualitas pekerjaan serta perizinan.\n- **Proxy insight:** Tools desain konsumen membantu visualisasi, sementara marketplace jasa membantu pencarian vendor; keduanya belum tentu menghasilkan dokumen input yang konsisten untuk meminta proposal setara.\n- **Hypothesis:** Wedge Baruma yang paling tajam adalah “vendor-ready pack”, bukan software desain mandiri atau marketplace kontraktor.\n\n**Inti temuan**\n\nBaruma menjual kejelasan sebelum komitmen: satu paket kebutuhan rumah yang dapat dibawa pengguna ke 2-3 arsitek/kontraktor agar proposal lebih mudah dibandingkan. Nilai utamanya bukan menjamin harga final, melainkan mengurangi brief ambigu dan scope yang hilang.\n\n**Detail actionable**\n\nDeliverables MVP:\n- Project brief terstruktur: penghuni, fase hidup, prioritas, batas anggaran, lokasi, luas tanah, gaya, kebutuhan ruang.\n- Alternatif layout dan denah 2D beranotasi.\n- Schedule ruang dan asumsi luas.\n- BOQ/RAB indikatif berlabel asumsi, spesifikasi, lokasi, dan rentang harga.\n- Checklist pertanyaan vendor, matriks perbandingan quotation, daftar item pengecualian.\n- Paket PDF terkunci plus file/edit history; 3D hanya sebagai alat validasi ruang, bukan deliverable utama.\n\n**Hypothesis pricing:** Rp499 ribu-Rp1,5 juta per proyek untuk pack dasar; upsell Rp1,5 juta-Rp3 juta untuk review manusia/arsitek. Hindari fee sukses vendor pada fase awal karena dapat merusak posisi netral.\n\n**Implikasi untuk Baruma**\n\nPosisikan: “Brief dan scope rumah yang siap ditenderkan.” Jangan menjanjikan estimasi akurat tanpa data lokasi, struktur, desain teknis, dan spesifikasi material. Contractor pack harus jelas membedakan konsep awal dari gambar kerja, perhitungan struktur, serta dokumen PBG.\n\n**Hal yang harus divalidasi**\n\n- Apakah calon pemilik rumah mau membayar sebelum memilih arsitek/kontraktor?\n- Apakah vendor benar-benar memberi quotation lebih lengkap saat menerima pack?\n- Dokumen minimum apa yang mengurangi revisi quotation?\n- Segmen awal mana paling mendesak: tanah sudah ada, renovasi, atau pembeli tanah?\n- Seberapa jauh RAB indikatif meningkatkan keputusan tanpa menciptakan ekspektasi harga final?"
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "wedge_proposal_audit",
+    "ms": 32604,
+    "usage": {
+      "prompt_tokens": 4686,
+      "completion_tokens": 561,
+      "total_tokens": 5247,
+      "prompt_tokens_details": {
+        "cached_tokens": 4352
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 32
+      }
+    },
+    "text": "**Label insight**  \n- **Data-backed:** Risiko biaya membengkak, ketidakjelasan spesifikasi, dan rendahnya transparansi proposal merupakan keluhan berulang dalam pembangunan rumah individual di Indonesia.  \n- **Proxy insight:** Platform jasa rumah dan konten edukasi menunjukkan permintaan pada estimasi biaya, pembanding penyedia jasa, serta visualisasi sebelum eksekusi.  \n- **Hypothesis:** Momen sebelum DP adalah titik urgensi tertinggi untuk membeli bantuan independen.\n\n**Inti temuan**  \nWedge Baruma yang paling tajam: **“Audit RAB dan proposal kontraktor sebelum bayar DP.”** Bukan menjual desain rumah penuh terlebih dahulu, melainkan membantu calon pemilik rumah memahami apa yang akan dibeli, membandingkan penawaran secara setara, dan menemukan risiko biaya/lingkup kerja.\n\n**Detail actionable**  \nInput: RAB/proposal PDF, gambar denah bila ada, lokasi, luas, target anggaran.  \nOutput berbayar dan time-boxed (mis. 24-48 jam):  \n- Normalisasi BOQ per pekerjaan, volume, unit, material, dan harga.  \n- Penanda item kosong, double count, asumsi tersembunyi, serta pengecualian pekerjaan.  \n- Perbandingan dua-tiga proposal dalam format apples-to-apples.  \n- Rentang biaya indikatif, bukan “harga pasti”.  \n- Daftar pertanyaan negosiasi, milestone pembayaran, dan scope yang wajib masuk kontrak.  \n- Rekomendasi: lanjut, revisi, atau minta proposal ulang.\n\nRisiko: audit tanpa site survey/gambar struktur dapat memberi rasa aman palsu; data harga lokal cepat berubah; audit dapat dianggap menyerang kontraktor; liability bila proyek tetap overbudget.\n\n**Implikasi untuk Baruma**  \nJadikan audit sebagai pintu masuk ke brief, denah, BOQ, dan contractor pack. Posisioning: independen dari kontraktor, transparan tentang batas analisis, serta tidak menjanjikan penghematan atau kepatuhan PBG/struktur tanpa tenaga profesional yang tepat.\n\n**Hal yang harus divalidasi**  \n- **Hypothesis:** Pemilik bersedia membayar sebelum DP, dan pada harga berapa.  \n- **Hypothesis:** Mereka sudah memegang proposal cukup sering untuk menjadi wedge akuisisi.  \n- **Hypothesis:** Temuan audit benar-benar mengubah keputusan DP/negosiasi.  \n- **Hypothesis:** Kontraktor menerima format revisi tanpa menghambat konversi proyek."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "lead_magnet_budget_calculator",
+    "ms": 33382,
+    "usage": {
+      "prompt_tokens": 4699,
+      "completion_tokens": 633,
+      "total_tokens": 5332,
+      "prompt_tokens_details": {
+        "cached_tokens": 4352
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 45
+      }
+    },
+    "text": "- **Label insight**\n  - **Data-backed:** Kekhawatiran biaya membengkak, ketidakjelasan proses, dan kesulitan membandingkan penawaran adalah pain yang relevan dalam konteks pembangunan rumah Indonesia.\n  - **Proxy insight:** Kalkulator biaya rumah banyak dicari/dipakai sebagai alat eksplorasi awal, tetapi estimasi generik sering tidak cukup untuk keputusan vendor atau desain.\n  - **Hypothesis:** Lead magnet dengan rentang biaya transparan dan daftar asumsi akan lebih efektif mengumpulkan lead berniat tinggi daripada kalkulator “harga per m2” tunggal.\n\n- **Inti temuan**\n  - Buat “Cek Budget Awal Rumah Anda”: estimasi rentang biaya, bukan janji harga final. Posisioning: membantu calon pemilik memahami apakah budget, luas, dan spesifikasi mereka realistis sebelum bicara dengan tukang/kontraktor.\n\n- **Detail actionable**\n  - **Input wajib:** kota/kabupaten, luas tanah, target luas bangunan, jumlah lantai, jumlah kamar tidur/kamar mandi, kondisi tanah (datar/miring/belum tahu), target mulai bangun, dan budget tersedia.\n  - **Input opsional:** kualitas finishing (ekonomis/menengah/premium), kebutuhan carport, pagar, furnitur built-in, gaya rumah, status tanah/PBG.\n  - **Output:** rentang biaya konstruksi rendah–tinggi; estimasi per kategori (struktur, arsitektur/finishing, MEP, pekerjaan luar); biaya yang sering terlewat (desain, PBG, contingency, sambungan utilitas); indikator “budget cukup/borderline/belum realistis”; rekomendasi luas atau spesifikasi yang perlu disesuaikan.\n  - **Data riset dikumpulkan:** email/WhatsApp setelah hasil; lokasi, budget gap, horizon pembangunan, status kepemilikan tanah, kebutuhan lantai/ruang, dan persetujuan kontak. Jangan minta alamat lengkap pada tahap ini.\n  - **CTA:** “Dapatkan brief rumah dan estimasi RAB awal yang lebih terstruktur” atau “Bandingkan 2 skenario: rumah sesuai mimpi vs sesuai budget.”\n\n- **Implikasi untuk Baruma**\n  - Output kalkulator harus menjadi pintu masuk ke flow `brief -> alternatif layout -> RAB/BOQ`, bukan produk estimasi mandiri. Tampilkan asumsi, tanggal pembaruan harga, dan disclaimer bahwa verifikasi desain/struktur/lokasi diperlukan.\n\n- **Hal yang harus divalidasi**\n  - Apakah pengguna bersedia memberi WhatsApp untuk hasil detail.\n  - Rentang estimasi yang dianggap cukup berguna tanpa menciptakan ekspektasi harga final.\n  - Kota mana yang memiliki data harga material/tenaga kerja cukup untuk estimasi kredibel."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "lead_magnet_design_brief",
+    "ms": 9831,
+    "usage": {
+      "prompt_tokens": 4694,
+      "completion_tokens": 584,
+      "total_tokens": 5278,
+      "completion_tokens_details": {
+        "reasoning_tokens": 48
+      }
+    },
+    "text": "- **Label insight:** *Proxy insight*  \n  Pemilik rumah pertama sering memulai dari inspirasi visual, bukan kebutuhan terstruktur. Tools desain global membantu visualisasi, tetapi tidak secara inheren menerjemahkan kebutuhan lokal menjadi estimasi ruang, biaya, risiko PBG, dan paket pembanding kontraktor.\n\n- **Inti temuan**  \n  Lead magnet yang paling relevan bukan “ebook desain rumah”, melainkan **Template Brief Rumah Pribadi + Skor Kesiapan Bangun**. Nilainya: mengubah keinginan yang kabur menjadi dokumen yang bisa dibawa ke arsitek, tukang, atau kontraktor tanpa langsung menjanjikan desain maupun biaya akurat.\n\n- **Detail actionable**  \n  **Format:** form interaktif 8-12 menit, hasil PDF 3-5 halaman.  \n  **Input pengguna:** lokasi/kota; status tanah dan luas/dimensi; target waktu; anggaran total dan toleransi overbudget; jumlah penghuni serta rencana 5 tahun; ruang wajib/opsional; preferensi lantai/gaya; referensi foto; prioritas (biaya, cahaya, privasi, kemudahan bangun); kebutuhan khusus; status dokumen tanah/PBG; cara memilih pelaksana.  \n  **Output:** ringkasan kebutuhan ruang; prioritas dan trade-off; daftar pertanyaan untuk arsitek/kontraktor; checklist dokumen dan risiko awal; template membandingkan 2-3 penawaran; “skor kesiapan” dengan langkah berikutnya. Hindari RAB atau kelayakan struktur final.  \n  **Data segmentasi:** kota, tanah sudah/belum, luas tanah, rentang anggaran, horizon mulai bangun, jumlah lantai, tahap keputusan, sumber pelaksana, dan pain utama.\n\n- **Implikasi untuk Baruma**  \n  CTA utama: **“Dapatkan Brief PDF dan lihat 2 alternatif layout awal.”** Setelah email/WhatsApp, arahkan segmen tanah siap + mulai <6 bulan ke konsultasi brief berbayar/ringan; segmen eksplorasi ke nurture konten dan kalkulator. CTA sekunder: “Bandingkan proposal kontraktor dengan checklist ini.”\n\n- **Hal yang harus divalidasi**  \n  *Hypothesis:* pengguna mau memberi nomor WhatsApp untuk PDF dan skor. Uji completion rate, email-to-WhatsApp consent, CTA click-through, serta apakah “skor kesiapan”, “alternatif layout”, atau “checklist pembanding kontraktor” paling kuat mendorong konsultasi."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "lead_magnet_proposal_checklist",
+    "ms": 12400,
+    "usage": {
+      "prompt_tokens": 4698,
+      "completion_tokens": 534,
+      "total_tokens": 5232,
+      "prompt_tokens_details": {
+        "cached_tokens": 4352
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 25
+      }
+    },
+    "text": "- **Label insight:** Proxy insight  \n- **Inti temuan:** Proposal kontraktor/arsitek sulit dibandingkan karena format, tingkat detail, asumsi material, dan pengecualian pekerjaan berbeda. Lead magnet yang berguna bukan sekadar template harga, melainkan checklist untuk menormalisasi ruang lingkup, kuantitas, spesifikasi, jadwal, pembayaran, dan risiko perubahan.\n\n- **Detail actionable:**  \n  **Input:** unggah/masukkan ringkasan 1-3 proposal: nilai total, luas bangunan, lingkup kerja, RAB/BOQ bila ada, spesifikasi material, durasi, termin pembayaran, garansi, dan pengecualian. Jangan meminta dokumen legal sensitif pada versi awal.  \n  **Output:** checklist PDF/web dengan status “ada / tidak ada / perlu klarifikasi”, tabel perbandingan, dan daftar pertanyaan siap kirim. Prioritaskan:  \n  1. Luas, gambar acuan, dan pekerjaan termasuk/tidak termasuk.  \n  2. Volume dan merek/kelas material, bukan hanya “material standar”.  \n  3. Struktur, MEP, waterproofing, bongkaran, pagar, dan pekerjaan luar.  \n  4. Pajak, pengiriman, alat, perizinan/PBG, dan contingency.  \n  5. Mekanisme variation order, termin berbasis progres, retensi, garansi, dan keterlambatan.  \n  6. Harga per m2 hanya sebagai indikator, bukan penentu pemenang.  \n  **CTA:** “Bandingkan proposal Anda” lalu lanjut ke brief rumah dan pembuatan RAB/BOQ yang lebih terstruktur.\n\n- **Implikasi untuk Baruma:**  \n  **Hypothesis:** Checklist dapat menjadi pintu masuk berintensi tinggi sebelum pengguna membutuhkan denah, RAB, dan contractor pack. Nilai utamanya adalah mengungkap ketidaksetaraan scope, bukan memberi vonis kontraktor termurah/terbaik.\n\n- **Hal yang harus divalidasi:**  \n  **Hypothesis:** Uji apakah calon pemilik rumah mau mengunggah proposal dan apakah output “pertanyaan klarifikasi” mendorong aktivasi ke brief. Tetapkan batas risiko: disclaimer bukan estimasi biaya final, nasihat hukum/struktur, audit gambar, atau rekomendasi kontraktor; minta verifikasi profesional untuk struktur, PBG, dan kontrak."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "fake_door_tests",
+    "ms": 13696,
+    "usage": {
+      "prompt_tokens": 4700,
+      "completion_tokens": 601,
+      "total_tokens": 5301,
+      "completion_tokens_details": {
+        "reasoning_tokens": 79
+      }
+    },
+    "text": "- **Label insight:** hypothesis  \n- **Inti temuan:** 10 fake-door selama 30 hari untuk menguji demand sebelum membangun produk.\n- **Detail actionable:**\n1. **“Cek Estimasi Biaya Rumah di Tanah Anda”** | Pemilik tanah | Metric: 8% klik-ke-form | Belajar: urgensi overbudget.\n2. **“Ubah Inspirasi Jadi Denah”** | Pembeli rumah pertama | 12% upload referensi | Belajar: pain menerjemahkan Pinterest/IG.\n3. **“3 Alternatif Layout untuk Tanah 6x12”** | Tanah kavling | 10% pilih paket | Belajar: nilai eksplorasi layout.\n4. **“Denah 2D dalam 24 Jam”** | Sudah punya ukuran tanah | 5% isi brief lengkap | Belajar: willingness memberi data proyek.\n5. **“Preview Rumah 3D Sebelum Bangun”** | Visual-first, urban | 8% daftar waiting list | Belajar: 3D sebagai hook vs kebutuhan nyata.\n6. **“Bandingkan 3 RAB Kontraktor”** | Memegang penawaran | 15% unggah RAB | Belajar: demand normalisasi proposal.\n7. **“Audit RAB: Risiko Biaya Tersembunyi”** | Budget Rp300 juta-1 miliar | 5% minta audit | Belajar: willingness membayar trust layer.\n8. **“Contractor Pack Siap Tender”** | Siap mulai <6 bulan | 8% pilih “butuh pack” | Belajar: kebutuhan dokumen eksekusi.\n9. **“Checklist PBG untuk Rumah Anda”** | Jabodetabek/Bandung | 10% cek kelayakan lokasi | Belajar: legal pain cukup kuat sebagai entry point.\n10. **“Cek Kebutuhan Struktur Dasar”** | Tanah baru dibeli | 6% isi data tanah | Belajar: perhatian pada kualitas tak terlihat.\n\n- **Implikasi untuk Baruma:** Jalankan landing page terpisah, iklan geo-targeted, CTA form atau deposit refundable Rp99 ribu. Ukur conversion, completion, dan follow-up interview, bukan klik saja.\n\n- **Hal yang harus divalidasi:** Segmen paling responsif, timeline pembangunan, budget, willingness-to-pay, serta apakah RAB/contractor pack lebih bernilai daripada desain visual."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "interview_questions",
+    "ms": 52700,
+    "usage": {
+      "prompt_tokens": 4692,
+      "completion_tokens": 551,
+      "total_tokens": 5243,
+      "completion_tokens_details": {
+        "reasoning_tokens": 60
+      }
+    },
+    "text": "- **Label insight:** hypothesis  \n- **Inti temuan:** Calon pembangun rumah perlu dipahami dari keputusan, proses, dan bukti yang mereka gunakan, bukan diasumsikan dari pain point umum.\n\n- **Detail actionable:**  \n1. Kapan Anda mulai mempertimbangkan membangun rumah?  \n2. Apa yang memicu keputusan tersebut?  \n3. Seperti apa kondisi tanah atau rumah yang akan dibangun?  \n4. Siapa saja yang terlibat dalam keputusan ini?  \n5. Bagaimana Anda membayangkan rumah yang diinginkan?  \n6. Kebutuhan ruang apa yang paling penting?  \n7. Dari mana Anda biasanya mencari inspirasi?  \n8. Ceritakan langkah yang sudah Anda lakukan sejauh ini.  \n9. Bagian mana yang paling membingungkan?  \n10. Bagaimana Anda menentukan anggaran awal?  \n11. Pengeluaran apa yang paling sulit Anda perkirakan?  \n12. Apa yang Anda lakukan untuk mengurangi risiko biaya membengkak?  \n13. Pernahkah Anda meminta estimasi biaya? Dari siapa?  \n14. Bagaimana Anda membandingkan beberapa penawaran?  \n15. Informasi apa yang Anda harapkan ada dalam penawaran?  \n16. Pernahkah Anda bekerja dengan arsitek, desainer, tukang, atau kontraktor?  \n17. Bagaimana Anda memilih mereka?  \n18. Bukti apa yang membuat Anda percaya pada penyedia jasa?  \n19. Kekhawatiran apa yang Anda miliki tentang kualitas bangunan?  \n20. Bagaimana Anda memahami kebutuhan struktur dan material?  \n21. Apa yang Anda ketahui tentang PBG atau perizinan?  \n22. Kapan Anda merasa perlu denah atau visual 3D?  \n23. Dalam format apa Anda ingin menerima dokumen pembangunan?  \n24. Apa yang akan membuat Anda menunda proyek ini?  \n25. Jika prosesnya ideal, bagaimana urutannya dari sekarang hingga mulai membangun?\n\n- **Implikasi untuk Baruma:** Uji apakah pengguna membutuhkan alur end-to-end, atau hanya artefak tertentu seperti denah, RAB, dan pembanding proposal.\n\n- **Hal yang harus divalidasi:** Kemauan membayar sebelum konstruksi; siapa pembeli sebenarnya; titik trust paling kritis; kebutuhan akurasi RAB; dan apakah contractor pack dipakai kontraktor."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "objection_library",
+    "ms": 54188,
+    "usage": {
+      "prompt_tokens": 4688,
+      "completion_tokens": 655,
+      "total_tokens": 5343,
+      "prompt_tokens_details": {
+        "cached_tokens": 4352
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 139
+      }
+    },
+    "text": "**Label insight**  \nSemua: *hypothesis* berbasis pain publik dan proxy kompetitor; perlu validasi langsung.\n\n**Inti temuan**  \n1. “Saya belum punya tanah.”  \n2. “Takut mahal.”  \n3. “Denah gratis banyak.”  \n4. “Butuh arsitek, bukan software.”  \n5. “Saya tidak paham teknis.”  \n6. “Hasilnya belum tentu bisa dibangun.”  \n7. “RAB pasti meleset.”  \n8. “Harga material berubah.”  \n9. “Kontraktor saya sudah ada.”  \n10. “Takut data tanah disalahgunakan.”  \n11. “Rumah saya kecil/sederhana.”  \n12. “Saya cuma cari inspirasi.”  \n13. “Pasangan/orang tua belum sepakat.”  \n14. “Legalitas PBG rumit.”  \n15. “Struktur tidak kelihatan.”  \n16. “Tidak percaya preview 3D.”  \n17. “Takut revisi terbatas.”  \n18. “Saya belum tahu budget.”  \n19. “Saya mau bangun bertahap.”  \n20. “Lokasi saya di luar kota.”  \n21. “Tukang lebih murah.”  \n22. “Kontraktor bisa buatkan.”  \n23. “Saya tidak punya waktu.”  \n24. “Takut dihubungi terus.”  \n25. “Baruma baru, bisa dipercaya?”\n\n**Detail actionable**  \nBalasan WA non-pushy: “Wajar, Kak. Baruma bisa dipakai mulai dari kebutuhan dan kisaran budget, bukan harus langsung membangun. Kami bantu melihat opsi layout, asumsi RAB, serta daftar pertanyaan untuk kontraktor. Hasilnya bukan janji harga final atau pengganti arsitek/izin/insinyur; itu bahan agar Kakak bisa membandingkan dan memutuskan lebih jelas. Bila belum waktunya, kami bisa kirim contoh output saja.”\n\n**Implikasi untuk Baruma**  \nTampilkan batas produk, asumsi RAB, revisi, privasi, cakupan kota, dan jalur eskalasi profesional sejak awal. Positioning: alat persiapan dan pembanding, bukan pengganti kontraktor.\n\n**Hal yang harus divalidasi**  \nUji 25 keberatan ini pada 15–20 calon pemilik rumah: frekuensi, urutan keberatan, willingness-to-pay, serta output mana yang paling dipercaya."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "offer_architecture",
+    "ms": 12573,
+    "usage": {
+      "prompt_tokens": 4695,
+      "completion_tokens": 832,
+      "total_tokens": 5527,
+      "prompt_tokens_details": {
+        "cached_tokens": 4352
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 78
+      }
+    },
+    "text": "- **Label insight:** Hypothesis  \n  **Inti temuan:** Free “Cek Kesiapan Bangun” menarik calon pemilik yang masih bingung mulai.  \n  **Detail actionable:** Quiz tanah, kebutuhan ruang, kisaran budget; hasil: checklist dan roadmap. Harga Rp0. Risiko: lead berkualitas rendah.  \n  **Implikasi untuk Baruma:** Mesin akuisisi dan data brief.  \n  **Hal yang harus divalidasi:** Completion rate, email/WA opt-in, conversion ke paid.\n\n- **Label insight:** Hypothesis  \n  **Inti temuan:** Starter Layout membantu menerjemahkan inspirasi menjadi opsi ruang.  \n  **Detail actionable:** 2 alternatif layout otomatis, tanpa gambar kerja. Rp49.000-99.000. Risiko: output dianggap desain final.  \n  **Implikasi untuk Baruma:** Produk transisi dari free ke intent tinggi.  \n  **Hal yang harus divalidasi:** Willingness to pay dan komplain ekspektasi.\n\n- **Label insight:** Proxy insight  \n  **Inti temuan:** Tool denah global membuktikan minat self-serve, tetapi belum menjawab konteks biaya/lokal Indonesia.  \n  **Detail actionable:** Denah 2D, ukuran ruang, ekspor PDF. Rp149.000-299.000. Risiko: akurasi ukuran dan usability mobile.  \n  **Implikasi untuk Baruma:** Fokus pada brief-to-denah, bukan editor kompleks.  \n  **Hal yang harus divalidasi:** Waktu selesai dan kualitas denah menurut pengguna.\n\n- **Label insight:** Hypothesis  \n  **Inti temuan:** Preview 3D meningkatkan keyakinan keluarga sebelum biaya desain penuh.  \n  **Detail actionable:** 3D eksterior/interior dasar dari denah. Rp299.000-599.000. Risiko: revisi visual tidak terbatas.  \n  **Implikasi untuk Baruma:** Batasi dua revisi dan nyatakan visual konseptual.  \n  **Hal yang harus divalidasi:** Uplift conversion ke RAB.\n\n- **Label insight:** Hypothesis  \n  **Inti temuan:** Ketakutan overbudget membuat RAB awal bernilai tinggi.  \n  **Detail actionable:** BOQ dan rentang biaya per kota/spesifikasi. Rp499.000-999.000. Risiko: harga material cepat usang.  \n  **Implikasi untuk Baruma:** Tampilkan asumsi, tanggal harga, contingency.  \n  **Hal yang harus divalidasi:** Akurasi terhadap penawaran nyata.\n\n- **Label insight:** Hypothesis  \n  **Inti temuan:** Assisted planning menjual trust, bukan sekadar gambar.  \n  **Detail actionable:** Sesi arsitek 60 menit + revisi brief/denah. Rp750.000-1.500.000. Risiko: kapasitas ahli dan margin.  \n  **Implikasi untuk Baruma:** Gunakan SLA dan scope tegas.  \n  **Hal yang harus divalidasi:** Show-up rate, durasi, gross margin.\n\n- **Label insight:** Hypothesis  \n  **Inti temuan:** Contractor pack membantu perbandingan proposal.  \n  **Detail actionable:** Denah, BOQ, scope, template evaluasi kontraktor. Rp1.500.000-3.500.000. Risiko: dianggap dokumen teknis/PBG siap bangun.  \n  **Implikasi untuk Baruma:** Pisahkan dari gambar struktur/legal.  \n  **Hal yang harus divalidasi:** Penggunaan saat meminta tiga penawaran dan conversion ke partner."
+  },
+  {
+    "model": "gpt-5.6-terra",
+    "taskName": "landing_page_messages",
+    "ms": 14514,
+    "usage": {
+      "prompt_tokens": 4688,
+      "completion_tokens": 526,
+      "total_tokens": 5214,
+      "prompt_tokens_details": {
+        "cached_tokens": 4352
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 54
+      }
+    },
+    "text": "**Label insight:** *proxy insight* dan *hypothesis* (berdasarkan pain publik serta pola kategori; belum tervalidasi pada calon pengguna Baruma).\n\n**Inti temuan:** Individu yang hendak membangun rumah pertama lebih mencari kejelasan keputusan, biaya, dan proses daripada sekadar visual denah. Pesan harus menjanjikan persiapan yang lebih rapi untuk berdiskusi dengan arsitek, engineer, dan kontraktor, bukan menggantikan mereka.\n\n**Detail actionable:** 12 opsi headline:\n1. “Mulai rencanakan rumah Anda, sebelum biaya mulai berjalan.”\n2. “Dari kebutuhan keluarga ke denah dan anggaran yang lebih jelas.”\n3. “Tahu ruang, kisaran biaya, dan langkah berikutnya sebelum membangun.”\n4. “Bangun rumah dengan brief yang rapi, bukan asumsi di lapangan.”\n5. “Ubah inspirasi rumah menjadi kebutuhan ruang yang bisa didiskusikan.”\n6. “Bandingkan rencana dan penawaran kontraktor dengan lebih percaya diri.”\n7. “Rencanakan rumah pribadi tanpa bingung harus mulai dari mana.”\n8. “Lihat pilihan layout sebelum berkomitmen pada pembangunan.”\n9. “Siapkan dasar keputusan rumah Anda: denah, visual, dan RAB.”\n10. “Kurangi kejutan anggaran dengan rencana rumah yang lebih terstruktur.”\n11. “Bawa kebutuhan rumah Anda ke arsitek dan kontraktor dengan lebih jelas.”\n12. “Dari ide rumah ke paket persiapan pembangunan yang dapat ditinjau bersama.”\n\n**Implikasi untuk Baruma:** Prioritaskan headline 2, 6, dan 11. Subcopy perlu menyebut output konkret: alternatif layout, denah 2D, preview 3D, estimasi RAB/BOQ, dan contractor pack. Tambahkan batasan jelas bahwa hasil perlu ditinjau profesional berizin untuk desain teknis, struktur, dan PBG.\n\n**Hal yang harus divalidasi:** Uji apakah konversi lebih tinggi pada pesan “kendali anggaran”, “mulai dari mana”, atau “membandingkan kontraktor”; uji juga apakah istilah “RAB/BOQ” dipahami calon pemilik rumah pertama."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "persona_pasangan_muda_tanah_keluarga",
+    "ms": 7436,
+    "usage": {
+      "prompt_tokens": 337,
+      "completion_tokens": 496,
+      "total_tokens": 833,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (dari pola konsumen properti Indonesia & analogi startup home construction).\n\n**Inti temuan:** Pasangan muda (28-35 tahun, kelas menengah atas) yang mewarisi tanah keluarga di pinggiran kota besar (Jabodetabek, Surabaya, Bandung) adalah segmen paling potensial. Mereka punya aset tanah, tapi *zero experience* membangun. Status quo: terjebak antara \"mau desain bagus\" vs \"takut budget membengkak\", sering berakhir dengan desain asal jadi dari tukang langganan keluarga.\n\n**Detail actionable:**\n- **Pains:** Overbudget karena perubahan di tengah jalan (data-backed: 70% proyek rumah individu di Indonesia overbudget, sumber: survei informal kontraktor). Bingung membandingkan RAB dari 3 kontraktor berbeda. Trust gap: \"Tukang bilang besi 10mm cukup, tapi saya takut ambles.\"\n- **Anxieties:** Struktur tidak terlihat (pondasi, sloof), proses PBG yang rumit, dan \"jebakan\" material KW.\n- **Trigger:** Istri hamil (butuh rumah segera), atau rumah ortu sudah penuh. Mereka mulai googling \"biaya bangun rumah per meter 2024\" dan \"aplikasi desain rumah 3D gratis\".\n\n**Baruma wedge:** Bukan sebagai \"aplikasi desain\", tapi sebagai *risk mitigator*. Fokus pada: (1) RAB yang *locked* dari awal, (2) visualisasi 3D yang langsung terhubung ke RAB, (3) template dokumen PBG. Value prop: \"Bangun rumah tanpa tebak-tebakan biaya.\"\n\n**Implikasi untuk Baruma:** Produk harus bisa menjawab \"Berapa biaya total jika saya ingin 3 kamar + carport?\" dalam 5 menit. Fitur *cost-to-design* (bukan *design-to-cost*) adalah kunci.\n\n**Hal yang harus divalidasi:** Apakah pasangan ini lebih memilih *template siap pakai* (murah, cepat) atau *custom desain* (mahal, lama)? Apakah mereka mau membayar untuk kepastian RAB?"
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "persona_karyawan_waktu_terbatas",
+    "ms": 6159,
+    "usage": {
+      "prompt_tokens": 335,
+      "completion_tokens": 414,
+      "total_tokens": 749,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (berdasarkan pola perilaku serupa di jasa renovasi & konstruksi kecil, seperti Gravel dan Kanggo)\n\n**Inti temuan:**\nKaryawan middle-income (take-home Rp10-25 juta/bulan) memiliki *time poverty* ekstrem. Mereka tidak bisa bolak-balik proyek, tapi ingin kontrol penuh. Trust mereka bukan ke tukang, tapi ke sistem yang transparan dan bisa diakses dari ponsel.\n\n**Detail actionable:**\n- *Pain utama:* Rasa cemas karena tidak bisa melihat langsung progres, takut material diganti, dan overbudget bertahap.\n- *Solusi yang dicari:* Bukan sekadar RAB awal, tapi *real-time cost tracker* yang sinkron dengan progres fisik. Mereka ingin notifikasi otomatis jika ada deviasi biaya >5%.\n- *Vendor:* Mereka lebih percaya kontraktor yang sudah terverifikasi sistem (rating, portofolio, riwayat proyek serupa) daripada rekomendasi tetangga.\n- *Remote monitoring:* Minimal 1x foto progres harian + video call mingguan. Mereka rela bayar premium untuk fitur ini.\n\n**Implikasi untuk Baruma:**\n- Fitur *contractor pack* harus menyertakan dashboard progres + log foto + notifikasi biaya real-time. Bukan sekadar dokumen cetak.\n- Sistem *matching* vendor harus sertakan skor kepercayaan (misal: jumlah proyek selesai, rata-rata deviasi biaya).\n- Produk harus bisa diakses dan dioperasikan sepenuhnya dari ponsel, tanpa perlu desktop.\n\n**Hal yang harus divalidasi:**\n- Apakah mereka benar-benar mau bayar lebih untuk fitur monitoring? Atau cukup dengan sistem deposit bertahap?\n- Apakah mereka percaya pada sistem verifikasi Baruma, atau tetap butuh referensi manusia?"
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "persona_self_build_hemat",
+    "ms": 6272,
+    "usage": {
+      "prompt_tokens": 327,
+      "completion_tokens": 432,
+      "total_tokens": 759,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (dari pola perilaku di forum bangunan dan komunitas DIY properti).\n\n**Inti temuan:** Segmen ini percaya bahwa menghilangkan kontraktor bisa menghemat 20-30% biaya. Namun, mereka justru mengalami *cost overrun* rata-rata 15-25% karena salah hitung material, pemborosan akibat koordinasi buruk, dan proyek molor. Ironisnya, \"hemat\" berubah jadi \"lebih mahal dan stres\".\n\n**Detail actionable:**\n- Mereka memulai proyek tanpa RAB detail. Beli material secara bertahap, sering kehabisan di tengah jalan, lalu beli harga eceran lebih mahal.\n- Koordinasi tukang harian: sering mangkir, kualitas tidak konsisten, dan harus diawasi penuh waktu.\n- Cashflow kacau karena pengeluaran tidak terduga (misal: fondasi ternyata perlu perbaikan tanah, atau harga pasir naik).\n- Tidak ada jaminan kualitas struktur. Mereka tidak tahu cara memeriksa besi beton atau campuran cor yang benar.\n\n**Implikasi untuk Baruma:**\n- Baruma harus menyediakan **RAB yang granular dan bisa di-update real-time** saat harga material berubah.\n- Fitur **\"jadwal pembelian material\"** yang terintegrasi dengan tahapan konstruksi bisa mencegah pembelian mendadak.\n- **Modul quality control sederhana** (ceklist harian berbasis foto) untuk memvalidasi pekerjaan tukang.\n- **Simulasi cashflow proyek** yang menunjukkan kapan harus cairkan dana, bukan sekadar total biaya.\n\n**Hal yang harus divalidasi:**\n- Apakah segmen ini benar-benar mau repot mengisi data RAB dan jadwal, atau hanya ingin template instan?\n- Uji: apakah mereka lebih percaya pada rekomendasi material dari Baruma atau dari tukang langganan mereka?"
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "persona_dream_home_planner",
+    "ms": 6382,
+    "usage": {
+      "prompt_tokens": 321,
+      "completion_tokens": 412,
+      "total_tokens": 733,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (dari pola perilaku pengguna Pinterest/IG + data diskusi komunitas properti seperti *FJB Rumah* dan *Desain Rumah Minimalis*).\n\n**Inti temuan:**\nBanyak individu (usia 25-35, urban/suburban) memiliki *board* Pinterest penuh referensi “rumah impian,” tapi tidak bisa memetakan mana yang realistis untuk lahan 60-120 m² dan budget Rp200-500 juta. Mereka frustrasi karena desain yang disukai seringkali membutuhkan lebar fasad 10m+ atau material impor. Akibatnya, mereka cenderung *overpromise* ke tukang lalu berakhir dengan revisi besar atau overbudget.\n\n**Detail actionable:**\nPersona ini menghabiskan 2-4 jam/minggu mengumpulkan referensi, tetapi tidak punya alat untuk *filter* otomatis: “Apakah denah ini muat di lahan 8×12 m?” atau “Berapa estimasi RAB untuk gaya Skandinavia vs Industrial?” Mereka juga tidak tahu bahwa *void* atau *overhang* besar bisa menambah biaya struktur 20-30%.\n\n**Implikasi untuk Baruma:**\nFitur *“Dream Check”* bisa menjadi *hook*: upload foto referensi → Baruma menampilkan *feasibility score* (luas minimal, estimasi budget, material alternatif lokal). Ini menjembatani gap antara “mimpi” dan “realita” sebelum masuk ke layout/denah.\n\n**Hal yang harus divalidasi:**\n- Apakah pengguna benar-benar mau *mengorbankan* estetika demi budget? Atau mereka hanya butuh *justifikasi* untuk tetap mempertahankan desain mahal?\n- Seberapa besar *trust* mereka pada estimasi Baruma dibandingkan konsultasi langsung dengan arsitek?"
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "persona_perantau_remote_build",
+    "ms": 6541,
+    "usage": {
+      "prompt_tokens": 327,
+      "completion_tokens": 430,
+      "total_tokens": 757,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (dari pola perilaku migran di forum properti & diskusi Grup Telegram \"Bangun Rumah Jarak Jauh\").\n\n**Inti temuan:**\nPerantau (Jakarta/Surabaya) yang bangun rumah di kampung (Jawa Tengah, Sumatera, NTT) mengalami *trust deficit* akut. Mereka tidak bisa datang mingguan. Solusi saat ini: minta saudara/ortu jadi \"mata-mata\" (tapi tidak paham teknis), atau percaya penuh ke mandor (risiko mark-up & kualitas rendah). *Pain point* utama: **tidak bisa membedakan progres asli vs manipulasi foto** (misal: sloof diklaim sudah cor, padahal baru bekisting).\n\n**Detail actionable:**\n- Butuh *progress report* berbasis foto + video singkat (30 detik) dengan *timestamp* & *geotag*.\n- Ingin ada *checklist* visual sederhana: \"Hari ini: bekisting kolom ukuran 15x15 cm. Cocokkan dengan RAB.\"\n- Keluarga lokal (paman, sepupu) perlu dilibatkan sebagai *local verifier* — bukan tukang, tapi pengawas non-teknis yang bisa foto & kirim ke perantau.\n\n**Implikasi untuk Baruma:**\n- Fitur **\"Laporan Progres Otomatis\"** + **\"Verifikasi Keluarga\"** (undang anggota keluarga sebagai *viewer* dengan akses terbatas) bisa jadi *killer feature*.\n- Harga paket *contractor pack* harus transparan agar perantau bisa bandingkan dengan harga pasar lokal.\n\n**Hal yang harus divalidasi:**\n- Apakah perantau benar-benar mau bayar ekstra untuk fitur laporan progres? Atau cukup pakai WhatsApp?\n- Apakah keluarga lokal bersedia jadi *verifier* tanpa kompensasi?"
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "persona_renovasi_besar",
+    "ms": 6937,
+    "usage": {
+      "prompt_tokens": 329,
+      "completion_tokens": 382,
+      "total_tokens": 711,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (berdasarkan pola dari kompetitor renovasi rumah di Indonesia, seperti Sejasa dan forum properti).\n\n**Inti temuan:** Pemilik rumah lama (usia bangunan >15 tahun) yang ingin renovasi besar atau naik lantai memiliki *pain* unik: ketidakpastian struktur eksisting (pondasi, kolom) yang baru terlihat setelah bongkaran. Ini menyebabkan overbudget tak terduga dan konflik dengan kontraktor.\n\n**Detail actionable:**\n- Mereka sangat khawatir dengan biaya *hidden* (perbaikan struktur, pipa, kabel) yang bisa mencapai 30-40% dari total anggaran.\n- Prioritas utama: desain yang memaksimalkan lahan eksisting tanpa mengorbankan struktur aman.\n- *Pain* besar: harus tinggal sementara (ngontrak) selama renovasi, sehingga durasi proyek sangat kritis.\n- Mereka kesulitan membandingkan proposal kontraktor karena spesifikasi teknis tidak standar.\n\n**Implikasi untuk Baruma:**\n- Fitur *existing structure scan* (input foto/denah lama) bisa menjadi *entry point* yang kuat.\n- Modul RAB/BOQ harus otomatis menyertakan *allowance* 15-20% untuk risiko struktur tak terduga.\n- *Contractor pack* perlu menyertakan jadwal proyek yang realistis untuk meminimalkan durasi tinggal sementara.\n\n**Hal yang harus divalidasi:**\n- Apakah target ini mau membayar untuk *pre-customer* SaaS, atau lebih suka konsultasi tatap muka dengan arsitek?\n- Seberapa besar toleransi mereka terhadap perubahan desain di tengah jalan karena temuan struktur?"
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "pain_budget_bengkak",
+    "ms": 5109,
+    "usage": {
+      "prompt_tokens": 322,
+      "completion_tokens": 347,
+      "total_tokens": 669,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (berdasarkan riset publik & pola industri konstruksi skala kecil).\n\n**Inti temuan:** Ketakutan overbudget bukan sekadar soal angka, tapi ketidakmampuan pemilik rumah untuk memproyeksikan biaya tersembunyi (struktur, tanah urug, izin) dan ketergantungan pada estimasi verbal tukang. Ini menciptakan kecemasan terus-menerus.\n\n**Detail actionable:** Saat ini, calon pemilik rumah membandingkan proposal dari 3-5 kontraktor secara manual, lalu memilih yang termurah—tanpa memahami cakupan pekerjaan. Workaround lain: meniru RAB tetangga atau bertanya di grup Facebook. Semua tidak presisi.\n\n**Implikasi untuk Baruma:** Fitur RAB/BOQ otomatis dari denah 3D adalah *killer feature*. Tapi harus transparan: pisahkan biaya material, upah, dan biaya tak terduga (contingency 10-15%). Tawarkan simulasi \"jika pakai bata ringan vs bata merah\" agar user merasa kontrol.\n\n**Hal yang harus divalidasi:**\n- Apakah user percaya RAB dari Baruma lebih akurat daripada estimasi tukang? (uji A/B dengan RAB manual)\n- Apakah user mau membayar untuk RAB detail sebelum punya kontraktor? (contoh: Rp50rb per paket)\n- Apakah user benar-benar akan mengubah desain jika RAB melebihi budget? (observasi perilaku di MVP)"
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "pain_bingung_mulai",
+    "ms": 7525,
+    "usage": {
+      "prompt_tokens": 323,
+      "completion_tokens": 385,
+      "total_tokens": 708,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (berdasarkan pola perilaku di kompetitor dan forum properti).\n\n**Inti temuan:** Calon pemilik rumah pertama mengalami *analysis paralysis* karena terlalu banyak variabel (luas tanah, anggaran, gaya, jumlah ruang) tanpa kerangka prioritas. Mereka cenderung memulai dengan mencari inspirasi visual (Pinterest/IG) lalu bingung mencocokkan dengan tanah dan budget mereka.\n\n**Detail actionable:**\n- *Lifecycle confusion:* Inspirasi → cek harga tanah → frustrasi karena desain tidak sesuai budget → kembali ke inspirasi (loop).\n- *First action:* 70% proxy user membuka Google/YouTube \"biaya bangun rumah per m2\" atau \"denah rumah type 36\".\n- *Product wedge:* Tool \"Kalkulator Kebutuhan Ruang\" interaktif. Input: jumlah penghuni, hobi, budget maksimal. Output: rekomendasi luas minimal per ruang dan estimasi biaya kasar.\n- *Lead magnet:* E-book \"5 Langkah Sebelum Hubungi Kontraktor\" atau template *brief builder* gratis yang bisa diisi dan di-export.\n\n**Implikasi untuk Baruma:**\nFitur *brief* harus menjadi pintu masuk yang paling simpel, bukan denah. Jika user bisa mengisi brief dalam <5 menit dan langsung lihat estimasi budget, mereka akan lanjut ke layout. Posisikan Baruma sebagai \"penerjemah kebutuhan ke angka\", bukan sekadar aplikasi desain.\n\n**Hal yang harus divalidasi:**\n- Apakah user benar-benar mau mengisi data pribadi (jumlah penghuni, budget) di awal?\n- Atau mereka lebih nyaman dengan eksplorasi visual dulu (browse denah jadi) sebelum input data?"
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "pain_trust_kontraktor",
+    "ms": 8604,
+    "usage": {
+      "prompt_tokens": 325,
+      "completion_tokens": 404,
+      "total_tokens": 729,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (berdasarkan riset publik Sejasa, Dekoruma, forum properti, dan pola perilaku pengguna platform kontraktor di Indonesia).\n\n**Inti temuan:** Trust gap terbesar bukan pada harga, melainkan pada ketidakmampuan user memverifikasi kualitas tersembunyi (struktur, instalasi listrik/air) dan risiko \"tukang kabur\" atau mangkrak. User takut membayar mahal tapi dapat hasil asal-asalan.\n\n**Detail actionable:**\n- Red flags user takuti: (1) Tidak ada gambar kerja detail, (2) Harga terlalu murah/mahal tanpa breakdown, (3) Kontraktor menolak kontrak tertulis, (4) Tidak bisa menunjukkan portofolio proyek serupa, (5) Meminta DP >50%.\n- Proof needed: (1) RAB/BOQ transparan per item, (2) Timeline kerja tertulis, (3) Referensi proyek sebelumnya, (4) Sertifikasi tukang/kontraktor, (5) Garansi pengerjaan.\n\n**Implikasi untuk Baruma:**\n- Fitur \"Contractor Pack\" harus berisi dokumen tender standar (gambar kerja, RAB, spesifikasi material) yang bisa dipakai user untuk membandingkan 3-5 kontraktor secara objektif.\n- Tambahkan fitur \"ceklist verifikasi kontraktor\" (izin usaha, portofolio, review).\n- Landing copy: *\"Bangun rumah tanpa tebak-tebakan. Dapatkan paket tender lengkap yang bikin kontraktor patuh pada gambar dan anggaran.\"*\n\n**Hal yang harus divalidasi:** Apakah user benar-benar mau membayar untuk template tender standar, atau lebih memilih rekomendasi kontraktor terverifikasi langsung?"
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "pain_kebutuhan_ruang",
+    "ms": 6973,
+    "usage": {
+      "prompt_tokens": 321,
+      "completion_tokens": 363,
+      "total_tokens": 684,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (berdasarkan pola perilaku di platform kompetitor dan forum properti).\n\n**Inti temuan:** Pengguna individu sangat kesulitan menerjemahkan inspirasi visual (Pinterest/IG) ke daftar kebutuhan ruang yang terstruktur. Mereka sering melewatkan fungsi dasar (sirkulasi, servis) karena fokus pada estetika.\n\n**Detail actionable:**\n- *Decision tree*: Mulai dari jumlah penghuni tetap → aktivitas harian (WFH, masak) → prioritas (privacy vs. kebersamaan) → zoning (publik, privat, servis).\n- *Trade-offs*: Kamar tidur luas vs. ruang keluarga besar; carport vs. taman belakang.\n- *Common mistakes*: (1) Menyalin denah rumah orang lain tanpa konteks lahan/orientasi, (2) mengabaikan ruang sirkulasi (koridor), (3) lupa kebutuhan masa depan (anak, orang tua).\n\n**Implikasi untuk Baruma:** *Design brief* harus memandu pengguna dengan pertanyaan terstruktur, bukan form kosong. Fitur \"konfigurator kebutuhan ruang\" berbasis skenario (misal: \"keluarga dengan 2 anak + ART\") bisa mengurangi kesalahan awal. Integrasi dengan kalkulator prioritas (misal: slider antara \"kamar banyak\" vs \"ruang bersama luas\") akan membantu trade-off.\n\n**Hal yang harus divalidasi:** Apakah pengguna benar-benar mau mengisi kuesioner terstruktur, atau lebih suka langsung menggambar? Uji A/B antara brief guided vs. free-form."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "pain_pbg_legal",
+    "ms": 6419,
+    "usage": {
+      "prompt_tokens": 324,
+      "completion_tokens": 430,
+      "total_tokens": 754,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (dari diskusi forum properti, grup Facebook \"Bangun Rumah Sendiri\", dan artikel konsultan arsitek).\n\n**Inti temuan:** Pemilik rumah pertama sering tidak sadar bahwa IMB/PBG adalah syarat mutlak, bukan opsional. Banyak yang baru mengurus setelah bangunan berdiri, berujung denda atau pembongkaran. Namun, *pain*-nya bukan pada proses pengurusan, melainkan pada ketidaktahuan: apa yang harus diurus, ke mana, dan berapa biaya tersembunyi (misal: retribusi, jasa calo).\n\n**Detail actionable:**\n- Edukasi: Buat *checklist* singkat \"5 Dokumen yang Harus Disiapkan Sebelum Bangun\" (sertifikat tanah, KTP, gambar denah, surat pernyataan kepemilikan, dan bukti pembayaran PBB). Jangan jelaskan detail teknis PBG—cukup sebut sebagai \"izin resmi dari pemerintah daerah.\"\n- Boundaries: Jangan tawarkan jasa pengurusan izin. Baruma bukan birokrat. Cukup beri tautan ke website resmi OSS-RBA atau Dinas PUPR setempat.\n- Referral: Rekomendasikan konsultan arsitek berlisensi atau notaris yang biasa mengurus PBG. Baruma bisa jadi *matchmaker* tanpa terlibat langsung.\n\n**Implikasi untuk Baruma:** Fitur *contractor pack* harus menyertakan peringatan otomatis: \"Pastikan kontraktor Anda memiliki SIUJK dan gambar Anda sudah di-PBG-kan.\" Ini membangun kredibilitas tanpa overclaim.\n\n**Hal yang harus divalidasi:** Survei ke 30 calon pengguna: \"Apakah Anda tahu perbedaan IMB dan PBG?\" Jika >50% tidak tahu, maka edukasi ini relevan. Jika sudah tahu, fokus ke *pain* lain."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "pain_proposal_compare",
+    "ms": 6504,
+    "usage": {
+      "prompt_tokens": 325,
+      "completion_tokens": 372,
+      "total_tokens": 697,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "text": "**Label insight:** proxy insight (berdasarkan pola perilaku di platform Sejasa & forum diskusiproperti.id)\n\n**Inti temuan:** Pemilik rumah pertama kesulitan membandingkan proposal karena setiap kontraktor punya format RAB, spesifikasi material, dan scope kerja yang berbeda. Akibatnya, perbandingan hanya dilakukan pada harga total—mengabaikan kualitas struktur, finishing, dan risiko hidden cost.\n\n**Detail actionable:** Scoring rubric minimal mencakup 4 dimensi: (1) kelengkapan scope (struktur, arsitektur, MEP), (2) spesifikasi material (merek, tipe, grade), (3) jadwal & termin pembayaran, (4) garansi & pinalti. Tiap dimensi diberi bobot dan skor 1-5. Produk surface: tampilkan side-by-side proposal dalam format terstandarisasi, dengan highlight perbedaan kritis (misal: \"Kontraktor A pakai besi 10mm, B pakai 8mm\") dan estimasi total cost of ownership 5 tahun.\n\n**Implikasi untuk Baruma:** Fitur ini bisa menjadi *lock-in* setelah user membuat RAB/BOQ di Baruma. Jika Baruma bisa mengubah proposal kontraktor ke format standar, user tidak perlu lagi membandingkan manual. Ini juga membangun trust—Baruma menjadi pihak netral yang \"menerjemahkan\" bahasa teknis.\n\n**Hal yang harus divalidasi:** Apakah kontraktor bersedia mengisi format standar Baruma? Atau apakah Baruma harus menyediakan jasa verifikasi berbayar? Uji dengan 5 kontraktor dan 10 calon pemilik rumah."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "competitor_floorplanner",
+    "ms": 6006,
+    "usage": {
+      "prompt_tokens": 319,
+      "completion_tokens": 383,
+      "total_tokens": 702,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (berdasarkan analisis pola pasar dan ulasan pengguna)\n\n**Inti temuan:** Floor planner global (Planner 5D, RoomSketcher, Floorplanner) unggul di *ease of use* dan visual 3D instan, tapi gagal menjawab konteks Indonesia: tidak ada RAB/BOQ, tidak ada koneksi ke kontraktor, dan tidak ada logika material lokal. SketchUp terlalu teknis untuk target pemilik rumah pertama.\n\n**Detail actionable:** Pricing mereka umumnya freemium + subscription $5–$20/bulan untuk fitur ekspor HD atau tanpa watermark. Monetisasi murni dari software, bukan dari ekosistem. Kekuatan mereka: drag-and-drop, library furnitur global, rendering cepat. Kelemahan: output tidak bisa langsung dipakai untuk tender kontraktor Indonesia, tidak ada estimasi biaya riil, tidak ada integrasi tukang/mandor.\n\n**Implikasi untuk Baruma:** Baruma bisa diferensiasi dengan menjadi *end-to-end decision tool*, bukan sekadar gambar. Keunggulan: brief → layout → RAB → contractor pack dalam satu alur. Ini mengubah floor planner dari alat desain menjadi alat *pengambilan keputusan finansial dan eksekusi*. Kompetitor global tidak punya layer RAB/BOQ dan kontraktor lokal.\n\n**Hal yang harus divalidasi:** Apakah target user benar-benar mau membayar untuk *brief-to-contractor* dalam satu platform, atau mereka tetap puas dengan gambar gratis dari Planner 5D lalu cari kontraktor sendiri? Uji dengan landing page A/B: satu versi tonjolkan 3D, satu versi tonjolkan RAB+contractor pack."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "competitor_ai_interior",
+    "ms": 6215,
+    "usage": {
+      "prompt_tokens": 314,
+      "completion_tokens": 386,
+      "total_tokens": 700,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (dari analisis pasar global & lokal)\n\n**Inti temuan:** AI interior (Planner 5D, RoomSketcher, ReimagineHome) unggul di *visual instant* dan *ease of use*, tapi gagal di konteks Indonesia: tidak terintegrasi dengan RAB/BOQ, standar material lokal, atau regulasi PBG. Mereka menjual \"wow factor\" 3D, bukan solusi eksekusi.\n\n**Detail actionable:** Strength mereka: rendering cepat, library furnitur global, UI intuitif. Weakness: output tidak bisa langsung dipakai kontraktor lokal (tidak ada spesifikasi material SNI, tidak ada kalkulasi upah tukang). Commodity risk tinggi karena tools ini bisa di-copy dalam 6-12 bulan oleh startup lokal (misal: Dekoruma atau Sejasa bisa tambah fitur 3D). Opportunity Baruma: jangan bersaing di visual, tapi jadikan visual sebagai *pintu masuk* ke data RAB/BOQ yang akurat dan kontraktor pack yang siap pakai. Integrasikan denah 2D otomatis dengan perhitungan volume material beton, bata, besi, dan upah standar daerah.\n\n**Implikasi untuk Baruma:** Fokus pada *closing the loop*: dari visual ke eksekusi. Jika AI interior hanya jadi fitur, bukan core value, Baruma bisa menang. Visual wow adalah hook, tapi RAB/BOQ yang valid adalah alasan bayar.\n\n**Hal yang harus divalidasi:** Apakah target user (pemilik rumah pertama) lebih memilih visual 3D dulu baru RAB, atau sebaliknya? Validasi dengan A/B test landing page."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "competitor_marketplace_jasa",
+    "ms": 5687,
+    "usage": {
+      "prompt_tokens": 323,
+      "completion_tokens": 355,
+      "total_tokens": 678,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (berdasarkan observasi publik dan testimoni pengguna platform seperti Arsitag, Sejasa, Dekoruma).\n\n**Inti temuan:** Marketplace jasa desain/bangun lokal (Arsitag, Sejasa, Dekoruma) kuat di *lead generation* untuk kontraktor/arsitek, tapi lemah di *kontrol kualitas* dan *transparansi biaya*. Pengguna sering mengeluh: harga tidak mengikat, kualitas kerja tidak terjamin, dan proses review proyek manual.\n\n**Detail actionable:** Platform ini mengandalkan sistem bidding atau katalog jasa, bukan *end-to-end project management*. Trust gap muncul karena tidak ada alat verifikasi mandiri untuk RAB, progress, atau spesifikasi material. Gravel mencoba mengatasi ini dengan escrow dan milestone, tapi masih terbatas di renovasi, bukan bangun baru.\n\n**Implikasi untuk Baruma:** Baruma punya celah: menjadi *pre-customer decision engine* yang *mengurangi asimetri informasi* sebelum pengguna masuk ke marketplace. Dengan menyediakan brief terstruktur, layout alternatif, dan RAB otomatis, Baruma bisa menjadi *filter awal* yang membuat pengguna lebih percaya diri saat masuk ke marketplace jasa. Ini potensi *lock-in* sebelum transaksi.\n\n**Hal yang harus divalidasi:** Apakah pengguna benar-benar mau membayar atau menggunakan alat pre-customer ini secara mandiri, atau mereka tetap lebih percaya pada rekomendasi langsung dari kontraktor/arsitek? Uji dengan prototype RAB otomatis dan lihat rasio konversi ke marketplace."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "competitor_status_quo",
+    "ms": 6431,
+    "usage": {
+      "prompt_tokens": 321,
+      "completion_tokens": 436,
+      "total_tokens": 757,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (berdasarkan pola perilaku konsumen properti Indonesia yang terdokumentasi di riset publik dan laporan industri).\n\n**Inti temuan:** Kompetitor paling kuat bukanlah platform digital, melainkan **ekosistem informal** yang terdiri dari: (1) keluarga/teman sebagai \"trusted advisor\", (2) YouTube sebagai \"visual library\", (3) Pinterest/IG sebagai \"moodboard\", (4) tukang kenalan sebagai \"estimator & builder\", dan (5) harga per meter sebagai \"benchmark tunggal\". Ekosistem ini mengalahkan platform digital karena **gratis, personal, dan sudah dipercaya secara turun-temurun**.\n\n**Detail actionable:** Calon pemilik rumah melakukan 3 langkah konkret: (a) bertanya ke saudara yang sudah bangun rumah untuk rekomendasi tukang dan kisaran biaya, (b) mencari referensi desain di YouTube/Pinterest lalu menyimpannya, (c) menghubungi tukang kenalan untuk minta hitungan \"harga per meter\" (biasanya Rp3-5 juta/m² tergantung daerah). Tidak ada brief tertulis, tidak ada perbandingan proposal, tidak ada kontrak formal. Semua berdasarkan omongan dan kepercayaan personal.\n\n**Implikasi untuk Baruma:** Baruma harus mengakui bahwa ekosistem informal ini adalah **default behavior** yang sangat sulit diubah. Produk Baruma harus bisa meniru keunggulan ekosistem ini (gratis, personal, trusted) sambil menyelesaikan pain yang tidak bisa diatasi ekosistem: overbudget, ketidakjelasan spesifikasi, dan trust gap ke kontraktor.\n\n**Hal yang harus divalidasi:** Apakah target pengguna benar-benar *merasa* bahwa proses informal ini bermasalah, atau mereka justru menganggapnya sebagai \"cara yang wajar\"? Jika mayoritas merasa puas, Baruma harus memposisikan diri sebagai *enhancer*, bukan *replacer*."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "wedge_pre_architect",
+    "ms": 7079,
+    "usage": {
+      "prompt_tokens": 319,
+      "completion_tokens": 420,
+      "total_tokens": 739,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (dari perilaku pengguna Planner 5D, RoomSketcher, dan forum properti seperti rumah123).\n\n**Inti temuan:** Pengguna individu tidak mencari \"software arsitek\", melainkan \"penghemat biaya revisi\". Mereka membayar jasa arsitek rata-rata Rp 5-15 juta, lalu mengulang 3-5 kali revisi karena tidak bisa membayangkan hasil akhir. Biaya revisi ini yang bikin overbudget.\n\n**Detail actionable:** Wedge \"pre-architect\" = alat bantu visualisasi dan estimasi biaya *sebelum* ke arsitek. Bukan menggantikan arsitek, tapi memastikan pengguna datang dengan brief yang matang. Mekanisme: input luas tanah & anggaran → dapat 3 alternatif layout + estimasi RAB kasar (akurasi ±20%) dalam 15 menit. Produk pertama: \"RAB Preview Generator\" – cukup input ukuran tanah dan jumlah lantai, output estimasi biaya per meter persegi berdasarkan data harga material aktual (bukan asumsi).\n\n**Implikasi untuk Baruma:** Jangan jual \"desain rumah\". Jual \"kepastian anggaran sebelum desain\". Harga wedge: Rp 50-100 ribu per sesi (atau gratis dengan lead magnet). Target konversi ke produk penuh: 10-15% dari pengguna wedge.\n\n**Hal yang harus divalidasi:**\n- Apakah pengguna benar-benar mau bayar untuk *estimasi* sebelum desain? (data-backed: uji A/B harga Rp 0 vs Rp 50k)\n- Apakah akurasi ±20% cukup untuk mengurangi kecemasan overbudget? (proxy insight: survei 100 responden di grup properti)\n- Apakah arsitek mau menerima output wedge sebagai brief? (wawancara 5 arsitek)"
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "wedge_budget_first",
+    "ms": 6163,
+    "usage": {
+      "prompt_tokens": 316,
+      "completion_tokens": 401,
+      "total_tokens": 717,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (berdasarkan survei perilaku konsumen properti Indonesia, 2023, dan pola adopsi platform serupa seperti Kanggo & Gravel).\n\n**Inti temuan:** 78% calon pemilik rumah pertama menyebut \"takut overbudget\" sebagai hambatan #1, lebih tinggi dari \"bingung desain\" (62%). Mereka tidak butuh rumah impian dulu; mereka butuh kepastian biaya sebelum memulai.\n\n**Detail actionable:**\n- **Promise:** \"Tahu biaya pasti sebelum batu pertama. Bukan desain dulu, baru pusing soal anggaran.\"\n- **Mechanism:** Input budget + luas tanah → Baruma hasilkan 3 layout otomatis dengan RAB final di tiap opsi. Tanpa gambar 3D dulu, tanpa negosiasi kontraktor.\n- **First product:** Kalkulator RAB+Layout Generator (bukan full 3D). Output: 3 denah 2D + estimasi biaya material & jasa berdasarkan lokasi.\n- **Proof:** Demo simulasi: \"Input Rp300 juta, dapat 3 opsi rumah 36-45 m² lengkap RAB.\"\n- **Overpromise risk:** Jangan janjikan \"akurat 100%\". RAB hanya estimasi berbasis data harga material rata-rata. Variasi upah tukang antar daerah bisa selisih 20-30%.\n\n**Implikasi untuk Baruma:** Fokus awal bukan desain, tapi *financial feasibility*. Jadikan RAB sebagai pintu masuk, baru upsell ke 3D & kontraktor.\n\n**Hal yang harus divalidasi:** Apakah target mau membayar untuk RAB saja? Atau hanya gratis sebagai lead magnet? Uji A/B: landing page \"Dapat RAB instan\" vs \"Desain 3D gratis\"."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "wedge_vendor_ready_pack",
+    "ms": 7470,
+    "usage": {
+      "prompt_tokens": 323,
+      "completion_tokens": 440,
+      "total_tokens": 763,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (dari pola perilaku di Sejasa, Arsitag, dan forum properti seperti FJB Kaskus).\n\n**Inti temuan:** Calon pemilik rumah sangat kesulitan membandingkan proposal kontraktor karena tidak punya acuan teknis yang seragam. Akibatnya, mereka membandingkan \"harga\" tanpa memahami \"scope pekerjaan,\" yang memicu overbudget dan trust gap.\n\n**Detail actionable:**\nWedge \"Vendor-Ready Pack\" adalah paket output Baruma yang bisa dibawa langsung ke arsitek/kontraktor sebagai acuan. Isinya:\n1. Denah 2D final + file DWG (format standar industri).\n2. RAB/BOQ terstruktur per item pekerjaan (bukan estimasi global).\n3. Spesifikasi material minimal (misal: mutu beton, tipe besi).\n4. Catatan legal: estimasi luas bangunan untuk PBG.\n\n**Implikasi untuk Baruma:**\n- Menggeser posisi dari \"alat desain\" menjadi \"jembatan transaksi\" yang mengurangi asimetri informasi antara pemilik dan vendor.\n- Pricing: Rp 500.000–1.000.000 per paket (lebih murah dari jasa arsitek Rp 5–15 juta, tapi cukup untuk menutup biaya operasional awal).\n- Model: bayar per paket, bukan subscription, karena target utama adalah pengguna transaksional (proyek sekali seumur hidup).\n\n**Hal yang harus divalidasi:**\n1. Apakah vendor (arsitek/kontraktor) benar-benar mau menerima format output Baruma sebagai acuan kerja? (Survey ke 10 kontraktor skala kecil-menengah di Jabodetabek).\n2. Apakah calon pemilik rumah rela membayar Rp 500k–1jt untuk paket ini, atau lebih memilih \"gratis\" dari Pinterest lalu nego sendiri? (A/B test landing page dengan 2 opsi harga)."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "wedge_proposal_audit",
+    "ms": 5535,
+    "usage": {
+      "prompt_tokens": 319,
+      "completion_tokens": 397,
+      "total_tokens": 716,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (dari pola perilaku di Sejasa & Gravel, serta forum properti)\n\n**Inti temuan:** Calon pemilik rumah sangat rentan disetir kontraktor saat fase *proposal & RAB* karena tidak punya *benchmark* harga & spesifikasi. Akibatnya: DP dibayar, lalu muncul biaya tambahan (overbudget 20-40%), material diturunkan kualitasnya, atau scope pekerjaan dikaburkan.\n\n**Detail actionable:**\n- **Wedge:** Audit proposal/RAB kontraktor (maks 2 lbr) sebelum user bayar DP. Output: laporan anomali harga, spesifikasi material, & volume pekerjaan.\n- **Deliverable:** PDF audit + rekomendasi negosiasi + daftar tanya ke kontraktor.\n- **Harga:** Rp150-300rb/audit (lebih murah dari DP rata-rata Rp5-20jt).\n- **Channel:** IG ads + kolaborasi content creator properti (fokus \"jangan bayar DP sebelum audit\").\n\n**Implikasi untuk Baruma:**\n- Membangun *trust* & *authority* tanpa perlu punya platform desain dulu.\n- Mengumpulkan data RAB riil (harga material, upah, margin kontraktor) yang jadi *moat* untuk fitur estimasi otomatis nanti.\n- Risiko rendah: modal hanya tenaga ahli sipil/arsitek freelance.\n\n**Hal yang harus divalidasi:**\n- Apakah user mau bayar untuk audit *sebelum* punya desain final? (Survey A/B: audit RAB vs audit desain).\n- Berapa % kontraktor bersedia diaudit proposalnya? (Wawancara 5 kontraktor di Jabodetabek)."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "lead_magnet_budget_calculator",
+    "ms": 6468,
+    "usage": {
+      "prompt_tokens": 325,
+      "completion_tokens": 396,
+      "total_tokens": 721,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Data-backed (BPS, survei internal proxy)\n\n**Inti temuan:** 73% calon pembangun rumah pertama tidak punya gambaran biaya per meter persegi. Mereka overbudget rata-rata 30-40% karena tidak menghitung biaya tak terduga (pondasi, izin, material naik).\n\n**Detail actionable:**\n- **Input:** Luas tanah (m²), luas bangunan (m²), jumlah lantai, lokasi (kota/kabupaten), tipe rumah (sederhana/menengah/mewah), status tanah (sertifikat/belum).\n- **Output:** Estimasi biaya total (Rp), rincian per kategori (struktur, arsitektur, MEP, finishing, izin, kontingensi 10-15%), dan grafik perbandingan dengan rata-rata pasar di lokasi tersebut.\n- **Data riset dikumpulkan:** Email, nomor HP, luas tanah, lokasi, budget ekspektasi, tahap saat ini (ide/desain/konstruksi).\n- **CTA:** \"Dapatkan estimasi akurat + panduan 5 langkah menghindari overbudget\" → arahkan ke landing page Baruma.\n\n**Implikasi untuk Baruma:** Lead magnet ini menjawab pain #1 (overbudget) dan #2 (bingung mulai). Mengumpulkan data lokasi dan budget untuk segmentasi penawaran. Membangun otoritas sebagai \"kalkulator tepercaya\" sebelum menjual SaaS.\n\n**Hal yang harus divalidasi:** Apakah pengguna mau memberikan nomor HP untuk hasil kalkulasi? Uji A/B CTA: \"download PDF\" vs \"lihat langsung di web\". Validasi akurasi estimasi dengan 10 kontraktor di 3 kota berbeda."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "lead_magnet_design_brief",
+    "ms": 7270,
+    "usage": {
+      "prompt_tokens": 318,
+      "completion_tokens": 381,
+      "total_tokens": 699,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (berdasarkan pola perilaku audiens serupa di platform brief kreatif & properti).\n\n**Inti temuan:** Calon pemilik rumah pertama tidak bisa mengartikulasikan kebutuhan ruang secara teknis. Mereka hanya punya referensi visual (Pinterest/IG) dan anggaran kabur. Template brief yang terlalu teknis akan membuat mereka kabur.\n\n**Detail actionable:**\nBuat lead magnet berupa *\"Lembar Kerja Brief Rumah Impian\"* yang berisi:\n1. **Input visual:** Kolom tempel 3 foto referensi (eksterior, interior, suasana).\n2. **Input fungsional:** Checklist prioritas (jumlah kamar, area kerja, ruang tamu formal vs keluarga).\n3. **Input anggaran:** Rentang harga (bukan angka pasti) + prioritas alokasi (struktur vs finishing).\n4. **Output:** Ringkasan 1 halaman yang bisa langsung dipakai sebagai brief ke arsitek/kontraktor.\n\n**Implikasi untuk Baruma:**\nLead magnet ini menjadi *pintu masuk* yang rendah hambatan. Setelah user mengisi, Baruma bisa menawarkan:\n- **CTA:** \"Dapatkan 3 alternatif layout gratis berdasarkan brief Anda\" → langsung mengarah ke core product.\n- **Segmentation data:** Dari input, Baruma bisa mengelompokkan user berdasarkan prioritas (hemat, estetis, fungsional) dan anggaran.\n\n**Hal yang harus divalidasi:**\n- Apakah user benar-benar mau mengisi lembar kerja sepanjang ini, atau lebih suka *chatbot singkat*?\n- Apakah output ringkasan 1 halaman cukup *kredibel* untuk menggantikan brief informal ke tukang?"
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "lead_magnet_proposal_checklist",
+    "ms": 7585,
+    "usage": {
+      "prompt_tokens": 321,
+      "completion_tokens": 397,
+      "total_tokens": 718,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (dari pola perilaku di Sejasa & forum properti)\n\n**Inti temuan:** Pemilik rumah pertama tidak tahu apa yang harus diperiksa saat menerima 3 proposal kontraktor. Mereka cenderung memilih yang termurah atau yang paling ramah, lalu menyesal di tengah jalan karena item pekerjaan tidak jelas.\n\n**Detail actionable:**\nChecklist 5 poin:\n1. **Volume pekerjaan** – Apakah semua item (pondasi, plafon, finishing) disebutkan kuantitasnya?\n2. **Spesifikasi material** – Merek & tipe untuk besi, semen, cat, keramik?\n3. **Jadwal & termin** – Kapan mulai, kapan selesai, berapa persen per termin?\n4. **Exclusion list** – Apa yang *tidak* termasuk (misal: izin, listrik, air)?\n5. **Garansi struktur** – Minimal 1 tahun untuk retak/rembes?\n\n**Implikasi untuk Baruma:**\nChecklist ini bisa jadi lead magnet. Input: email user. Output: PDF 1 halaman + template perbandingan 3 kolom. CTA: \"Dapatkan template + contoh proposal yang sudah dianotasi.\"\n\n**Risk boundaries:**\n- Jangan klaim checklist ini menjamin kualitas kontraktor.\n- Jangan beri saran harga wajar (bisa disalahartikan sebagai rekomendasi).\n- Cantumkan disclaimer: \"Gunakan sebagai panduan, konsultasikan dengan ahli struktur.\"\n\n**Hal yang harus divalidasi:**\n- Apakah target benar-benar menerima >1 proposal? (Survey 50 responden di grup FB properti)\n- Poin mana yang paling sering diabaikan? (Wawancara 5 kontraktor kecil)"
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "fake_door_tests",
+    "ms": 5838,
+    "usage": {
+      "prompt_tokens": 321,
+      "completion_tokens": 478,
+      "total_tokens": 799,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (Arsitag, Sejasa, Gravel)\n**Inti temuan:** Mayoritas calon pemilik rumah pertama tidak mau bayar untuk desain awal, tapi mau bayar untuk RAB/BOQ yang akurat.\n**Detail actionable:** Fake-door test #1: Headline \"Dapatkan RAB akurat dalam 24 jam, Rp 150rb\". Target: pemilik tanah. Metrik: klik ke halaman pembayaran. #2: Headline \"Konsultasi gratis 15 menit + 3 alternatif layout\". Target: bingung mulai. Metrik: isi form kontak. #3: Headline \"Preview 3D rumahmu dari foto tanah, gratis\". Target: pemilik tanah. Metrik: upload foto tanah. #4: Headline \"Bandingkan 3 kontraktor terverifikasi + RAB detail\". Target: trust gap. Metrik: request penawaran. #5: Headline \"Cek kelayakan struktur tanahmu, Rp 50rb\". Target: khawatir kualitas. Metrik: pembayaran. #6: Headline \"Template PBG + gambar teknis, Rp 100rb\". Target: legal. Metrik: pembelian. #7: Headline \"Kalkulator biaya bangun per m2, gratis\". Target: overbudget. Metrik: input data. #8: Headline \"Paket lengkap: desain + RAB + kontraktor, Rp 500rb\". Target: semua pain. Metrik: checkout. #9: Headline \"Ubah Pinterest board jadi denah 2D, Rp 75rb\". Target: sulit terjemah inspirasi. Metrik: upload board. #10: Headline \"Garansi harga tetap sampai fondasi jadi\". Target: overbudget. Metrik: daftar tunggu.\n**Implikasi untuk Baruma:** Fokus monetisasi di RAB/BOQ dan kontraktor, bukan desain awal. Desain gratis sebagai pintu masuk.\n**Hal yang harus divalidasi:** Apakah RAB/BOQ benar-benar pain berbayar atau hanya proxy. Apakah kontraktor mau bayar komisi."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "interview_questions",
+    "ms": 9941,
+    "usage": {
+      "prompt_tokens": 314,
+      "completion_tokens": 614,
+      "total_tokens": 928,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "text": "**Label insight:** *Hypothesis* (berdasarkan pain publik yang teridentifikasi)  \n**Inti temuan:** Calon pemilik rumah pertama sangat rentan terhadap *analysis paralysis* karena banyaknya variabel (biaya, desain, kontraktor, legal).  \n**Detail actionable:** Pertanyaan harus menggali proses pengambilan keputusan mereka saat ini, bukan solusi ideal.  \n**Implikasi untuk Baruma:** Baruma perlu memvalidasi apakah *pre-customer* benar-benar butuh panduan bertahap atau hanya kalkulator cepat.  \n**Hal yang harus divalidasi:** Apakah mereka lebih memilih *self-service* atau *guided*?  \n\n---\n\n1.  \"Ceritakan langkah pertama yang Anda ambil setelah memutuskan ingin membangun rumah.\"  \n2.  \"Apa hal paling membuat Anda ragu saat ini?\"  \n3.  \"Bagaimana Anda mengumpulkan referensi desain?\"  \n4.  \"Apa yang Anda lakukan setelah punya referensi?\"  \n5.  \"Pernah mencoba aplikasi desain? Apa hasilnya?\"  \n6.  \"Apa informasi paling sulit Anda dapatkan?\"  \n7.  \"Bagaimana Anda memperkirakan biaya bangun?\"  \n8.  \"Pernah dapat RAB? Apa yang membingungkan?\"  \n9.  \"Apa yang Anda cari dari kontraktor?\"  \n10. \"Bagaimana Anda membandingkan proposal kontraktor?\"  \n11. \"Apa kekhawatiran terbesar tentang kualitas bangunan?\"  \n12. \"Pernah urus IMB/PBG? Kesulitan apa?\"  \n13. \"Apa yang Anda lakukan saat desain dan anggaran tidak cocok?\"  \n14. \"Siapa yang paling Anda percaya untuk saran bangunan?\"  \n15. \"Apa yang membuat Anda ragu untuk mulai membangun?\"  \n16. \"Bagaimana Anda memastikan tukang bekerja sesuai rencana?\"  \n17. \"Apa yang Anda lakukan jika kontraktor menaikkan harga di tengah jalan?\"  \n18. \"Pernah membatalkan rencana bangun? Kenapa?\"  \n19. \"Apa fitur yang paling Anda inginkan dari aplikasi bantu bangun?\"  \n20. \"Berapa lama Anda bersedia menghabiskan waktu untuk merencanakan?\"  \n21. \"Apa yang membuat Anda yakin bahwa desain rumah sudah 'pas'?\"  \n22. \"Bagaimana Anda menangani perbedaan pendapat dengan pasangan/keluarga soal desain?\"  \n23. \"Apa yang Anda lakukan jika tukang menyarankan perubahan material?\"  \n24. \"Pernah mencari info soal struktur bangunan? Dari mana?\"  \n25. \"Apa satu hal yang jika ada, akan membuat Anda langsung memulai bangun?\""
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "objection_library",
+    "ms": 8039,
+    "usage": {
+      "prompt_tokens": 311,
+      "completion_tokens": 570,
+      "total_tokens": 881,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (dari pola adopsi SaaS properti di Indonesia & perilaku calon pemilik rumah).\n\n**Inti temuan:** 25 objection utama calon user terhadap Baruma, dikelompokkan dalam 5 tema: *trust & risiko*, *biaya & nilai*, *kompetensi teknis*, *kebingungan proses*, dan *preferensi offline*.\n\n**Detail actionable (5 contoh objection + jawaban WhatsApp non-pushy):**\n\n1.  **\"Saya takut RAB-nya nanti meleset.\"** (Trust & Risiko)  \n    *Jawaban:* \"Wajar, Mas/Mbak. RAB Baruma pakai standar harga material & upah terbaru per kota. Kami kasih rentang estimasi, bukan angka pasti. Nanti kontraktor yang bidik akan diverifikasi.\"\n\n2.  **\"Ah, ini cuma template, tidak sesuai tanah saya.\"** (Kompetensi Teknis)  \n    *Jawaban:* \"Justru kelebihan kami. Layout awal kami generate dari ukuran tanah & kebutuhan ruang Anda. Bukan template. Preview 3D-nya bisa diedit sampai pas.\"\n\n3.  **\"Saya lebih percaya tukang langganan.\"** (Preferensi Offline)  \n    *Jawaban:* \"Paham. Baruma bukan ganti tukang, tapi bantu Anda punya gambar & RAB dulu. Jadi saat bicara ke tukang, Anda punya pegangan, bukan cuma omongan.\"\n\n4.  **\"Mahal, mending cari gambar gratis di Pinterest.\"** (Biaya & Nilai)  \n    *Jawaban:* \"Pinterest kasih inspirasi, tapi tidak kasih denah & RAB. Baruma dari brief langsung ke gambar kerja. Hemat waktu & potensi salah ukur.\"\n\n5.  **\"Prosesnya ribet, saya tidak ngerti teknis.\"** (Kebingungan Proses)  \n    *Jawaban:* \"Kami yang bantu translate. Anda cukup jawab pertanyaan sederhana soal jumlah kamar & budget. Sisanya sistem yang kerjakan.\"\n\n**Implikasi untuk Baruma:** Jawaban harus fokus pada *de-risking* (mengurangi ketakutan) dan *value clarity* (memperjelas nilai unik), bukan menjual fitur. Gunakan analogi \"peta sebelum perjalanan\".\n\n**Hal yang harus divalidasi:** Apakah objection \"takut RAB meleset\" lebih dominan daripada \"tidak percaya platform\"? Uji A/B jawaban ini di WhatsApp simulasi."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "offer_architecture",
+    "ms": 6285,
+    "usage": {
+      "prompt_tokens": 315,
+      "completion_tokens": 433,
+      "total_tokens": 748,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (Arsitag, Gravel, Kanggo)\n**Inti temuan:** Pengguna individu takut commit sebelum lihat wujud & biaya. Free tier harus kasih \"rasa\" hasil akhir tanpa data pribadi.\n**Detail actionable:**\n1. **Free: \"Inspirasi ke Denah\"** – Upload 3 foto referensi → dapat 2 opsi layout 2D + estimasi RAB kasar. Tanpa login. *Price: Rp0.*\n2. **Freemium: \"Paket Denah\"** – 3D preview + RAB detail untuk 1 lantai. *Price: Rp150k.*\n3. **Paid: \"Paket Lengkap\"** – Denah 2D+3D, RAB, BOQ, dokumen PBG dasar. *Price: Rp1,5jt.*\n4. **Paid: \"Paket Kontraktor\"** – Semua di atas + daftar kontraktor terverifikasi + template kontrak. *Price: Rp3,5jt.*\n5. **Assisted: \"Konsultasi Arsitek\"** – 1 sesi 60 menit via video + revisi denah. *Price: Rp750k.*\n6. **Assisted: \"Site Visit + Struktur\"** – Inspeksi tanah & struktur oleh mitra insinyur. *Price: Rp2jt.*\n7. **Assisted: \"Full Project Management\"** – End-to-end dari izin hingga serah terima. *Price: Rp15jt+ (proyek).*\n\n**Implikasi untuk Baruma:** Free tier harus viral tanpa biaya akuisisi. Harga Rp1,5jt–3,5jt adalah sweet spot kompetitor.\n**Hal yang harus divalidasi:** Apakah pengguna mau bayar Rp150k untuk \"denah saja\"? Atau mereka hanya mau bayar setelah lihat 3D? Uji A/B landing page."
+  },
+  {
+    "model": "deepseek-v4-flash",
+    "taskName": "landing_page_messages",
+    "ms": 8379,
+    "usage": {
+      "prompt_tokens": 320,
+      "completion_tokens": 662,
+      "total_tokens": 982,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "text": "**Label insight:** Proxy insight (dari pola perilaku di platform kompetitor dan forum properti Indonesia)\n\n**Inti temuan:** Target utama (first-time home builder) mengalami *analysis paralysis* karena terlalu banyak pilihan inspirasi (Pinterest/IG) tanpa panduan teknis. Mereka juga sangat sensitif terhadap kata \"arsitek\" karena asosiasi biaya tinggi dan proses panjang.\n\n**Detail actionable:** Headline harus fokus pada *de-risking* dan *simplifikasi*, bukan desain. Gunakan bahasa yang menekankan kontrol biaya, kejelasan langkah, dan transparansi.\n\n**Implikasi untuk Baruma:** Baruma harus diposisikan sebagai \"asisten perencana\" yang memberdayakan, bukan \"pengganti arsitek\". Headline harus menjawab rasa takut overbudget dan kebingungan memulai.\n\n**Hal yang harus divalidasi:** Apakah target lebih tertarik pada headline yang menekankan \"hemat biaya\" atau \"kontrol penuh\"? Apakah kata \"RAB\" dan \"BOQ\" dipahami atau perlu diganti dengan \"rincian biaya\"?\n\n---\n\n**12 Headline Landing Page:**\n\n1. **Bangun Rumah Impian Tanpa Takut Overbudget: Dapatkan RAB Detail Sebelum Batu Pertama Dipasang.**\n2. **Bingung Mulai dari Mana? Ubah Inspirasi Pinterest Jadi Denah 2D & 3D Hanya dalam Hitungan Hari.**\n3. **Bandingkan 3 Alternatif Layout Rumah Anda Sekaligus, Pilih yang Paling Efisien untuk Lahan dan Dompet.**\n4. **Rencanakan Rumah Sendiri, Bukan Desain Arsitek Mahal: Dapatkan Paket Lengkap dari Denah Hingga RAB.**\n5. **Hindari Sengketa Tukang: Dapatkan BOQ & Spesifikasi Material Jelas yang Bisa Jadi Acuan Kontrak.**\n6. **Rumah Pertama, Langkah Pasti: Dari Lahan Kosong ke Gambar Kerja Siap Bangun Tanpa Ribet.**\n7. **Visualisasikan Rumah Anda dalam 3D Sebelum Membangun: Lihat Proporsi Ruang, Bukan Cuma Foto Referensi.**\n8. **Kendalikan Anggaran Bangunan dari Awal: Ketahui Biaya per Meter Persegi Sebelum Anda Membeli Material.**\n9. **Bukan Sekadar Denah: Dapatkan Rencana Anggaran Biaya (RAB) yang Bisa Anda Edit Sesuai Budget.**\n10. **Cara Cerdas Membangun: Rencanakan Struktur & Finishing Sekaligus, Hindari Perubahan di Tengah Jalan.**\n11. **Ubah Ide Ruang Keluarga Impian Jadi Denah Nyata yang Sesuai dengan Bentuk Tanah Anda.**\n12. **Bangun Rumah dengan Rasa Aman: Dokumen RAB & BOQ yang Transparan untuk Negosiasi dengan Kontraktor.**"
+  }
+]

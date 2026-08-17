@@ -1,0 +1,13 @@
+# Build script paket berikut sengaja TIDAK dijalankan (perilaku yang sudah
+# berlaku selama ini). pnpm v11 menolak jalan bila keputusan ini tidak
+# eksplisit (ERR_PNPM_IGNORED_BUILDS), sehingga `pnpm exec` — termasuk
+# webServer Playwright — gagal start. Nilai false = pertahankan status quo.
+allowBuilds:
+  core-js: false
+  onnxruntime-node: false
+  protobufjs: false
+  sharp: false
+  unrs-resolver: false
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver

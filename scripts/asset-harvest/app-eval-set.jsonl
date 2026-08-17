@@ -1,0 +1,238 @@
+{"q":"hapus lampu eksterior","expect":"action:removeLamp","name":"removeLamp","type":"action","kind":"by_name"}
+{"q":"lampu taman depan saya terlalu terang dan mengganggu tetangga, tolong dihilangkan saja.","expect":"action:removeLamp","name":"removeLamp","type":"action","kind":"by_goal"}
+{"q":"hapus lampu dalam ruang","expect":"action:removeLight","name":"removeLight","type":"action","kind":"by_name"}
+{"q":"lampu di kamar tidur ini sudah tidak dipakai karena saya ganti dengan model lain, hapus saja.","expect":"action:removeLight","name":"removeLight","type":"action","kind":"by_goal"}
+{"q":"hapus zona atap","expect":"action:removeRoofZone","name":"removeRoofZone","type":"action","kind":"by_name"}
+{"q":"saya tidak jadi membuat atap tambahan di bagian belakang, tolong buang saja dari denah.","expect":"action:removeRoofZone","name":"removeRoofZone","type":"action","kind":"by_goal"}
+{"q":"hapus titik air","expect":"action:removeWaterPoint","name":"removeWaterPoint","type":"action","kind":"by_name"}
+{"q":"keran di taman belakang itu tidak jadi dipasang, hapus saja dari rencana.","expect":"action:removeWaterPoint","name":"removeWaterPoint","type":"action","kind":"by_goal"}
+{"q":"Pasang titik listrik otomatis","expect":"action:autoGenerateElectrical","name":"autoGenerateElectrical","type":"action","kind":"by_name"}
+{"q":"Saya malas hitung titik lampu dan stopkontak satu per satu, tolong buatkan otomatis sesuai standar","expect":"action:autoGenerateElectrical","name":"autoGenerateElectrical","type":"action","kind":"by_goal"}
+{"q":"Buat titik air otomatis","expect":"action:autoGenerateWater","name":"autoGenerateWater","type":"action","kind":"by_name"}
+{"q":"Biar cepat, tolong tempatkan keran dan saluran air di dapur dan kamar mandi secara otomatis","expect":"action:autoGenerateWater","name":"autoGenerateWater","type":"action","kind":"by_goal"}
+{"q":"Sesuaikan ukuran septic tank","expect":"action:autoSizeSanitation","name":"autoSizeSanitation","type":"action","kind":"by_name"}
+{"q":"Saya khawatir septic tank dan resapan tidak sesuai standar, tolong hitung ulang ukurannya","expect":"action:autoSizeSanitation","name":"autoSizeSanitation","type":"action","kind":"by_goal"}
+{"q":"Hapus atap parsial","expect":"action:clearRooftopArea","name":"clearRooftopArea","type":"action","kind":"by_name"}
+{"q":"Atap saya hanya menutupi setengah bangunan, saya ingin seluruh atap rata tanpa bagian yang dikurangi","expect":"action:clearRooftopArea","name":"clearRooftopArea","type":"action","kind":"by_goal"}
+{"q":"Tambah sofa ke ruang tamu","expect":"action:addFurniture","name":"addFurniture","type":"action","kind":"by_name"}
+{"q":"saya mau taruh sofa tiga dudukan di ruang tamu, dekat jendela","expect":"action:addFurniture","name":"addFurniture","type":"action","kind":"by_goal"}
+{"q":"Pasang lampu gantung di kamar","expect":"action:addLight","name":"addLight","type":"action","kind":"by_name"}
+{"q":"kamar tidur utama gelap, saya ingin lampu gantung di tengah plafon","expect":"action:addLight","name":"addLight","type":"action","kind":"by_goal"}
+{"q":"Buat pintu geser ke teras","expect":"action:addOpening","name":"addOpening","type":"action","kind":"by_name"}
+{"q":"saya mau akses ke teras dari ruang keluarga, bikin pintu geser lebar","expect":"action:addOpening","name":"addOpening","type":"action","kind":"by_goal"}
+{"q":"Tambah atap miring di sisi dapur","expect":"action:addRoofZone","name":"addRoofZone","type":"action","kind":"by_name"}
+{"q":"dapur perlu atap terpisah yang lebih tinggi dari ruang utama","expect":"action:addRoofZone","name":"addRoofZone","type":"action","kind":"by_goal"}
+{"q":"tambah ruang baru di lantai ini","expect":"action:addRoom","name":"addRoom","type":"action","kind":"by_name"}
+{"q":"saya butuh kamar tidur tambahan di lantai dua, tolong buatkan.","expect":"action:addRoom","name":"addRoom","type":"action","kind":"by_goal"}
+{"q":"pasang lampu dinding luar","expect":"action:addWallLamp","name":"addWallLamp","type":"action","kind":"by_name"}
+{"q":"teras depan gelap, saya ingin lampu di tembok luar ruang tamu.","expect":"action:addWallLamp","name":"addWallLamp","type":"action","kind":"by_goal"}
+{"q":"tambah titik air seperti kloset","expect":"action:addWaterPoint","name":"addWaterPoint","type":"action","kind":"by_name"}
+{"q":"kamar mandi belum ada kloset, tolong pasang di pojok kiri.","expect":"action:addWaterPoint","name":"addWaterPoint","type":"action","kind":"by_goal"}
+{"q":"terapkan template fasad modern","expect":"action:applyFacadeTemplate","name":"applyFacadeTemplate","type":"action","kind":"by_name"}
+{"q":"rumah saya tampak biasa, saya ingin fasad bergaya modern dan rapi.","expect":"action:applyFacadeTemplate","name":"applyFacadeTemplate","type":"action","kind":"by_goal"}
+{"q":"memindahkan lampu gantung di ruang tamu","expect":"action:moveLight","name":"moveLight","type":"action","kind":"by_name"}
+{"q":"lampu di ruang tamu terlalu dekat dengan jendela, saya ingin lampu itu lebih ke tengah ruangan","expect":"action:moveLight","name":"moveLight","type":"action","kind":"by_goal"}
+{"q":"memindahkan septic tank ke pojok belakang","expect":"action:moveSanitationObject","name":"moveSanitationObject","type":"action","kind":"by_name"}
+{"q":"septic tank saya sekarang terlalu dekat dengan sumur, tolong pindahkan ke sudut belakang lahan","expect":"action:moveSanitationObject","name":"moveSanitationObject","type":"action","kind":"by_goal"}
+{"q":"memindahkan kran air di dapur","expect":"action:moveWaterPoint","name":"moveWaterPoint","type":"action","kind":"by_name"}
+{"q":"kran air di dapur terlalu dekat dengan kompor, saya ingin kran itu digeser ke dekat wastafel","expect":"action:moveWaterPoint","name":"moveWaterPoint","type":"action","kind":"by_goal"}
+{"q":"menghapus stopkontak di ruang keluarga","expect":"action:removeElectricalPoint","name":"removeElectricalPoint","type":"action","kind":"by_name"}
+{"q":"stopkontak di ruang keluarga sudah tidak terpakai dan mengganggu penempatan sofa, hapus saja","expect":"action:removeElectricalPoint","name":"removeElectricalPoint","type":"action","kind":"by_goal"}
+{"q":"hapus bukaan yang tidak perlu","expect":"action:deleteOpening","name":"deleteOpening","type":"action","kind":"by_name"}
+{"q":"saya mau menghilangkan jendela di dapur karena menghadap ke tetangga","expect":"action:deleteOpening","name":"deleteOpening","type":"action","kind":"by_goal"}
+{"q":"hapus ruang yang tidak dipakai","expect":"action:deleteRoom","name":"deleteRoom","type":"action","kind":"by_name"}
+{"q":"saya mau membatalkan ruang tamu yang sudah tidak dibutuhkan lagi","expect":"action:deleteRoom","name":"deleteRoom","type":"action","kind":"by_goal"}
+{"q":"pindahkan titik listrik","expect":"action:moveElectricalPoint","name":"moveElectricalPoint","type":"action","kind":"by_name"}
+{"q":"saya mau stop kontak di kamar tidur dipindah ke dekat meja belajar","expect":"action:moveElectricalPoint","name":"moveElectricalPoint","type":"action","kind":"by_goal"}
+{"q":"pindahkan furnitur","expect":"action:moveFurniture","name":"moveFurniture","type":"action","kind":"by_name"}
+{"q":"saya mau sofa di ruang keluarga digeser ke pojok dekat jendela","expect":"action:moveFurniture","name":"moveFurniture","type":"action","kind":"by_goal"}
+{"q":"menambahkan titik listrik di ruangan","expect":"action:addElectricalPoint","name":"addElectricalPoint","type":"action","kind":"by_name"}
+{"q":"saya mau ada stopkontak di dekat jendela kamar tidur utama, dan satu saklar di dekat pintu masuk","expect":"action:addElectricalPoint","name":"addElectricalPoint","type":"action","kind":"by_goal"}
+{"q":"menambahkan elemen eksterior ke halaman","expect":"action:addExteriorElement","name":"addExteriorElement","type":"action","kind":"by_name"}
+{"q":"saya ingin ada pagar rendah di depan rumah dan jalan setapak dari pintu ke gerbang","expect":"action:addExteriorElement","name":"addExteriorElement","type":"action","kind":"by_goal"}
+{"q":"menambahkan kisi-kisi fasad pada dinding","expect":"action:addFacadeElement","name":"addFacadeElement","type":"action","kind":"by_name"}
+{"q":"saya mau dinding luar ruang tamu tampak lebih modern dengan kisi-kisi vertikal yang lebar","expect":"action:addFacadeElement","name":"addFacadeElement","type":"action","kind":"by_goal"}
+{"q":"menambahkan lantai baru ke denah","expect":"action:addFloor","name":"addFloor","type":"action","kind":"by_name"}
+{"q":"saya ingin menambah lantai dua di atas ruang keluarga, supaya ada kamar tambahan","expect":"action:addFloor","name":"addFloor","type":"action","kind":"by_goal"}
+{"q":"Saya ingin menata ulang ruangan ini dari awal secara otomatis","expect":"action:resetRoom","name":"resetRoom","type":"action","kind":"by_name"}
+{"q":"Ruang tamu ini berantakan, tolong atur ulang semuanya biar rapi.","expect":"action:resetRoom","name":"resetRoom","type":"action","kind":"by_goal"}
+{"q":"Putar sofa ini 90 derajat ke arah lain","expect":"action:rotateFurniture","name":"rotateFurniture","type":"action","kind":"by_name"}
+{"q":"Sofa di ruang keluarga menghadap ke dinding, tolong putar biar menghadap TV.","expect":"action:rotateFurniture","name":"rotateFurniture","type":"action","kind":"by_goal"}
+{"q":"Ubah atap rumah menjadi model pelana","expect":"action:setRoof","name":"setRoof","type":"action","kind":"by_name"}
+{"q":"Atap rumah sekarang terlalu datar, saya mau yang lebih curam dan klasik.","expect":"action:setRoof","name":"setRoof","type":"action","kind":"by_goal"}
+{"q":"Buat lantai rooftop di atas rumah","expect":"action:setRooftop","name":"setRooftop","type":"action","kind":"by_name"}
+{"q":"Saya ingin ada area terbuka di atap untuk bersantai dan berkebun.","expect":"action:setRooftop","name":"setRooftop","type":"action","kind":"by_goal"}
+{"q":"saya mau bikin teras di atap belakang ukuran 3x4 meter","expect":"action:setRooftopArea","name":"setRooftopArea","type":"action","kind":"by_name"}
+{"q":"saya ingin area atap belakang dijadikan teras terbuka, sisanya tetap atap biasa","expect":"action:setRooftopArea","name":"setRooftopArea","type":"action","kind":"by_goal"}
+{"q":"tanah di lahan saya lembek, perlu disesuaikan","expect":"action:setSoilBearing","name":"setSoilBearing","type":"action","kind":"by_name"}
+{"q":"saya khawatir pondasi rumah aman karena tanahnya lunak, mohon dihitung ulang","expect":"action:setSoilBearing","name":"setSoilBearing","type":"action","kind":"by_goal"}
+{"q":"saya ingin rumah bergaya minimalis modern","expect":"action:setStyle","name":"setStyle","type":"action","kind":"by_name"}
+{"q":"saya mau seluruh ruangan di rumah ini punya nuansa yang seragam dan modern","expect":"action:setStyle","name":"setStyle","type":"action","kind":"by_goal"}
+{"q":"saya mau dinding kamar utama pakai batu alam","expect":"action:setWallCladding","name":"setWallCladding","type":"action","kind":"by_name"}
+{"q":"saya ingin dinding luar kamar utama dilapisi batu alam agar terlihat alami","expect":"action:setWallCladding","name":"setWallCladding","type":"action","kind":"by_goal"}
+{"q":"mengubah titik air yang sudah ada","expect":"action:updateWaterPoint","name":"updateWaterPoint","type":"action","kind":"by_name"}
+{"q":"saya ingin mengganti wastafel di dapur menjadi tipe cuci piring dan menambah catatan untuk pipa","expect":"action:updateWaterPoint","name":"updateWaterPoint","type":"action","kind":"by_goal"}
+{"q":"memasang jendela awning","expect":"element:awning_window","name":"awning_window","type":"element","kind":"by_name"}
+{"q":"saya mau ventilasi di kamar mandi, yang bisa dibuka walau hujan","expect":"element:awning_window","name":"awning_window","type":"element","kind":"by_goal"}
+{"q":"menambahkan bukaan fasad tetap","expect":"element:cantilever_opening","name":"cantilever_opening","type":"element","kind":"by_name"}
+{"q":"saya butuh jendela yang tidak bisa dibuka tapi tetap ada peneduh dari sinar matahari","expect":"element:cantilever_opening","name":"cantilever_opening","type":"element","kind":"by_goal"}
+{"q":"memasang jendela casement","expect":"element:casement_window","name":"casement_window","type":"element","kind":"by_name"}
+{"q":"saya ingin jendela yang bisa dibuka lebar ke luar untuk sirkulasi udara","expect":"element:casement_window","name":"casement_window","type":"element","kind":"by_goal"}
+{"q":"mengubah tipe titik listrik di ruang tamu","expect":"action:updateElectricalPoint","name":"updateElectricalPoint","type":"action","kind":"by_name"}
+{"q":"saya butuh stopkontak di ruang tamu diganti jadi tipe yang ada USB-nya, karena sering charge HP","expect":"action:updateElectricalPoint","name":"updateElectricalPoint","type":"action","kind":"by_goal"}
+{"q":"mengubah material dinding luar tembok","expect":"action:updateExteriorElement","name":"updateExteriorElement","type":"action","kind":"by_name"}
+{"q":"tembok luar rumah saya mau diganti warna cat dari putih jadi krem biar lebih hangat","expect":"action:updateExteriorElement","name":"updateExteriorElement","type":"action","kind":"by_goal"}
+{"q":"mengubah ukuran jendela fasad depan","expect":"action:updateFacadeElement","name":"updateFacadeElement","type":"action","kind":"by_name"}
+{"q":"jendela kamar depan terlalu kecil, saya mau diperbesar biar cahaya masuk lebih banyak","expect":"action:updateFacadeElement","name":"updateFacadeElement","type":"action","kind":"by_goal"}
+{"q":"mengganti lampu teras yang sudah ada","expect":"action:updateLamp","name":"updateLamp","type":"action","kind":"by_name"}
+{"q":"lampu di teras depan terlalu redup, saya mau diganti dengan yang lebih terang","expect":"action:updateLamp","name":"updateLamp","type":"action","kind":"by_goal"}
+{"q":"Saya ingin mengganti lampu gantung dengan lampu sorot di ruang tamu","expect":"action:updateLight","name":"updateLight","type":"action","kind":"by_name"}
+{"q":"Lampu di ruang tamu terlalu terang dan silau, saya mau yang lebih redup dan hangat","expect":"action:updateLight","name":"updateLight","type":"action","kind":"by_goal"}
+{"q":"Tolong ubah jendela kamar tidur jadi lebih lebar","expect":"action:updateOpening","name":"updateOpening","type":"action","kind":"by_name"}
+{"q":"Jendela kamar saya terlalu kecil, saya mau pemandangan taman lebih terlihat","expect":"action:updateOpening","name":"updateOpening","type":"action","kind":"by_goal"}
+{"q":"Saya mau atap teras diperpanjang sampai ke pinggir","expect":"action:updateRoofZone","name":"updateRoofZone","type":"action","kind":"by_name"}
+{"q":"Atap teras terlalu pendek, hujan sering masuk ke dalam","expect":"action:updateRoofZone","name":"updateRoofZone","type":"action","kind":"by_goal"}
+{"q":"Kamar anak saya terlalu sempit, tolong diperbesar","expect":"action:updateRoom","name":"updateRoom","type":"action","kind":"by_name"}
+{"q":"Ruang keluarga saya ingin digabung dengan ruang makan biar lebih luas","expect":"action:updateRoom","name":"updateRoom","type":"action","kind":"by_goal"}
+{"q":"jendela tinggi dekat plafon","expect":"element:clerestory_window","name":"clerestory_window","type":"element","kind":"by_name"}
+{"q":"saya mau kamar tidur tetap terang tapi tetangga tidak bisa melihat ke dalam","expect":"element:clerestory_window","name":"clerestory_window","type":"element","kind":"by_goal"}
+{"q":"dinding kaca penuh dari lantai ke plafon","expect":"element:curtain_wall","name":"curtain_wall","type":"element","kind":"by_name"}
+{"q":"saya ingin ruang tamu terasa luas dengan pemandangan taman tanpa sekat","expect":"element:curtain_wall","name":"curtain_wall","type":"element","kind":"by_goal"}
+{"q":"menempatkan model 3D dari luar","expect":"element:exterior-asset","name":"asset","type":"element","kind":"by_name"}
+{"q":"saya mau letakkan patung taman dari file yang sudah saya unduh di halaman depan","expect":"element:exterior-asset","name":"asset","type":"element","kind":"by_goal"}
+{"q":"balok dekorasi pada fasad","expect":"element:exterior-beam","name":"beam","type":"element","kind":"by_name"}
+{"q":"saya ingin fasad rumah terlihat lebih kokoh dengan tambahan hiasan kotak di dinding luar","expect":"element:exterior-beam","name":"beam","type":"element","kind":"by_goal"}
+{"q":"exterior_decor, dekorasi eksterior","expect":"element:exterior-exterior_decor","name":"exterior_decor","type":"element","kind":"by_name"}
+{"q":"saya ingin pasang patung taman di halaman depan biar rumah lebih cantik","expect":"element:exterior-exterior_decor","name":"exterior_decor","type":"element","kind":"by_goal"}
+{"q":"exterior_stair, tangga luar","expect":"element:exterior-exterior_stair","name":"exterior_stair","type":"element","kind":"by_name"}
+{"q":"saya butuh tangga dari teras ke halaman belakang yang lebih tinggi","expect":"element:exterior-exterior_stair","name":"exterior_stair","type":"element","kind":"by_goal"}
+{"q":"facade_panel, panel fasad","expect":"element:exterior-facade_panel","name":"facade_panel","type":"element","kind":"by_name"}
+{"q":"saya mau nutup tembok samping rumah dengan panel kayu biar rapi","expect":"element:exterior-facade_panel","name":"facade_panel","type":"element","kind":"by_goal"}
+{"q":"fence, pagar","expect":"element:exterior-fence","name":"fence","type":"element","kind":"by_name"}
+{"q":"saya mau bikin pagar kayu di sekeliling halaman depan rumah","expect":"element:exterior-fence","name":"fence","type":"element","kind":"by_goal"}
+{"q":"Tembok batas properti","expect":"element:exterior-boundary_wall","name":"boundary_wall","type":"element","kind":"by_name"}
+{"q":"Saya mau batas tanah saya jelas dengan pagar tembok yang rapi","expect":"element:exterior-boundary_wall","name":"boundary_wall","type":"element","kind":"by_goal"}
+{"q":"Kanopi pelindung","expect":"element:exterior-canopy","name":"canopy","type":"element","kind":"by_name"}
+{"q":"Pintu depan kepanasan kalau siang, saya ingin ada atap kecil di atasnya","expect":"element:exterior-canopy","name":"canopy","type":"element","kind":"by_goal"}
+{"q":"Kolom aksen dekoratif","expect":"element:exterior-column","name":"column","type":"element","kind":"by_name"}
+{"q":"Teras depan terlihat kosong, saya ingin ada tiang-tiang hias yang bagus","expect":"element:exterior-column","name":"column","type":"element","kind":"by_goal"}
+{"q":"Jalan masuk mobil","expect":"element:exterior-driveway","name":"driveway","type":"element","kind":"by_name"}
+{"q":"Mobil saya susah masuk ke garasi, perlu jalan khusus dari gerbang","expect":"element:exterior-driveway","name":"driveway","type":"element","kind":"by_goal"}
+{"q":"pasang pintu gerbang ayun","expect":"element:exterior-swing_gate","name":"swing_gate","type":"element","kind":"by_name"}
+{"q":"saya mau bikin akses masuk mobil yang bisa dibuka tutup kayak pintu biasa","expect":"element:exterior-swing_gate","name":"swing_gate","type":"element","kind":"by_goal"}
+{"q":"buat lantai teras","expect":"element:exterior-terrace_surface","name":"terrace_surface","type":"element","kind":"by_name"}
+{"q":"di luar rumah saya mau ada area duduk yang rata dan luas, bukan rumput","expect":"element:exterior-terrace_surface","name":"terrace_surface","type":"element","kind":"by_goal"}
+{"q":"tambah pohon hias","expect":"element:exterior-tree","name":"tree","type":"element","kind":"by_name"}
+{"q":"saya ingin halaman depan ada pohon rindang biar teduh","expect":"element:exterior-tree","name":"tree","type":"element","kind":"by_goal"}
+{"q":"letakkan mobil di garasi","expect":"element:exterior-vehicle","name":"vehicle","type":"element","kind":"by_name"}
+{"q":"saya mau lihat apakah garasi cukup muat untuk mobil sedan saya","expect":"element:exterior-vehicle","name":"vehicle","type":"element","kind":"by_goal"}
+{"q":"Buat portal dekoratif di pintu masuk taman","expect":"element:exterior-portal_frame","name":"portal_frame","type":"element","kind":"by_name"}
+{"q":"Saya ingin ada gapura atau rangka pintu masuk yang bagus di halaman depan","expect":"element:exterior-portal_frame","name":"portal_frame","type":"element","kind":"by_goal"}
+{"q":"Tambahkan pelat teras di luar rumah","expect":"element:exterior-slab","name":"slab","type":"element","kind":"by_name"}
+{"q":"Saya butuh lantai beton di luar untuk tempat duduk santai","expect":"element:exterior-slab","name":"slab","type":"element","kind":"by_goal"}
+{"q":"Pasang gerbang geser di pagar depan","expect":"element:exterior-sliding_gate","name":"sliding_gate","type":"element","kind":"by_name"}
+{"q":"Saya ingin pintu pagar yang bisa digeser ke samping agar tidak memakan tempat","expect":"element:exterior-sliding_gate","name":"sliding_gate","type":"element","kind":"by_goal"}
+{"q":"Buat dinding pembatas di halaman samping","expect":"element:exterior-solid_wall","name":"solid_wall","type":"element","kind":"by_name"}
+{"q":"Saya ingin tembok pemisah antara halaman saya dan tetangga","expect":"element:exterior-solid_wall","name":"solid_wall","type":"element","kind":"by_goal"}
+{"q":"walkway","expect":"element:exterior-walkway","name":"walkway","type":"element","kind":"by_name"}
+{"q":"saya mau bikin jalan setapak dari teras ke taman belakang, biar nggak becek kalau hujan","expect":"element:exterior-walkway","name":"walkway","type":"element","kind":"by_goal"}
+{"q":"facade_cutout","expect":"element:facade_cutout","name":"facade_cutout","type":"element","kind":"by_name"}
+{"q":"saya ingin dinding depan rumah punya lubang kotak besar untuk pajangan, bukan jendela","expect":"element:facade_cutout","name":"facade_cutout","type":"element","kind":"by_goal"}
+{"q":"fixed_window","expect":"element:fixed_window","name":"fixed_window","type":"element","kind":"by_name"}
+{"q":"saya butuh jendela besar yang tidak bisa dibuka di ruang tamu, biar pemandangan keluar maksimal","expect":"element:fixed_window","name":"fixed_window","type":"element","kind":"by_goal"}
+{"q":"folding_door","expect":"element:folding_door","name":"folding_door","type":"element","kind":"by_name"}
+{"q":"saya mau pintu geser lipat yang bisa membuka lebar ke halaman belakang","expect":"element:folding_door","name":"folding_door","type":"element","kind":"by_goal"}
+{"q":"garden_bed","expect":"element:exterior-garden_bed","name":"garden_bed","type":"element","kind":"by_name"}
+{"q":"halaman depan saya kosong, saya ingin ada taman bunga yang rapi di pinggir pagar","expect":"element:exterior-garden_bed","name":"garden_bed","type":"element","kind":"by_goal"}
+{"q":"pedestrian_gate","expect":"element:exterior-pedestrian_gate","name":"pedestrian_gate","type":"element","kind":"by_name"}
+{"q":"saya mau ada pintu kecil di pagar samping supaya bisa jalan ke kebun belakang","expect":"element:exterior-pedestrian_gate","name":"pedestrian_gate","type":"element","kind":"by_goal"}
+{"q":"plant","expect":"element:exterior-plant","name":"plant","type":"element","kind":"by_name"}
+{"q":"teras rumah saya gersang, saya ingin menambahkan beberapa pohon hias di sudut-sudutnya","expect":"element:exterior-plant","name":"plant","type":"element","kind":"by_goal"}
+{"q":"planter","expect":"element:exterior-planter","name":"planter","type":"element","kind":"by_name"}
+{"q":"saya butuh kotak tanaman besar di depan pintu masuk untuk menanam bunga warna-warni","expect":"element:exterior-planter","name":"planter","type":"element","kind":"by_goal"}
+{"q":"garage_door","expect":"element:garage_door","name":"garage_door","type":"element","kind":"by_name"}
+{"q":"Saya mau pintu garasi yang geser ke samping, bukan yang diangkat.","expect":"element:garage_door","name":"garage_door","type":"element","kind":"by_goal"}
+{"q":"hinged_door","expect":"element:hinged_door","name":"hinged_door","type":"element","kind":"by_name"}
+{"q":"Saya butuh pintu kamar yang biasa dibuka dorong, bukan geser.","expect":"element:hinged_door","name":"hinged_door","type":"element","kind":"by_goal"}
+{"q":"jalousie_window","expect":"element:jalousie_window","name":"jalousie_window","type":"element","kind":"by_name"}
+{"q":"Saya mau jendela kamar mandi yang bisa dibuka bilahnya untuk ventilasi.","expect":"element:jalousie_window","name":"jalousie_window","type":"element","kind":"by_goal"}
+{"q":"krawangan","expect":"element:krawangan","name":"krawangan","type":"element","kind":"by_name"}
+{"q":"Saya ingin dinding depan rumah ada lubang-lubang dekoratif biar angin masuk.","expect":"element:krawangan","name":"krawangan","type":"element","kind":"by_goal"}
+{"q":"pasang skylight di atap","expect":"element:skylight","name":"skylight","type":"element","kind":"by_name"}
+{"q":"ruang tengah saya gelap banget, mau ada cahaya dari atas","expect":"element:skylight","name":"skylight","type":"element","kind":"by_goal"}
+{"q":"pasang pintu kaca geser","expect":"element:sliding_glass_door","name":"sliding_glass_door","type":"element","kind":"by_name"}
+{"q":"saya mau akses ke teras dari ruang keluarga pakai pintu kaca besar","expect":"element:sliding_glass_door","name":"sliding_glass_door","type":"element","kind":"by_goal"}
+{"q":"pasang jendela geser","expect":"element:sliding_window","name":"sliding_window","type":"element","kind":"by_name"}
+{"q":"kamar tidur butuh ventilasi, tapi saya mau jendela yang geser aja","expect":"element:sliding_window","name":"sliding_window","type":"element","kind":"by_goal"}
+{"q":"titik air otomatis sesuai ruang","expect":"mechanic:air-default-per-ruang","name":"Titik air otomatis mengikuti tipe ruang","type":"mechanic","kind":"by_name"}
+{"q":"saya bikin dapur baru, tapi airnya belum ada sama sekali","expect":"mechanic:air-default-per-ruang","name":"Titik air otomatis mengikuti tipe ruang","type":"mechanic","kind":"by_goal"}
+{"q":"open_passage","expect":"element:open_passage","name":"open_passage","type":"element","kind":"by_name"}
+{"q":"Saya mau akses ke ruang tamu tanpa pakai pintu, biar terasa lapang.","expect":"element:open_passage","name":"open_passage","type":"element","kind":"by_goal"}
+{"q":"pivot_door","expect":"element:pivot_door","name":"pivot_door","type":"element","kind":"by_name"}
+{"q":"Pintu kamar saya mau yang unik, putar di tengah, bukan engsel biasa.","expect":"element:pivot_door","name":"pivot_door","type":"element","kind":"by_goal"}
+{"q":"pocket_door","expect":"element:pocket_door","name":"pocket_door","type":"element","kind":"by_name"}
+{"q":"Saya mau pintu geser yang bisa masuk ke dinding, hemat tempat.","expect":"element:pocket_door","name":"pocket_door","type":"element","kind":"by_goal"}
+{"q":"roster","expect":"element:roster","name":"roster","type":"element","kind":"by_name"}
+{"q":"Saya perlu ventilasi di dinding tembok yang tetap aman dan kuat.","expect":"element:roster","name":"roster","type":"element","kind":"by_goal"}
+{"q":"saya mau ruangan untuk masak dan menyiapkan makanan","expect":"room_type:dapur","name":"dapur","type":"room_type","kind":"by_name"}
+{"q":"saya butuh tempat khusus untuk memasak, menyimpan bumbu, dan peralatan dapur","expect":"room_type:dapur","name":"dapur","type":"room_type","kind":"by_goal"}
+{"q":"saya butuh ruang penyimpanan barang","expect":"room_type:gudang","name":"gudang","type":"room_type","kind":"by_name"}
+{"q":"saya mau ada tempat khusus untuk menyimpan alat bersih-bersih dan barang yang jarang dipakai","expect":"room_type:gudang","name":"gudang","type":"room_type","kind":"by_goal"}
+{"q":"saya mau ruang untuk mandi dan toilet","expect":"room_type:kamar_mandi","name":"kamar_mandi","type":"room_type","kind":"by_name"}
+{"q":"saya perlu kamar yang ada bak mandi, wastafel, dan kloset","expect":"room_type:kamar_mandi","name":"kamar_mandi","type":"room_type","kind":"by_goal"}
+{"q":"saya ingin ruangan untuk tidur dan istirahat","expect":"room_type:kamar_tidur","name":"kamar_tidur","type":"room_type","kind":"by_name"}
+{"q":"saya butuh kamar yang nyaman untuk tidur malam dan menyimpan pakaian","expect":"room_type:kamar_tidur","name":"kamar_tidur","type":"room_type","kind":"by_goal"}
+{"q":"akses berbeda dengan ventilasi","expect":"mechanic:akses-vs-ventilasi","name":"Akses (pintu) berbeda dari ventilasi (bukaan apa pun)","type":"mechanic","kind":"by_name"}
+{"q":"saya mau pasang pintu di sini, bukan jendela, biar bisa masuk ke kamar.","expect":"mechanic:akses-vs-ventilasi","name":"Akses (pintu) berbeda dari ventilasi (bukaan apa pun)","type":"mechanic","kind":"by_goal"}
+{"q":"dinding otomatis dari persegi ruang","expect":"mechanic:dinding-otomatis","name":"Dinding otomatis dari persegi ruang","type":"mechanic","kind":"by_name"}
+{"q":"saya gambar ruang persegi, kok dindingnya langsung muncul sendiri?","expect":"mechanic:dinding-otomatis","name":"Dinding otomatis dari persegi ruang","type":"mechanic","kind":"by_goal"}
+{"q":"6 keluarga geometri eksterior","expect":"mechanic:eksterior-keluarga-geometri","name":"Elemen eksterior punya 6 keluarga geometri dengan parameter berbeda","type":"mechanic","kind":"by_name"}
+{"q":"saya mau tambah teras, tapi bentuknya beda sama yang biasa.","expect":"mechanic:eksterior-keluarga-geometri","name":"Elemen eksterior punya 6 keluarga geometri dengan parameter berbeda","type":"mechanic","kind":"by_goal"}
+{"q":"setWallCladding vs applyFacadeTemplate","expect":"mechanic:fasad-cladding-vs-template","name":"setWallCladding mengubah satu dinding; applyFacadeTemplate mengubah semuanya sekaligus","type":"mechanic","kind":"by_name"}
+{"q":"saya mau ganti cat satu dinding aja, bukan semua tembok.","expect":"mechanic:fasad-cladding-vs-template","name":"setWallCladding mengubah satu dinding; applyFacadeTemplate mengubah semuanya sekaligus","type":"mechanic","kind":"by_goal"}
+{"q":"Hitung beban listrik kolam otomatis","expect":"mechanic:kolam-listrik","name":"Beban listrik kolam dihitung otomatis (pompa/lampu/heater/klorinator)","type":"mechanic","kind":"by_name"}
+{"q":"Saya mau pasang kolam renang, tapi bingung berapa daya listrik yang dibutuhkan untuk pompa dan lampunya.","expect":"mechanic:kolam-listrik","name":"Beban listrik kolam dihitung otomatis (pompa/lampu/heater/klorinator)","type":"mechanic","kind":"by_goal"}
+{"q":"Hitung sistem sirkulasi kolam otomatis","expect":"mechanic:kolam-sirkulasi","name":"Sistem sirkulasi kolam dihitung otomatis dari ukuran & kedalaman","type":"mechanic","kind":"by_name"}
+{"q":"Kolam saya ukuran 4x8 meter, tolong hitung berapa besar pompa dan filter yang pas biar airnya bersih.","expect":"mechanic:kolam-sirkulasi","name":"Sistem sirkulasi kolam dihitung otomatis dari ukuran & kedalaman","type":"mechanic","kind":"by_goal"}
+{"q":"Analisis keterhubungan ruang lewat pintu","expect":"mechanic:konektivitas","name":"Keterjangkauan ruang lewat graf pintu","type":"mechanic","kind":"by_name"}
+{"q":"Saya ingin tahu apakah semua kamar tidur terhubung langsung ke ruang keluarga tanpa harus lewat lorong panjang.","expect":"mechanic:konektivitas","name":"Keterjangkauan ruang lewat graf pintu","type":"mechanic","kind":"by_goal"}
+{"q":"Titik listrik otomatis sesuai tipe ruang","expect":"mechanic:listrik-default-per-ruang","name":"Titik listrik otomatis mengikuti tipe ruang","type":"mechanic","kind":"by_name"}
+{"q":"Di dapur, tolong pasang otomatis stop kontak di dekat meja kerja dan lampu di atas kompor.","expect":"mechanic:listrik-default-per-ruang","name":"Titik listrik otomatis mengikuti tipe ruang","type":"mechanic","kind":"by_goal"}
+{"q":"Bukaan di dinding bersama melayani dua ruang","expect":"mechanic:wallid-dua-sisi","name":"Bukaan di dinding bersama melayani dua ruang","type":"mechanic","kind":"by_name"}
+{"q":"saya ingin pintu dari dapur ke ruang makan juga bisa akses ke ruang keluarga, tanpa buat lubang baru","expect":"mechanic:wallid-dua-sisi","name":"Bukaan di dinding bersama melayani dua ruang","type":"mechanic","kind":"by_goal"}
+{"q":"area_kumpul","expect":"room_type:area_kumpul","name":"area_kumpul","type":"room_type","kind":"by_name"}
+{"q":"saya mau ruang tengah yang luas tanpa tembok, biar anak-anak bisa main bebas dan kita ngobrol santai","expect":"room_type:area_kumpul","name":"area_kumpul","type":"room_type","kind":"by_goal"}
+{"q":"balkon","expect":"room_type:balkon","name":"balkon","type":"room_type","kind":"by_name"}
+{"q":"saya ingin ada tempat duduk di luar kamar tidur untuk minum kopi pagi, tapi tidak perlu atap","expect":"room_type:balkon","name":"balkon","type":"room_type","kind":"by_goal"}
+{"q":"carport","expect":"room_type:carport","name":"carport","type":"room_type","kind":"by_name"}
+{"q":"saya butuh tempat parkir mobil di depan rumah yang terbuka, tidak perlu garasi tertutup","expect":"room_type:carport","name":"carport","type":"room_type","kind":"by_goal"}
+{"q":"Saya ingin menambahkan kolam renang di halaman belakang","expect":"room_type:kolam","name":"kolam","type":"room_type","kind":"by_name"}
+{"q":"Saya mau ada tempat berenang di luar rumah, tolong buatkan area kolam di halaman.","expect":"room_type:kolam","name":"kolam","type":"room_type","kind":"by_goal"}
+{"q":"Saya butuh ruang cuci khusus","expect":"room_type:laundry","name":"laundry","type":"room_type","kind":"by_name"}
+{"q":"Saya mau ada tempat khusus untuk mencuci pakaian, jangan dicampur dengan dapur atau kamar mandi.","expect":"room_type:laundry","name":"laundry","type":"room_type","kind":"by_goal"}
+{"q":"Saya ingin ruang ibadah kecil","expect":"room_type:musholla","name":"musholla","type":"room_type","kind":"by_name"}
+{"q":"Saya mau ada ruang khusus untuk sholat di dalam rumah, ukurannya cukup untuk sajadah saja.","expect":"room_type:musholla","name":"musholla","type":"room_type","kind":"by_goal"}
+{"q":"Saya ingin area santai di atap","expect":"room_type:rooftop_lounge","name":"rooftop_lounge","type":"room_type","kind":"by_name"}
+{"q":"Saya mau buat tempat duduk-duduk di lantai atas yang terbuka, tanpa tembok, untuk bersantai.","expect":"room_type:rooftop_lounge","name":"rooftop_lounge","type":"room_type","kind":"by_goal"}
+{"q":"positionM = titik tengah bukaan pada dinding","expect":"mechanic:positionm","name":"positionM = titik tengah bukaan pada dinding","type":"mechanic","kind":"by_name"}
+{"q":"Saya mau pintu geser di dinding ini tidak tepat di tengah, melainkan agak ke kiri.","expect":"mechanic:positionm","name":"positionM = titik tengah bukaan pada dinding","type":"mechanic","kind":"by_goal"}
+{"q":"Menghapus lantai membuang semua elemen di lantai itu","expect":"mechanic:removefloor-hapus-data","name":"Menghapus lantai membuang semua elemen di lantai itu","type":"mechanic","kind":"by_name"}
+{"q":"Saya tidak jadi pakai lantai dua, hapus saja semua ruangan dan tembok di atas.","expect":"mechanic:removefloor-hapus-data","name":"Menghapus lantai membuang semua elemen di lantai itu","type":"mechanic","kind":"by_goal"}
+{"q":"Menonaktifkan rooftop menghapus seluruh isi lantainya","expect":"mechanic:rooftop-hapus-data","name":"Menonaktifkan rooftop menghapus seluruh isi lantainya","type":"mechanic","kind":"by_name"}
+{"q":"Saya batalkan atap rooftop, bersihkan semua ruang dan bukaan di lantai itu.","expect":"mechanic:rooftop-hapus-data","name":"Menonaktifkan rooftop menghapus seluruh isi lantainya","type":"mechanic","kind":"by_goal"}
+{"q":"Atap eksplisit (roofZones) menang atas layout.roof lama","expect":"mechanic:roofzones-vs-legacy","name":"Atap eksplisit (roofZones) menang atas layout.roof lama bila keduanya ada","type":"mechanic","kind":"by_name"}
+{"q":"Saya sudah atur zona atap manual, tapi atap lama masih muncul dan mengganggu.","expect":"mechanic:roofzones-vs-legacy","name":"Atap eksplisit (roofZones) menang atas layout.roof lama bila keduanya ada","type":"mechanic","kind":"by_goal"}
+{"q":"tangga","expect":"room_type:tangga","name":"tangga","type":"room_type","kind":"by_name"}
+{"q":"saya mau ada akses ke lantai atas, tolong buatkan tangga yang tidak perlu tembok.","expect":"room_type:tangga","name":"tangga","type":"room_type","kind":"by_goal"}
+{"q":"void","expect":"room_type:void","name":"void","type":"room_type","kind":"by_name"}
+{"q":"kamar ini terkurung, saya mau ada bukaan ke lantai bawah.","expect":"room_type:void","name":"void","type":"room_type","kind":"by_goal"}
+{"q":"workspace","expect":"room_type:workspace","name":"workspace","type":"room_type","kind":"by_name"}
+{"q":"saya butuh ruang kerja yang lapang tanpa sekat, untuk ngerjain proyek.","expect":"room_type:workspace","name":"workspace","type":"room_type","kind":"by_goal"}
+{"q":"Saya ingin ruang keluarga yang terbuka, tanpa dinding","expect":"room_type:ruang_keluarga","name":"ruang_keluarga","type":"room_type","kind":"by_name"}
+{"q":"Saya mau ada area berkumpul yang lapang dan menyatu dengan ruang lain","expect":"room_type:ruang_keluarga","name":"ruang_keluarga","type":"room_type","kind":"by_goal"}
+{"q":"Saya butuh ruang makan yang lega dan terbuka","expect":"room_type:ruang_makan","name":"ruang_makan","type":"room_type","kind":"by_name"}
+{"q":"Saya ingin tempat makan yang tidak terpisah tembok, biar terasa luas","expect":"room_type:ruang_makan","name":"ruang_makan","type":"room_type","kind":"by_goal"}
+{"q":"Saya ingin ruang tamu yang nyaman untuk tamu","expect":"room_type:ruang_tamu","name":"ruang_tamu","type":"room_type","kind":"by_name"}
+{"q":"Saya mau ada tempat duduk tamu yang cukup besar dan tidak sempit","expect":"room_type:ruang_tamu","name":"ruang_tamu","type":"room_type","kind":"by_goal"}
+{"q":"Saya ingin taman terbuka di dalam rumah","expect":"room_type:taman","name":"taman","type":"room_type","kind":"by_name"}
+{"q":"Saya mau ada area hijau tanpa dinding, biar terasa alami","expect":"room_type:taman","name":"taman","type":"room_type","kind":"by_goal"}

@@ -1,0 +1,55 @@
+-- Global asset library WAVE 3: folder c-j (canopy, chiller, gorden, dapur,
+-- dekorasi, elektronik, exhaust, fireplace, footboard, gantungan, genteng,
+-- handle, sofa Itali, jam) — 40 model GLB terkurasi dari ~1.260 SKP.
+-- Pola identik migration 0011 (idempotent + guarded).
+
+insert into user_assets
+  (id, user_id, name, category, source_type, source_name, original_filename,
+   model_url, file_size_bytes, width_m, depth_m, height_m,
+   license_confirmation, status, is_public)
+select v.* from (values
+  ('asset-glb-w3-canopy-1', 'usr-MPbZPdo6Bj', 'Canopy 1', 'generic', 'catalog', 'Baruma Asset Bank', 'canopy-1.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-canopy-1.glb', 41369, 4.21, 2.17, 0.83, true, 'uploaded', true),
+  ('asset-glb-w3-canopy-2', 'usr-MPbZPdo6Bj', 'Canopy 2', 'generic', 'catalog', 'Baruma Asset Bank', 'canopy-2.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-canopy-2.glb', 67891, 4.53, 1.89, 3.14, true, 'uploaded', true),
+  ('asset-glb-w3-chiller-1', 'usr-MPbZPdo6Bj', 'Chiller 1', 'generic', 'catalog', 'Baruma Asset Bank', 'chiller-1.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-chiller-1.glb', 51609, 0.86, 1.88, 2.06, true, 'uploaded', true),
+  ('asset-glb-w3-chiller-2', 'usr-MPbZPdo6Bj', 'Chiller 2', 'generic', 'catalog', 'Baruma Asset Bank', 'chiller-2.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-chiller-2.glb', 105369, 0.6, 0.65, 0.87, true, 'uploaded', true),
+  ('asset-glb-w3-dapur-set-1', 'usr-MPbZPdo6Bj', 'Dapur Set 1', 'generic', 'catalog', 'Baruma Asset Bank', 'dapur-set-1.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-dapur-set-1.glb', 52736, 0.83, 0.83, 1.7, true, 'uploaded', true),
+  ('asset-glb-w3-dapur-set-2', 'usr-MPbZPdo6Bj', 'Dapur Set 2', 'generic', 'catalog', 'Baruma Asset Bank', 'dapur-set-2.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-dapur-set-2.glb', 65536, 0.91, 0.85, 1.77, true, 'uploaded', true),
+  ('asset-glb-w3-dapur-set-3', 'usr-MPbZPdo6Bj', 'Dapur Set 3', 'generic', 'catalog', 'Baruma Asset Bank', 'dapur-set-3.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-dapur-set-3.glb', 111308, 0.91, 0.53, 0.08, true, 'uploaded', true),
+  ('asset-glb-w3-dapur-set-4', 'usr-MPbZPdo6Bj', 'Dapur Set 4', 'generic', 'catalog', 'Baruma Asset Bank', 'dapur-set-4.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-dapur-set-4.glb', 57548, 0.45, 0.62, 0.9, true, 'uploaded', true),
+  ('asset-glb-w3-dapur-set-5', 'usr-MPbZPdo6Bj', 'Dapur Set 5', 'generic', 'catalog', 'Baruma Asset Bank', 'dapur-set-5.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-dapur-set-5.glb', 88678, 0.34, 0.29, 0.37, true, 'uploaded', true),
+  ('asset-glb-w3-dapur-set-6', 'usr-MPbZPdo6Bj', 'Dapur Set 6', 'generic', 'catalog', 'Baruma Asset Bank', 'dapur-set-6.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-dapur-set-6.glb', 129433, 0.23, 0.58, 0.3, true, 'uploaded', true),
+  ('asset-glb-w3-dekorasi-1', 'usr-MPbZPdo6Bj', 'Dekorasi 1', 'generic', 'catalog', 'Baruma Asset Bank', 'dekorasi-1.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-dekorasi-1.glb', 46387, 0.28, 0.2, 0.18, true, 'uploaded', true),
+  ('asset-glb-w3-dekorasi-2', 'usr-MPbZPdo6Bj', 'Dekorasi 2', 'generic', 'catalog', 'Baruma Asset Bank', 'dekorasi-2.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-dekorasi-2.glb', 91443, 0.45, 0.12, 0.08, true, 'uploaded', true),
+  ('asset-glb-w3-dekorasi-3', 'usr-MPbZPdo6Bj', 'Dekorasi 3', 'generic', 'catalog', 'Baruma Asset Bank', 'dekorasi-3.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-dekorasi-3.glb', 56217, 0.52, 0.6, 1.92, true, 'uploaded', true),
+  ('asset-glb-w3-dekorasi-4', 'usr-MPbZPdo6Bj', 'Dekorasi 4', 'generic', 'catalog', 'Baruma Asset Bank', 'dekorasi-4.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-dekorasi-4.glb', 83763, 1.1, 0.88, 2.42, true, 'uploaded', true),
+  ('asset-glb-w3-dekorasi-5', 'usr-MPbZPdo6Bj', 'Dekorasi 5', 'generic', 'catalog', 'Baruma Asset Bank', 'dekorasi-5.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-dekorasi-5.glb', 141721, 0.9, 0.05, 0.9, true, 'uploaded', true),
+  ('asset-glb-w3-dekorasi-7', 'usr-MPbZPdo6Bj', 'Dekorasi 7', 'generic', 'catalog', 'Baruma Asset Bank', 'dekorasi-7.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-dekorasi-7.glb', 158003, 0.11, 0.29, 0.18, true, 'uploaded', true),
+  ('asset-glb-w3-elektronik-1', 'usr-MPbZPdo6Bj', 'Elektronik 1', 'generic', 'catalog', 'Baruma Asset Bank', 'elektronik-1.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-elektronik-1.glb', 40243, 0.44, 0.12, 0.05, true, 'uploaded', true),
+  ('asset-glb-w3-elektronik-2', 'usr-MPbZPdo6Bj', 'Elektronik 2', 'generic', 'catalog', 'Baruma Asset Bank', 'elektronik-2.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-elektronik-2.glb', 349900, 1.25, 0.35, 0.88, true, 'uploaded', true),
+  ('asset-glb-w3-elektronik-3', 'usr-MPbZPdo6Bj', 'Elektronik 3', 'generic', 'catalog', 'Baruma Asset Bank', 'elektronik-3.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-elektronik-3.glb', 16793, 0.4, 0.42, 0.26, true, 'uploaded', true),
+  ('asset-glb-w3-elektronik-4', 'usr-MPbZPdo6Bj', 'Elektronik 4', 'generic', 'catalog', 'Baruma Asset Bank', 'elektronik-4.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-elektronik-4.glb', 60723, 0.34, 1.13, 0.67, true, 'uploaded', true),
+  ('asset-glb-w3-elektronik-5', 'usr-MPbZPdo6Bj', 'Elektronik 5', 'generic', 'catalog', 'Baruma Asset Bank', 'elektronik-5.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-elektronik-5.glb', 493875, 3.82, 2.2, 0.87, true, 'uploaded', true),
+  ('asset-glb-w3-exhaust-fan-1', 'usr-MPbZPdo6Bj', 'Exhaust Fan 1', 'generic', 'catalog', 'Baruma Asset Bank', 'exhaust-fan-1.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-exhaust-fan-1.glb', 30617, 0.14, 0.05, 0.14, true, 'uploaded', true),
+  ('asset-glb-w3-fireplace-1', 'usr-MPbZPdo6Bj', 'Fireplace 1', 'generic', 'catalog', 'Baruma Asset Bank', 'fireplace-1.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-fireplace-1.glb', 229478, 1.2, 0.4, 1.36, true, 'uploaded', true),
+  ('asset-glb-w3-footboard-1', 'usr-MPbZPdo6Bj', 'Footboard 1', 'generic', 'catalog', 'Baruma Asset Bank', 'footboard-1.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-footboard-1.glb', 20480, 1.2, 0.45, 0.35, true, 'uploaded', true),
+  ('asset-glb-w3-gantungan-baju-1', 'usr-MPbZPdo6Bj', 'Gantungan Baju 1', 'generic', 'catalog', 'Baruma Asset Bank', 'gantungan-baju-1.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-gantungan-baju-1.glb', 31334, 2.16, 0.83, 3.02, true, 'uploaded', true),
+  ('asset-glb-w3-genteng-model-1', 'usr-MPbZPdo6Bj', 'Genteng Model 1', 'generic', 'catalog', 'Baruma Asset Bank', 'genteng-model-1.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-genteng-model-1.glb', 32563, 4.12, 0.82, 1.8, true, 'uploaded', true),
+  ('asset-glb-w3-gorden-1', 'usr-MPbZPdo6Bj', 'Gorden 1', 'generic', 'catalog', 'Baruma Asset Bank', 'gorden-1.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-gorden-1.glb', 177561, 2.48, 0.1, 2.6, true, 'uploaded', true),
+  ('asset-glb-w3-gorden-3', 'usr-MPbZPdo6Bj', 'Gorden 3', 'generic', 'catalog', 'Baruma Asset Bank', 'gorden-3.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-gorden-3.glb', 128409, 2.5, 0.16, 2.48, true, 'uploaded', true),
+  ('asset-glb-w3-gorden-4', 'usr-MPbZPdo6Bj', 'Gorden 4', 'generic', 'catalog', 'Baruma Asset Bank', 'gorden-4.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-gorden-4.glb', 206131, 0.46, 4.02, 5.9, true, 'uploaded', true),
+  ('asset-glb-w3-gorden-5', 'usr-MPbZPdo6Bj', 'Gorden 5', 'generic', 'catalog', 'Baruma Asset Bank', 'gorden-5.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-gorden-5.glb', 123084, 1.81, 0.49, 3.02, true, 'uploaded', true),
+  ('asset-glb-w3-handle-pintu-1', 'usr-MPbZPdo6Bj', 'Handle Pintu 1', 'generic', 'catalog', 'Baruma Asset Bank', 'handle-pintu-1.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-handle-pintu-1.glb', 3072, 0.05, 0.5, 0.05, true, 'uploaded', true),
+  ('asset-glb-w3-handle-pintu-2', 'usr-MPbZPdo6Bj', 'Handle Pintu 2', 'generic', 'catalog', 'Baruma Asset Bank', 'handle-pintu-2.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-handle-pintu-2.glb', 31948, 0.32, 0.14, 0.05, true, 'uploaded', true),
+  ('asset-glb-w3-handle-pintu-3', 'usr-MPbZPdo6Bj', 'Handle Pintu 3', 'generic', 'catalog', 'Baruma Asset Bank', 'handle-pintu-3.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-handle-pintu-3.glb', 264499, 0.73, 0.84, 0.05, true, 'uploaded', true),
+  ('asset-glb-w3-jam-dinding-1', 'usr-MPbZPdo6Bj', 'Jam Dinding 1', 'generic', 'catalog', 'Baruma Asset Bank', 'jam-dinding-1.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-jam-dinding-1.glb', 37785, 0.2, 0.05, 0.2, true, 'uploaded', true),
+  ('asset-glb-w3-jam-dinding-2', 'usr-MPbZPdo6Bj', 'Jam Dinding 2', 'generic', 'catalog', 'Baruma Asset Bank', 'jam-dinding-2.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-jam-dinding-2.glb', 65740, 0.2, 0.05, 0.2, true, 'uploaded', true),
+  ('asset-glb-w3-jam-dinding-3', 'usr-MPbZPdo6Bj', 'Jam Dinding 3', 'generic', 'catalog', 'Baruma Asset Bank', 'jam-dinding-3.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-jam-dinding-3.glb', 311091, 0.58, 0.05, 0.58, true, 'uploaded', true),
+  ('asset-glb-w3-sofa-itali-1', 'usr-MPbZPdo6Bj', 'Sofa Itali 1', 'sofa', 'catalog', 'Baruma Asset Bank', 'sofa-itali-1.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-sofa-itali-1.glb', 936960, 0.6, 0.6, 0.45, true, 'uploaded', true),
+  ('asset-glb-w3-sofa-itali-2', 'usr-MPbZPdo6Bj', 'Sofa Itali 2', 'sofa', 'catalog', 'Baruma Asset Bank', 'sofa-itali-2.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-sofa-itali-2.glb', 688947, 2.25, 0.86, 2.15, true, 'uploaded', true),
+  ('asset-glb-w3-sofa-itali-3', 'usr-MPbZPdo6Bj', 'Sofa Itali 3', 'sofa', 'catalog', 'Baruma Asset Bank', 'sofa-itali-3.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-sofa-itali-3.glb', 753971, 0.5, 0.5, 0.6, true, 'uploaded', true),
+  ('asset-glb-w3-sofa-itali-4', 'usr-MPbZPdo6Bj', 'Sofa Itali 4', 'sofa', 'catalog', 'Baruma Asset Bank', 'sofa-itali-4.glb', '/api/v1/assets/file/asset-library/global/furniture/w3-sofa-itali-4.glb', 963584, 1.2, 0.51, 0.82, true, 'uploaded', true)
+) as v(id, user_id, name, category, source_type, source_name, original_filename,
+       model_url, file_size_bytes, width_m, depth_m, height_m,
+       license_confirmation, status, is_public)
+where exists (select 1 from profiles where id = 'usr-MPbZPdo6Bj')
+on conflict (id) do nothing;
