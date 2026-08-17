@@ -27,8 +27,10 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: [
-    "25aae217-01d7-4c96-b2c2-ef6b5d1b3906.preview.emergentagent.com",
-    "25aae217-01d7-4c96-b2c2-ef6b5d1b3906.cluster-5.preview.emergentcf.cloud",
+    "baruma-nextjs.preview.emergentagent.com",
+    "baruma-nextjs.cluster-5.preview.emergentcf.cloud",
+    "*.preview.emergentagent.com",
+    "*.cluster-5.preview.emergentcf.cloud",
   ],
   experimental: {
     // radix-ui (barrel dengan puluhan subpath) tidak masuk daftar default

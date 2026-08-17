@@ -101,3 +101,38 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Verify WebSocket bug fix - Next.js 16 dev mode was blocking cross-origin requests to webpack-hmr WebSocket. Fix applied: added allowedDevOrigins to next.config.ts including preview domains and wildcard patterns."
+
+frontend:
+  - task: "WebSocket HMR Connection - Cross-Origin Fix Verification"
+    implemented: true
+    working: true
+    file: "/app/next.config.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Bug reported by user - WebSocket connection to 'wss://baruma-nextjs.preview.emergentagent.com/_next/webpack-hmr' failed with cross-origin blocking. Root cause: Next.js 16 dev mode blocks cross-origin requests unless origin is in allowedDevOrigins. Fix applied: Updated next.config.ts with allowedDevOrigins including 'baruma-nextjs.preview.emergentagent.com', 'baruma-nextjs.cluster-5.preview.emergentcf.cloud', and wildcard patterns '*.preview.emergentagent.com' / '*.cluster-5.preview.emergentcf.cloud'. Service restarted."
+        - working: true
+          agent: "testing"
+          comment: "✅ BUG FIX VERIFIED SUCCESSFUL. Tested homepage and /login page at https://baruma-nextjs.preview.emergentagent.com. Results: (1) WebSocket HMR connected successfully - console shows '[HMR] connected' messages, (2) WebSocket created at wss://baruma-nextjs.preview.emergentagent.com/_next/webpack-hmr with successful connection, (3) NO 'Blocked cross-origin request' errors found, (4) NO WebSocket connection failures, (5) WebSocket properly closes and reconnects when navigating between pages. Only unrelated warnings: font preloading and Cloudflare RUM endpoint (cdn-cgi/rum). The allowedDevOrigins configuration successfully resolved the cross-origin blocking issue."
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "WebSocket HMR Connection - Cross-Origin Fix Verification"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "testing"
+      message: "Bug verification complete. WebSocket HMR cross-origin fix is working correctly. No further action needed for this bug. The allowedDevOrigins configuration in next.config.ts has successfully resolved the issue."
