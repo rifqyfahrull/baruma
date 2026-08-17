@@ -79,3 +79,6 @@ public/textures/*.jpg
 src/components/faucet-check/tokens.txt
 scripts/asset-harvest/out-answer-eval.jsonl
 scripts/test-prod-agent.mjs
+
+# local pnpm content-addressable store (from install)
+.pnpm-store/
