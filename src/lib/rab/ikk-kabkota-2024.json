@@ -1,0 +1,2301 @@
+{
+"_meta": {
+"source": "BPS Indeks Kemahalan Konstruksi Provinsi & Kabupaten/Kota 2024 (acuan Kota Banjarmasin=100)",
+"year": 2024,
+"reference_city": "Banjarmasin=100",
+"rows": 458,
+"note": "Diekstrak dari publikasi BPS IKK 2024. Sebagian kecil kabupaten dengan nama terpotong di PDF tidak tercakup dan jatuh ke IKK provinsi."
+},
+"data": [
+{
+"n": "Kota Ambon",
+"i": 100.41,
+"p": "maluku"
+},
+{
+"n": "Kota BATAM",
+"i": 110.64,
+"p": "kepulauan_riau"
+},
+{
+"n": "Kota Balikpapan",
+"i": 111.89,
+"p": "kalimantan_timur"
+},
+{
+"n": "Kota Banda Aceh",
+"i": 94.74,
+"p": "aceh"
+},
+{
+"n": "Kota Bandar Lampung",
+"i": 86.01,
+"p": "lampung"
+},
+{
+"n": "Kota Bandung",
+"i": 117.19,
+"p": "jawa_barat"
+},
+{
+"n": "Kota Banjar",
+"i": 98.04,
+"p": "jawa_barat"
+},
+{
+"n": "Kota Banjarbaru",
+"i": 98.84,
+"p": "kalimantan_selatan"
+},
+{
+"n": "Kota Banjarmasin",
+"i": 100.0,
+"p": "kalimantan_selatan"
+},
+{
+"n": "Kota Batu",
+"i": 99.88,
+"p": "jawa_timur"
+},
+{
+"n": "Kota Baubau",
+"i": 95.6,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kota Bekasi",
+"i": 106.59,
+"p": "jawa_barat"
+},
+{
+"n": "Kota Bengkulu",
+"i": 94.72,
+"p": "bengkulu"
+},
+{
+"n": "Kota Bima",
+"i": 110.99,
+"p": "nusa_tenggara_barat"
+},
+{
+"n": "Kota Binjai",
+"i": 92.06,
+"p": "sumatera_utara"
+},
+{
+"n": "Kota Bitung",
+"i": 97.34,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kota Blitar",
+"i": 92.25,
+"p": "jawa_timur"
+},
+{
+"n": "Kota Bontang",
+"i": 118.4,
+"p": "kalimantan_timur"
+},
+{
+"n": "Kota Bukittinggi",
+"i": 95.45,
+"p": "sumatera_barat"
+},
+{
+"n": "Kota Cilegon",
+"i": 93.43,
+"p": "banten"
+},
+{
+"n": "Kota Cimahi",
+"i": 112.94,
+"p": "jawa_barat"
+},
+{
+"n": "Kota Cirebon",
+"i": 105.18,
+"p": "jawa_barat"
+},
+{
+"n": "Kota DUMAI",
+"i": 97.25,
+"p": "riau"
+},
+{
+"n": "Kota Denpasar",
+"i": 115.46,
+"p": "bali"
+},
+{
+"n": "Kota Depok",
+"i": 109.97,
+"p": "jawa_barat"
+},
+{
+"n": "Kota Gorontalo",
+"i": 95.64,
+"p": "gorontalo"
+},
+{
+"n": "Kota Gunungsitoli",
+"i": 103.43,
+"p": "sumatera_utara"
+},
+{
+"n": "Kota Jakarta Barat",
+"i": 113.41,
+"p": "dki_jakarta"
+},
+{
+"n": "Kota Jakarta Pusat",
+"i": 119.14,
+"p": "dki_jakarta"
+},
+{
+"n": "Kota Jakarta Selatan",
+"i": 112.22,
+"p": "dki_jakarta"
+},
+{
+"n": "Kota Jakarta Timur",
+"i": 109.6,
+"p": "dki_jakarta"
+},
+{
+"n": "Kota Jakarta Utara",
+"i": 112.64,
+"p": "dki_jakarta"
+},
+{
+"n": "Kota Jambi",
+"i": 94.24,
+"p": "jambi"
+},
+{
+"n": "Kota Jayapura",
+"i": 125.66,
+"p": "papua"
+},
+{
+"n": "Kota Kediri",
+"i": 94.38,
+"p": "jawa_timur"
+},
+{
+"n": "Kota Kendari",
+"i": 87.53,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kota Kotamobagu",
+"i": 97.72,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kota Kupang",
+"i": 84.59,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kota Langsa",
+"i": 92.08,
+"p": "aceh"
+},
+{
+"n": "Kota Langsa",
+"i": 100.91,
+"p": "aceh"
+},
+{
+"n": "Kota Lubuklinggau",
+"i": 91.18,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kota Madiun",
+"i": 94.27,
+"p": "jawa_timur"
+},
+{
+"n": "Kota Magelang",
+"i": 98.85,
+"p": "jawa_tengah"
+},
+{
+"n": "Kota Makassar",
+"i": 96.06,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kota Malang",
+"i": 98.02,
+"p": "jawa_timur"
+},
+{
+"n": "Kota Manado",
+"i": 104.66,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kota Mataram",
+"i": 102.96,
+"p": "nusa_tenggara_barat"
+},
+{
+"n": "Kota Medan",
+"i": 94.2,
+"p": "sumatera_utara"
+},
+{
+"n": "Kota Metro",
+"i": 86.9,
+"p": "lampung"
+},
+{
+"n": "Kota Mojokerto",
+"i": 96.58,
+"p": "jawa_timur"
+},
+{
+"n": "Kota Padang Panjang",
+"i": 90.3,
+"p": "sumatera_barat"
+},
+{
+"n": "Kota Padangsidimpuan",
+"i": 95.61,
+"p": "sumatera_utara"
+},
+{
+"n": "Kota Pagar Alam",
+"i": 93.79,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kota Palangka Raya",
+"i": 101.91,
+"p": "kalimantan_tengah"
+},
+{
+"n": "Kota Palembang",
+"i": 85.89,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kota Palopo",
+"i": 99.31,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kota Palu",
+"i": 85.25,
+"p": "sulawesi_tengah"
+},
+{
+"n": "Kota Pangkalpinang",
+"i": 110.21,
+"p": "kepulauan_bangka_belitung"
+},
+{
+"n": "Kota Parepare",
+"i": 90.66,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kota Pariaman",
+"i": 90.87,
+"p": "sumatera_barat"
+},
+{
+"n": "Kota Pasuruan",
+"i": 97.09,
+"p": "jawa_timur"
+},
+{
+"n": "Kota Payakumbuh",
+"i": 90.32,
+"p": "sumatera_barat"
+},
+{
+"n": "Kota Pekalongan",
+"i": 103.37,
+"p": "jawa_tengah"
+},
+{
+"n": "Kota Pekanbaru",
+"i": 90.22,
+"p": "riau"
+},
+{
+"n": "Kota Pematang Siantar",
+"i": 92.05,
+"p": "sumatera_utara"
+},
+{
+"n": "Kota Pontianak",
+"i": 102.16,
+"p": "kalimantan_barat"
+},
+{
+"n": "Kota Prabumulih",
+"i": 89.82,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kota Probolinggo",
+"i": 94.93,
+"p": "jawa_timur"
+},
+{
+"n": "Kota Sabang",
+"i": 102.78,
+"p": "aceh"
+},
+{
+"n": "Kota Salatiga",
+"i": 104.58,
+"p": "jawa_tengah"
+},
+{
+"n": "Kota Samarinda",
+"i": 107.21,
+"p": "kalimantan_timur"
+},
+{
+"n": "Kota Semarang",
+"i": 105.04,
+"p": "jawa_tengah"
+},
+{
+"n": "Kota Serang",
+"i": 95.04,
+"p": "banten"
+},
+{
+"n": "Kota Sibolga",
+"i": 102.94,
+"p": "sumatera_utara"
+},
+{
+"n": "Kota Singkawang",
+"i": 107.89,
+"p": "kalimantan_barat"
+},
+{
+"n": "Kota Sorong",
+"i": 113.71,
+"p": "papua_barat_daya"
+},
+{
+"n": "Kota Subulussalam",
+"i": 97.17,
+"p": "aceh"
+},
+{
+"n": "Kota Sukabumi",
+"i": 102.8,
+"p": "jawa_barat"
+},
+{
+"n": "Kota Sungai Penuh",
+"i": 97.3,
+"p": "jambi"
+},
+{
+"n": "Kota Surabaya",
+"i": 102.54,
+"p": "jawa_timur"
+},
+{
+"n": "Kota Surakarta",
+"i": 103.08,
+"p": "jawa_tengah"
+},
+{
+"n": "Kota Tangerang",
+"i": 98.61,
+"p": "banten"
+},
+{
+"n": "Kota Tangerang Selatan",
+"i": 104.33,
+"p": "banten"
+},
+{
+"n": "Kota Tanjung Balai",
+"i": 94.78,
+"p": "sumatera_utara"
+},
+{
+"n": "Kota Tanjung Pinang",
+"i": 106.28,
+"p": "kepulauan_riau"
+},
+{
+"n": "Kota Tarakan",
+"i": 110.5,
+"p": "kalimantan_utara"
+},
+{
+"n": "Kota Tasikmalaya",
+"i": 103.86,
+"p": "jawa_barat"
+},
+{
+"n": "Kota Tebing Tinggi",
+"i": 95.16,
+"p": "sumatera_utara"
+},
+{
+"n": "Kota Tegal",
+"i": 104.5,
+"p": "jawa_tengah"
+},
+{
+"n": "Kota Ternate",
+"i": 122.4,
+"p": "maluku_utara"
+},
+{
+"n": "Kota Tidore Kepulauan",
+"i": 109.84,
+"p": "maluku_utara"
+},
+{
+"n": "Kota Tomohon",
+"i": 99.69,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kota Tual",
+"i": 110.62,
+"p": "maluku"
+},
+{
+"n": "Kota Yogyakarta",
+"i": 102.25,
+"p": "di_yogyakarta"
+},
+{
+"n": "Kabupaten Aceh Barat Daya",
+"i": 92.68,
+"p": "aceh"
+},
+{
+"n": "Kabupaten Aceh Selatan",
+"i": 98.65,
+"p": "aceh"
+},
+{
+"n": "Kabupaten Aceh Singkil",
+"i": 94.32,
+"p": "aceh"
+},
+{
+"n": "Kabupaten Aceh Tengah",
+"i": 100.11,
+"p": "aceh"
+},
+{
+"n": "Kabupaten Aceh Tenggara",
+"i": 93.43,
+"p": "aceh"
+},
+{
+"n": "Kabupaten Aceh Timur",
+"i": 95.47,
+"p": "aceh"
+},
+{
+"n": "Kabupaten Aceh Utara",
+"i": 102.71,
+"p": "aceh"
+},
+{
+"n": "Kabupaten Asmat",
+"i": 146.77,
+"p": "papua_selatan"
+},
+{
+"n": "Kabupaten Badung",
+"i": 110.56,
+"p": "bali"
+},
+{
+"n": "Kabupaten Balangan",
+"i": 106.76,
+"p": "kalimantan_selatan"
+},
+{
+"n": "Kabupaten Bandung",
+"i": 111.3,
+"p": "jawa_barat"
+},
+{
+"n": "Kabupaten Banggai",
+"i": 97.81,
+"p": "sulawesi_tengah"
+},
+{
+"n": "Kabupaten Banggai Kepulauan",
+"i": 94.27,
+"p": "sulawesi_tengah"
+},
+{
+"n": "Kabupaten Banggai Laut",
+"i": 96.18,
+"p": "sulawesi_tengah"
+},
+{
+"n": "Kabupaten Bangka",
+"i": 106.79,
+"p": "kepulauan_bangka_belitung"
+},
+{
+"n": "Kabupaten Bangka Barat",
+"i": 104.98,
+"p": "kepulauan_bangka_belitung"
+},
+{
+"n": "Kabupaten Bangka Selatan",
+"i": 104.17,
+"p": "kepulauan_bangka_belitung"
+},
+{
+"n": "Kabupaten Bangka Tengah",
+"i": 102.59,
+"p": "kepulauan_bangka_belitung"
+},
+{
+"n": "Kabupaten Bangkalan",
+"i": 100.12,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Bangli",
+"i": 109.08,
+"p": "bali"
+},
+{
+"n": "Kabupaten Banjar",
+"i": 101.45,
+"p": "kalimantan_selatan"
+},
+{
+"n": "Kabupaten Banjarnegara",
+"i": 100.41,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Bantaeng",
+"i": 93.7,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kabupaten Bantul",
+"i": 105.13,
+"p": "di_yogyakarta"
+},
+{
+"n": "Kabupaten Banyu Asin",
+"i": 93.46,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kabupaten Banyumas",
+"i": 100.9,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Barito Kuala",
+"i": 110.05,
+"p": "kalimantan_selatan"
+},
+{
+"n": "Kabupaten Barito Selatan",
+"i": 103.59,
+"p": "kalimantan_tengah"
+},
+{
+"n": "Kabupaten Barito Timur",
+"i": 102.86,
+"p": "kalimantan_tengah"
+},
+{
+"n": "Kabupaten Barito Utara",
+"i": 104.95,
+"p": "kalimantan_tengah"
+},
+{
+"n": "Kabupaten Barru",
+"i": 92.49,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kabupaten Batang",
+"i": 101.8,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Batang Hari",
+"i": 90.1,
+"p": "jambi"
+},
+{
+"n": "Kabupaten Belitung",
+"i": 103.8,
+"p": "kepulauan_bangka_belitung"
+},
+{
+"n": "Kabupaten Belitung Timur",
+"i": 105.22,
+"p": "kepulauan_bangka_belitung"
+},
+{
+"n": "Kabupaten Belu",
+"i": 77.03,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kabupaten Bengkalis",
+"i": 98.5,
+"p": "riau"
+},
+{
+"n": "Kabupaten Bengkayang",
+"i": 105.48,
+"p": "kalimantan_barat"
+},
+{
+"n": "Kabupaten Bengkulu Selatan",
+"i": 95.51,
+"p": "bengkulu"
+},
+{
+"n": "Kabupaten Bengkulu Tengah",
+"i": 92.01,
+"p": "bengkulu"
+},
+{
+"n": "Kabupaten Bengkulu Utara",
+"i": 91.0,
+"p": "bengkulu"
+},
+{
+"n": "Kabupaten Berau",
+"i": 115.92,
+"p": "kalimantan_timur"
+},
+{
+"n": "Kabupaten Biak Numfor",
+"i": 128.26,
+"p": "papua"
+},
+{
+"n": "Kabupaten Bima",
+"i": 111.0,
+"p": "nusa_tenggara_barat"
+},
+{
+"n": "Kabupaten Bintan",
+"i": 105.63,
+"p": "kepulauan_riau"
+},
+{
+"n": "Kabupaten Bireuen",
+"i": 94.12,
+"p": "aceh"
+},
+{
+"n": "Kabupaten Blitar",
+"i": 90.03,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Blora",
+"i": 103.85,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Boalemo",
+"i": 101.37,
+"p": "gorontalo"
+},
+{
+"n": "Kabupaten Bogor",
+"i": 115.39,
+"p": "jawa_barat"
+},
+{
+"n": "Kabupaten Bolaang Mongondow",
+"i": 95.66,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kabupaten Bolaang Mongondow Selatan",
+"i": 92.21,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kabupaten Bolaang Mongondow Timur",
+"i": 97.49,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kabupaten Bolaang Mongondow Utara",
+"i": 91.43,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kabupaten Bombana",
+"i": 94.69,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Bondowoso",
+"i": 93.02,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Bone",
+"i": 97.16,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kabupaten Bone Bolango",
+"i": 94.7,
+"p": "gorontalo"
+},
+{
+"n": "Kabupaten Boven Digoel",
+"i": 139.28,
+"p": "papua_selatan"
+},
+{
+"n": "Kabupaten Brebes",
+"i": 104.48,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Bulelentg",
+"i": 104.76,
+"p": "bali"
+},
+{
+"n": "Kabupaten Bulukumba",
+"i": 95.11,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kabupaten Bulungan",
+"i": 109.68,
+"p": "kalimantan_utara"
+},
+{
+"n": "Kabupaten Bungo",
+"i": 89.12,
+"p": "jambi"
+},
+{
+"n": "Kabupaten Buol",
+"i": 90.82,
+"p": "sulawesi_tengah"
+},
+{
+"n": "Kabupaten Buru",
+"i": 100.55,
+"p": "maluku"
+},
+{
+"n": "Kabupaten Buru Selatan",
+"i": 106.08,
+"p": "maluku"
+},
+{
+"n": "Kabupaten Buton",
+"i": 99.31,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Buton Selatan",
+"i": 98.8,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Buton Tengah",
+"i": 103.09,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Buton Utara",
+"i": 99.85,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Cianjur",
+"i": 103.18,
+"p": "jawa_barat"
+},
+{
+"n": "Kabupaten Cilacap",
+"i": 101.76,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Dairi",
+"i": 101.58,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Deiyai",
+"i": 180.72,
+"p": "papua_tengah"
+},
+{
+"n": "Kabupaten Deli Serdang",
+"i": 89.32,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Dharmasraya",
+"i": 91.19,
+"p": "sumatera_barat"
+},
+{
+"n": "Kabupaten Dogiyai",
+"i": 172.02,
+"p": "papua_tengah"
+},
+{
+"n": "Kabupaten Dompu",
+"i": 108.9,
+"p": "nusa_tenggara_barat"
+},
+{
+"n": "Kabupaten Donggala",
+"i": 86.67,
+"p": "sulawesi_tengah"
+},
+{
+"n": "Kabupaten Empat Lawang",
+"i": 89.46,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kabupaten Ende",
+"i": 86.78,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kabupaten Fakfak",
+"i": 121.38,
+"p": "papua_barat"
+},
+{
+"n": "Kabupaten Garut",
+"i": 102.23,
+"p": "jawa_barat"
+},
+{
+"n": "Kabupaten Gayo Lues",
+"i": 94.18,
+"p": "aceh"
+},
+{
+"n": "Kabupaten Gianyar",
+"i": 103.63,
+"p": "bali"
+},
+{
+"n": "Kabupaten Gorontalo",
+"i": 97.5,
+"p": "gorontalo"
+},
+{
+"n": "Kabupaten Gorontalo Utara",
+"i": 94.71,
+"p": "gorontalo"
+},
+{
+"n": "Kabupaten Gowa",
+"i": 95.17,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kabupaten Gresik",
+"i": 106.44,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Grobogan",
+"i": 102.22,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Gunung Mas",
+"i": 112.63,
+"p": "kalimantan_tengah"
+},
+{
+"n": "Kabupaten Gunungkidul",
+"i": 107.97,
+"p": "di_yogyakarta"
+},
+{
+"n": "Kabupaten Halmahera Barat",
+"i": 107.49,
+"p": "maluku_utara"
+},
+{
+"n": "Kabupaten Halmahera Selatan",
+"i": 105.72,
+"p": "maluku_utara"
+},
+{
+"n": "Kabupaten Halmahera Tengah",
+"i": 116.67,
+"p": "maluku_utara"
+},
+{
+"n": "Kabupaten Halmahera Timur",
+"i": 114.43,
+"p": "maluku_utara"
+},
+{
+"n": "Kabupaten Halmahera Utara",
+"i": 108.77,
+"p": "maluku_utara"
+},
+{
+"n": "Kabupaten Hulu Sungai Selatan",
+"i": 93.27,
+"p": "kalimantan_selatan"
+},
+{
+"n": "Kabupaten Hulu Sungai Tengah",
+"i": 99.41,
+"p": "kalimantan_selatan"
+},
+{
+"n": "Kabupaten Hulu Sungai Utara",
+"i": 102.82,
+"p": "kalimantan_selatan"
+},
+{
+"n": "Kabupaten Humbang Hasundutan",
+"i": 97.48,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Indragiri Hilir",
+"i": 100.51,
+"p": "riau"
+},
+{
+"n": "Kabupaten Indragiri Hulu",
+"i": 95.28,
+"p": "riau"
+},
+{
+"n": "Kabupaten Indramayu",
+"i": 104.92,
+"p": "jawa_barat"
+},
+{
+"n": "Kabupaten Intan Jaya",
+"i": 342.93,
+"p": "papua_tengah"
+},
+{
+"n": "Kabupaten Jayapura",
+"i": 110.3,
+"p": "papua"
+},
+{
+"n": "Kabupaten Jayawijaya",
+"i": 242.78,
+"p": "papua_pegunungan"
+},
+{
+"n": "Kabupaten Jembrana",
+"i": 104.36,
+"p": "bali"
+},
+{
+"n": "Kabupaten Jeneponto",
+"i": 96.27,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kabupaten Jombang",
+"i": 98.01,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Kaimana",
+"i": 120.34,
+"p": "papua_barat"
+},
+{
+"n": "Kabupaten Kampar",
+"i": 94.39,
+"p": "riau"
+},
+{
+"n": "Kabupaten Kapuas",
+"i": 102.29,
+"p": "kalimantan_tengah"
+},
+{
+"n": "Kabupaten Kapuast Hulu",
+"i": 114.75,
+"p": "kalimantan_barat"
+},
+{
+"n": "Kabupaten Karanganyar",
+"i": 103.37,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Karangasem",
+"i": 102.95,
+"p": "bali"
+},
+{
+"n": "Kabupaten Karawang",
+"i": 108.74,
+"p": "jawa_barat"
+},
+{
+"n": "Kabupaten Karimun",
+"i": 108.15,
+"p": "kepulauan_riau"
+},
+{
+"n": "Kabupaten Karo",
+"i": 100.54,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Katingan",
+"i": 102.48,
+"p": "kalimantan_tengah"
+},
+{
+"n": "Kabupaten Kaur",
+"i": 97.76,
+"p": "bengkulu"
+},
+{
+"n": "Kabupaten Kayong Utara",
+"i": 106.78,
+"p": "kalimantan_barat"
+},
+{
+"n": "Kabupaten Kebumen",
+"i": 98.3,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Kediri",
+"i": 91.51,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Keerom",
+"i": 133.04,
+"p": "papua"
+},
+{
+"n": "Kabupaten Kendal",
+"i": 102.28,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Kepahitang",
+"i": 90.08,
+"p": "bengkulu"
+},
+{
+"n": "Kabupaten Kepulauan Anambas",
+"i": 126.75,
+"p": "kepulauan_riau"
+},
+{
+"n": "Kabupaten Kepulauan Aru",
+"i": 110.07,
+"p": "maluku"
+},
+{
+"n": "Kabupaten Kepulauan Mentawai",
+"i": 118.65,
+"p": "sumatera_barat"
+},
+{
+"n": "Kabupaten Kepulauan Meranti",
+"i": 102.89,
+"p": "riau"
+},
+{
+"n": "Kabupaten Kepulauan Sangihe",
+"i": 107.88,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kabupaten Kepulauan Selayar",
+"i": 98.85,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kabupaten Kepulauan Seribu",
+"i": 122.21,
+"p": "dki_jakarta"
+},
+{
+"n": "Kabupaten Kepulauan Sula",
+"i": 122.44,
+"p": "maluku_utara"
+},
+{
+"n": "Kabupaten Kepulauan Talaud",
+"i": 119.96,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kabupaten Kepulauan Tanimbar",
+"i": 111.8,
+"p": "maluku"
+},
+{
+"n": "Kabupaten Kepulauan Yapen",
+"i": 132.2,
+"p": "papua"
+},
+{
+"n": "Kabupaten Kerinci",
+"i": 97.95,
+"p": "jambi"
+},
+{
+"n": "Kabupaten Ketapang",
+"i": 103.67,
+"p": "kalimantan_barat"
+},
+{
+"n": "Kabupaten Klaten",
+"i": 100.31,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Klungkung",
+"i": 112.89,
+"p": "bali"
+},
+{
+"n": "Kabupaten Kolaka",
+"i": 88.35,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Kolaka Timur",
+"i": 88.47,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Kolakat Utara",
+"i": 92.14,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Konawe",
+"i": 87.71,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Konawe Kepulauan",
+"i": 95.91,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Konawe Selatan",
+"i": 92.73,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Konawe Utara",
+"i": 95.66,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Kotabaru",
+"i": 97.22,
+"p": "kalimantan_selatan"
+},
+{
+"n": "Kabupaten Kotawaringin Barat",
+"i": 106.99,
+"p": "kalimantan_tengah"
+},
+{
+"n": "Kabupaten Kotawaringin Timur",
+"i": 105.91,
+"p": "kalimantan_tengah"
+},
+{
+"n": "Kabupaten Kuantan Singingi",
+"i": 86.92,
+"p": "riau"
+},
+{
+"n": "Kabupaten Kubu Raya",
+"i": 103.68,
+"p": "kalimantan_barat"
+},
+{
+"n": "Kabupaten Kudus",
+"i": 104.64,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Kulon Progo",
+"i": 102.56,
+"p": "di_yogyakarta"
+},
+{
+"n": "Kabupaten Kupang",
+"i": 82.56,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kabupaten Kutai Barat",
+"i": 126.5,
+"p": "kalimantan_timur"
+},
+{
+"n": "Kabupaten Kutai Kartanegara",
+"i": 112.34,
+"p": "kalimantan_timur"
+},
+{
+"n": "Kabupaten Kutai Timur",
+"i": 123.01,
+"p": "kalimantan_timur"
+},
+{
+"n": "Kabupaten Labuhan Batu Utara",
+"i": 95.16,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Lahat",
+"i": 85.48,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kabupaten Lamandau",
+"i": 111.64,
+"p": "kalimantan_tengah"
+},
+{
+"n": "Kabupaten Lampung Barat",
+"i": 92.22,
+"p": "lampung"
+},
+{
+"n": "Kabupaten Lampung Selatan",
+"i": 88.62,
+"p": "lampung"
+},
+{
+"n": "Kabupaten Lampung Tengah",
+"i": 86.72,
+"p": "lampung"
+},
+{
+"n": "Kabupaten Lampung Timur",
+"i": 85.93,
+"p": "lampung"
+},
+{
+"n": "Kabupaten Lampung Utara",
+"i": 88.77,
+"p": "lampung"
+},
+{
+"n": "Kabupaten Landak",
+"i": 109.12,
+"p": "kalimantan_barat"
+},
+{
+"n": "Kabupaten Langkat",
+"i": 94.62,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Lanny Jaya",
+"i": 257.73,
+"p": "papua_pegunungan"
+},
+{
+"n": "Kabupaten Lebak",
+"i": 86.7,
+"p": "banten"
+},
+{
+"n": "Kabupaten Lebong",
+"i": 93.63,
+"p": "bengkulu"
+},
+{
+"n": "Kabupaten Lingga",
+"i": 111.31,
+"p": "kepulauan_riau"
+},
+{
+"n": "Kabupaten Lombok Barat",
+"i": 107.12,
+"p": "nusa_tenggara_barat"
+},
+{
+"n": "Kabupaten Lombok Tengah",
+"i": 101.64,
+"p": "nusa_tenggara_barat"
+},
+{
+"n": "Kabupaten Lombok Timur",
+"i": 105.37,
+"p": "nusa_tenggara_barat"
+},
+{
+"n": "Kabupaten Lombok Utara",
+"i": 100.83,
+"p": "nusa_tenggara_barat"
+},
+{
+"n": "Kabupaten Luwu Timur",
+"i": 102.25,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kabupaten Luwu Utara",
+"i": 99.17,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kabupaten Madiun",
+"i": 95.85,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Magetan",
+"i": 95.27,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Mahakam Ul:u",
+"i": 137.82,
+"p": "kalimantan_timur"
+},
+{
+"n": "Kabupaten Majalengka",
+"i": 102.13,
+"p": "jawa_barat"
+},
+{
+"n": "Kabupaten Majene",
+"i": 85.05,
+"p": "sulawesi_barat"
+},
+{
+"n": "Kabupaten Malaka",
+"i": 80.07,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kabupaten Malinau",
+"i": 103.83,
+"p": "kalimantan_utara"
+},
+{
+"n": "Kabupaten Maluku Tengah",
+"i": 100.76,
+"p": "maluku"
+},
+{
+"n": "Kabupaten Maluku Tenggara",
+"i": 110.87,
+"p": "maluku"
+},
+{
+"n": "Kabupaten Malukut Barat Daya",
+"i": 119.46,
+"p": "maluku"
+},
+{
+"n": "Kabupaten Mamasa",
+"i": 105.24,
+"p": "sulawesi_barat"
+},
+{
+"n": "Kabupaten Mamberamo Tengah",
+"i": 285.83,
+"p": "papua_pegunungan"
+},
+{
+"n": "Kabupaten Mambetramo Raya",
+"i": 175.63,
+"p": "papua"
+},
+{
+"n": "Kabupaten Mamuju",
+"i": 89.76,
+"p": "sulawesi_barat"
+},
+{
+"n": "Kabupaten Mamuju Tengah",
+"i": 90.07,
+"p": "sulawesi_barat"
+},
+{
+"n": "Kabupaten Mandailing Natal",
+"i": 93.25,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Manggarai Timur",
+"i": 93.7,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kabupaten Manokwari",
+"i": 113.78,
+"p": "papua_barat"
+},
+{
+"n": "Kabupaten Manokwari Selatan",
+"i": 121.72,
+"p": "papua_barat"
+},
+{
+"n": "Kabupaten Mappi",
+"i": 147.15,
+"p": "papua_selatan"
+},
+{
+"n": "Kabupaten Maybrat",
+"i": 130.71,
+"p": "papua_barat_daya"
+},
+{
+"n": "Kabupaten Melawi",
+"i": 110.58,
+"p": "kalimantan_barat"
+},
+{
+"n": "Kabupaten Mempawah",
+"i": 103.51,
+"p": "kalimantan_barat"
+},
+{
+"n": "Kabupaten Merangin",
+"i": 95.59,
+"p": "jambi"
+},
+{
+"n": "Kabupaten Merauke",
+"i": 138.95,
+"p": "papua_selatan"
+},
+{
+"n": "Kabupaten Mesuji",
+"i": 92.43,
+"p": "lampung"
+},
+{
+"n": "Kabupaten Mimika",
+"i": 121.9,
+"p": "papua_tengah"
+},
+{
+"n": "Kabupaten Minahasa",
+"i": 99.4,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kabupaten Minahasa Selatan",
+"i": 98.06,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kabupaten Minahasa Tenggara",
+"i": 97.07,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kabupaten Minahasa Utara",
+"i": 104.99,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kabupaten Mojokerto",
+"i": 97.79,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Morowali",
+"i": 104.11,
+"p": "sulawesi_tengah"
+},
+{
+"n": "Kabupaten Morowali Utara",
+"i": 103.88,
+"p": "sulawesi_tengah"
+},
+{
+"n": "Kabupaten Muara Enim",
+"i": 94.79,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kabupaten Muaro Jambi",
+"i": 96.85,
+"p": "jambi"
+},
+{
+"n": "Kabupaten Mukomuko",
+"i": 99.2,
+"p": "bengkulu"
+},
+{
+"n": "Kabupaten Muna",
+"i": 91.8,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Muna Barat",
+"i": 91.91,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Murung Raya",
+"i": 116.04,
+"p": "kalimantan_tengah"
+},
+{
+"n": "Kabupaten Musi Banyuasin",
+"i": 92.7,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kabupaten Musi Rawas",
+"i": 90.62,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kabupaten Musi Rawas Utara",
+"i": 93.81,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kabupaten Nabire",
+"i": 125.32,
+"p": "papua_tengah"
+},
+{
+"n": "Kabupaten Nagekeo",
+"i": 86.04,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kabupaten Natuna",
+"i": 116.22,
+"p": "kepulauan_riau"
+},
+{
+"n": "Kabupaten Nduga",
+"i": 230.13,
+"p": "papua_pegunungan"
+},
+{
+"n": "Kabupaten Ngada",
+"i": 84.89,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kabupaten Nganjuk",
+"i": 95.01,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Ngawi",
+"i": 92.76,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Nias",
+"i": 110.03,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Nias Barat",
+"i": 115.36,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Nias Selatan",
+"i": 110.59,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Nias Utara",
+"i": 107.35,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Nunukan",
+"i": 107.83,
+"p": "kalimantan_utara"
+},
+{
+"n": "Kabupaten Ogan Ilir",
+"i": 87.91,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kabupaten Ogan Komering Ilir",
+"i": 93.42,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kabupaten Ogan Komering Ulu",
+"i": 83.37,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kabupaten Ogan Komering Ulu Timur",
+"i": 92.51,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kabupaten Ogan Ktomering Ulu Selatan",
+"i": 89.75,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kabupaten Pacitan",
+"i": 91.07,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Padang Pariaman",
+"i": 88.15,
+"p": "sumatera_barat"
+},
+{
+"n": "Kabupaten Pakpak Bharat",
+"i": 99.12,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Pamekasan",
+"i": 96.19,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Pandeglang",
+"i": 85.68,
+"p": "banten"
+},
+{
+"n": "Kabupaten Paniai",
+"i": 177.76,
+"p": "papua_tengah"
+},
+{
+"n": "Kabupaten Parigi Moutong",
+"i": 86.43,
+"p": "sulawesi_tengah"
+},
+{
+"n": "Kabupaten Pasangkayu",
+"i": 97.28,
+"p": "sulawesi_barat"
+},
+{
+"n": "Kabupaten Paser",
+"i": 114.87,
+"p": "kalimantan_timur"
+},
+{
+"n": "Kabupaten Pasuruan",
+"i": 95.97,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Pati",
+"i": 104.52,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Pegunungan: Arfak",
+"i": 153.69,
+"p": "papua_barat"
+},
+{
+"n": "Kabupaten Pegunutngan Bintang",
+"i": 302.53,
+"p": "papua_pegunungan"
+},
+{
+"n": "Kabupaten Pekalongan",
+"i": 101.29,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Pelalawan",
+"i": 95.67,
+"p": "riau"
+},
+{
+"n": "Kabupaten Pemalang",
+"i": 104.1,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Penajam Paser Uwtara",
+"i": 117.84,
+"p": "kalimantan_timur"
+},
+{
+"n": "Kabupaten Penukal Abab Lematang Ilir",
+"i": 93.56,
+"p": "sumatera_selatan"
+},
+{
+"n": "Kabupaten Pesawaran",
+"i": 85.36,
+"p": "lampung"
+},
+{
+"n": "Kabupaten Pesisir Barat",
+"i": 95.14,
+"p": "lampung"
+},
+{
+"n": "Kabupaten Pesisir Selatan",
+"i": 92.61,
+"p": "sumatera_barat"
+},
+{
+"n": "Kabupaten Pidie Jaya",
+"i": 92.33,
+"p": "aceh"
+},
+{
+"n": "Kabupaten Pohuwato",
+"i": 95.33,
+"p": "gorontalo"
+},
+{
+"n": "Kabupaten Polewali Mandar",
+"i": 84.07,
+"p": "sulawesi_barat"
+},
+{
+"n": "Kabupaten Ponorogo",
+"i": 97.17,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Poso",
+"i": 92.44,
+"p": "sulawesi_tengah"
+},
+{
+"n": "Kabupaten Pringsewu",
+"i": 88.05,
+"p": "lampung"
+},
+{
+"n": "Kabupaten Probolinggo",
+"i": 93.78,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Pulang Pisau",
+"i": 102.2,
+"p": "kalimantan_tengah"
+},
+{
+"n": "Kabupaten Pulau Morot:ai",
+"i": 120.55,
+"p": "maluku_utara"
+},
+{
+"n": "Kabupaten Pulau Taliabu",
+"i": 114.13,
+"p": "maluku_utara"
+},
+{
+"n": "Kabupaten Puncak",
+"i": 379.81,
+"p": "papua_tengah"
+},
+{
+"n": "Kabupaten Puncak Jaya",
+"i": 334.69,
+"p": "papua_tengah"
+},
+{
+"n": "Kabupaten Purbalingga",
+"i": 99.9,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Purwakarta",
+"i": 104.89,
+"p": "jawa_barat"
+},
+{
+"n": "Kabupaten Purworejo",
+"i": 99.38,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Raja Ampat",
+"i": 123.94,
+"p": "papua_barat_daya"
+},
+{
+"n": "Kabupaten Rejang Lebong",
+"i": 93.15,
+"p": "bengkulu"
+},
+{
+"n": "Kabupaten Rembang",
+"i": 102.46,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Rokan Hilir",
+"i": 102.43,
+"p": "riau"
+},
+{
+"n": "Kabupaten Rokan Hulu",
+"i": 94.53,
+"p": "riau"
+},
+{
+"n": "Kabupaten SIAK",
+"i": 95.84,
+"p": "riau"
+},
+{
+"n": "Kabupaten Sabu Raijua",
+"i": 115.55,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kabupaten Sambas",
+"i": 110.04,
+"p": "kalimantan_barat"
+},
+{
+"n": "Kabupaten Samosir",
+"i": 103.17,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Sampang",
+"i": 98.15,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Sanggau",
+"i": 109.31,
+"p": "kalimantan_barat"
+},
+{
+"n": "Kabupaten Sarmi",
+"i": 138.87,
+"p": "papua"
+},
+{
+"n": "Kabupaten Sarolangun",
+"i": 94.04,
+"p": "jambi"
+},
+{
+"n": "Kabupaten Sekadau",
+"i": 105.72,
+"p": "kalimantan_barat"
+},
+{
+"n": "Kabupaten Seluma",
+"i": 95.39,
+"p": "bengkulu"
+},
+{
+"n": "Kabupaten Seram Bagian Barat",
+"i": 101.88,
+"p": "maluku"
+},
+{
+"n": "Kabupaten Seram Bagian Timur",
+"i": 101.03,
+"p": "maluku"
+},
+{
+"n": "Kabupaten Serang",
+"i": 93.2,
+"p": "banten"
+},
+{
+"n": "Kabupaten Serdang Bedagai",
+"i": 93.59,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Seruyant",
+"i": 108.01,
+"p": "kalimantan_tengah"
+},
+{
+"n": "Kabupaten Siau Tatgulandang Biaro",
+"i": 111.92,
+"p": "sulawesi_utara"
+},
+{
+"n": "Kabupaten Sidoarjo",
+"i": 106.35,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Sigi",
+"i": 79.28,
+"p": "sulawesi_tengah"
+},
+{
+"n": "Kabupaten Sijunjung",
+"i": 91.18,
+"p": "sumatera_barat"
+},
+{
+"n": "Kabupaten Sikka",
+"i": 89.38,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kabupaten Simeulue",
+"i": 108.8,
+"p": "aceh"
+},
+{
+"n": "Kabupaten Sintang",
+"i": 110.81,
+"p": "kalimantan_barat"
+},
+{
+"n": "Kabupaten Situbondo",
+"i": 91.91,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Sleman",
+"i": 106.63,
+"p": "di_yogyakarta"
+},
+{
+"n": "Kabupaten Solok",
+"i": 94.5,
+"p": "sumatera_barat"
+},
+{
+"n": "Kabupaten Solok Selatan",
+"i": 91.49,
+"p": "sumatera_barat"
+},
+{
+"n": "Kabupaten Soppeng",
+"i": 95.82,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kabupaten Sorong",
+"i": 116.59,
+"p": "papua_barat_daya"
+},
+{
+"n": "Kabupaten Sorong Selatan",
+"i": 118.81,
+"p": "papua_barat_daya"
+},
+{
+"n": "Kabupaten Sragen",
+"i": 101.67,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Subang",
+"i": 105.33,
+"p": "jawa_barat"
+},
+{
+"n": "Kabupaten Sukabumi",
+"i": 103.12,
+"p": "jawa_barat"
+},
+{
+"n": "Kabupaten Sukamara",
+"i": 111.64,
+"p": "kalimantan_tengah"
+},
+{
+"n": "Kabupaten Sukoharjo",
+"i": 100.45,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Sumba Barat",
+"i": 99.11,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kabupaten Sumba Barat Daya",
+"i": 96.6,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kabupaten Sumba Timur",
+"i": 97.82,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kabupaten Sumbawa",
+"i": 95.97,
+"p": "nusa_tenggara_barat"
+},
+{
+"n": "Kabupaten Sumbawa Ba:rat",
+"i": 97.37,
+"p": "nusa_tenggara_barat"
+},
+{
+"n": "Kabupaten Sumedang",
+"i": 103.47,
+"p": "jawa_barat"
+},
+{
+"n": "Kabupaten Sumenep",
+"i": 102.75,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Supiori",
+"i": 134.73,
+"p": "papua"
+},
+{
+"n": "Kabupaten Tabalong",
+"i": 100.89,
+"p": "kalimantan_selatan"
+},
+{
+"n": "Kabupaten Tabanan",
+"i": 104.23,
+"p": "bali"
+},
+{
+"n": "Kabupaten Takalar",
+"i": 93.14,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kabupaten Tambrauw",
+"i": 130.55,
+"p": "papua_barat_daya"
+},
+{
+"n": "Kabupaten Tana Tidung",
+"i": 105.9,
+"p": "kalimantan_utara"
+},
+{
+"n": "Kabupaten Tana Toraja",
+"i": 99.64,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kabupaten Tanah Bumbu",
+"i": 98.82,
+"p": "kalimantan_selatan"
+},
+{
+"n": "Kabupaten Tanah Datar",
+"i": 92.26,
+"p": "sumatera_barat"
+},
+{
+"n": "Kabupaten Tanah Laut",
+"i": 101.31,
+"p": "kalimantan_selatan"
+},
+{
+"n": "Kabupaten Tangerang",
+"i": 97.83,
+"p": "banten"
+},
+{
+"n": "Kabupaten Tanggamus",
+"i": 87.91,
+"p": "lampung"
+},
+{
+"n": "Kabupaten Tanjung Jabung Barat",
+"i": 101.51,
+"p": "jambi"
+},
+{
+"n": "Kabupaten Tanjung Jabung Timur",
+"i": 101.04,
+"p": "jambi"
+},
+{
+"n": "Kabupaten Tapanuli Selatan",
+"i": 93.67,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Tapanuli Tengah",
+"i": 100.58,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Tapanuli Utara",
+"i": 94.53,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Tapin",
+"i": 99.21,
+"p": "kalimantan_selatan"
+},
+{
+"n": "Kabupaten Tasikmalaya",
+"i": 98.5,
+"p": "jawa_barat"
+},
+{
+"n": "Kabupaten Tegal",
+"i": 101.18,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Teluk Bintuni",
+"i": 130.92,
+"p": "papua_barat"
+},
+{
+"n": "Kabupaten Teluk Wondama",
+"i": 115.25,
+"p": "papua_barat"
+},
+{
+"n": "Kabupaten Tetbo",
+"i": 91.68,
+"p": "jambi"
+},
+{
+"n": "Kabupaten Timor Tengah Selatan",
+"i": 86.09,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kabupaten Timor Tengah Utara",
+"i": 85.04,
+"p": "nusa_tenggara_timur"
+},
+{
+"n": "Kabupaten Toba",
+"i": 94.11,
+"p": "sumatera_utara"
+},
+{
+"n": "Kabupaten Tojo Una-una",
+"i": 87.91,
+"p": "sulawesi_tengah"
+},
+{
+"n": "Kabupaten Toli-toli",
+"i": 92.06,
+"p": "sulawesi_tengah"
+},
+{
+"n": "Kabupaten Tolikara",
+"i": 288.59,
+"p": "papua_pegunungan"
+},
+{
+"n": "Kabupaten Toraja Utara",
+"i": 100.23,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kabupaten Trenggalek",
+"i": 97.25,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Tulang Bawang Barat",
+"i": 93.52,
+"p": "lampung"
+},
+{
+"n": "Kabupaten Tulangbawang",
+"i": 90.65,
+"p": "lampung"
+},
+{
+"n": "Kabupaten Tulungagung",
+"i": 93.25,
+"p": "jawa_timur"
+},
+{
+"n": "Kabupaten Wajo",
+"i": 95.05,
+"p": "sulawesi_selatan"
+},
+{
+"n": "Kabupaten Wakatobi",
+"i": 109.48,
+"p": "sulawesi_tenggara"
+},
+{
+"n": "Kabupaten Waropen",
+"i": 144.6,
+"p": "papua"
+},
+{
+"n": "Kabupaten Way Kanan",
+"i": 89.19,
+"p": "lampung"
+},
+{
+"n": "Kabupaten Wonogiri",
+"i": 100.13,
+"p": "jawa_tengah"
+},
+{
+"n": "Kabupaten Yahukimo",
+"i": 169.54,
+"p": "papua_pegunungan"
+},
+{
+"n": "Kabupaten Yalimo",
+"i": 243.53,
+"p": "papua_pegunungan"
+}
+]
+}

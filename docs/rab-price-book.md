@@ -22,19 +22,50 @@
 | Cat `35_000/m²` | Rp35k/m² | Cat interior 2 lapis ≈ Rp30–40k/m² | Sesuai |
 | Lantai keramik/granit `250k / 450k / 850k` (standar/menengah/premium) | — | Keramik 40×40 ≈ Rp315k/m²; granit/homogeneous ≈ Rp450–900k/m² | Standar = keramik ekonomis; menengah/premium = granit/HT |
 | Plafon `180k / 250k / 400k` | — | Gypsum+rangka ≈ Rp180–250k/m²; PVC ≈ Rp283k/m² | Sesuai bracket |
-| Beton pondasi `3_500_000/m³` | Rp3,5 jt/m³ | Beton K250/K300 (material+upah, tanpa besi/bekisting) ≈ Rp1,15–1,19 jt/m³ | Baseline = **beton bertulang terpasang** (beton + pembesian + bekisting + upah), bukan beton polos |
-| Kolom/balok `4_500_000/m³` | Rp4,5 jt/m³ | idem + rasio tulangan lebih tinggi | Terpasang, K300 |
-| Plat lantai `3_800_000/m³` | Rp3,8 jt/m³ | idem | Terpasang, t=12cm |
+| Struktur beton | — | lihat tabel terurai di bawah | **Diperbarui v2024.1**: lini beton terpasang lama dipecah → beton-polos + pembesian + bekisting |
 | Atap genteng beton `ROOF_PRICES` (≈Rp400k/m²) | Rp400k/m² | Genteng beton terpasang ≈ Rp350–450k/m²; spandek ≈ Rp363k/m² | Sesuai |
 
-## Kebijakan tanggal berlaku
-- **Level estimasi**: setiap RAB memuat baris asumsi `Buku harga v2024.1 — berlaku
-  2024-07-01 …` (dari `PRICE_BOOK_META`), sehingga tiap estimasi terstempel tanggal.
-- **Kalibrasi ulang**: perbarui `PRICE_BOOK_META.version` + `effectiveDate` saat
-  harga baseline direvisi terhadap AHSP/HSPK terbaru, dan catat perubahan di sini.
+### Struktur beton — TERURAI per komponen AHSP (v2024.1)
+Lini beton kini dipecah jadi 3 komponen per elemen (pondasi telapak, kolom,
+balok & sloof, plat) agar bisa dipakai kontraktor:
+
+| Komponen | Harga baseline DKI | Referensi | Catatan |
+|---|---|---|---|
+| Beton polos `BETON_POLOS_IDR_M3` | Rp1.250.000/m³ | K250–300 (cor + upah, tanpa besi/bekisting) ≈ Rp1,15–1,25 jt/m³ | Sesuai AHSP beton-polos |
+| Pembesian `PEMBESIAN_IDR_KG` | Rp18.500/kg | Besi tulangan + bendrat + fabrikasi + pasang ≈ Rp17–20k/kg | Volume kg = rasio × m³ beton |
+| Bekisting `BEKISTING_IDR_M2` | Rp185.000/m² | Multiplek + rangka, pasang+bongkar (2× pakai) ≈ Rp150–200k/m² | Luas bidang cetak |
+
+Rasio pembesian (`REBAR_KG_PER_M3`, kg besi per m³ beton, tipikal rumah 2–3 lantai):
+pondasi telapak **90**, kolom **180**, balok & sloof **180**, plat lantai **100**.
+Luas bekisting dihitung dari geometri elemen (sisi telapak, keliling kolom × tinggi,
+bidang bawah+sisi balok/sloof, luas bawah plat).
+
+## Kalibrasi berkala (jadwal update)
+- **Kadens:** tinjau ulang harga baseline **tiap 6 bulan** (`PRICE_BOOK_META.reviewCadenceMonths`),
+  ATAU lebih awal bila harga **semen/besi bergerak >10%**.
+- **Trigger otomatis:** `isPriceBookStale()` bernilai `true` bila tanggal kini melewati
+  `PRICE_BOOK_META.nextReviewDate`. Saat itu setiap RAB menampilkan baris peringatan
+  "⚠ Buku harga sudah melewati jadwal tinjau — kalibrasi ulang…" di `assumptions`.
+- **Langkah kalibrasi:**
+  1. Ambil harga AHSP/HSPK + harga pasar semen, besi, keramik, dll terbaru.
+  2. Perbarui angka baseline di `src/lib/mock/rab.ts` + `regional-pricing.ts`
+     (finishing & komponen beton) dan koefisien bila perlu.
+  3. Naikkan `PRICE_BOOK_META.version`, set `effectiveDate` = hari ini, `nextReviewDate` = +6 bulan.
+  4. Perbarui IKK bila BPS merilis tahun baru (ganti dataset `ikk-kabkota-2024.json`
+     + `IKK_2024`, sesuaikan `BASELINE_IKK`). Ingat: IKK antar-tahun **tidak** dapat
+     dibandingkan langsung (basis kota acuan berbeda).
+  5. Catat perubahan di changelog di bawah.
+
+### Changelog buku harga
+| Versi | Berlaku | Tinjau berikutnya | Catatan |
+|---|---|---|---|
+| 2024.1 | 2024-07-01 | 2025-01-01 | Rilis awal: baseline DKI 2024, IKK provinsi+kab/kota 2024, beton terurai per komponen AHSP |
 
 ## Batas & tindak lanjut
-- Beton dibilkan sebagai "terpasang" (sudah termasuk besi + bekisting). Jika ingin
-  BOQ terpisah (beton polos / pembesian kg / bekisting m²), pecah per komponen AHSP.
-- Cakupan IKK kota masih parsial (lihat `IKK_CITY_2024`); lengkapi dari tabel
-  BPS kab/kota 2024 untuk presisi kota kecil dalam provinsi mahal.
+- Beton kini **terurai** (beton-polos + pembesian kg + bekisting m²) — siap untuk BOQ
+  kontraktor. Rasio pembesian & harga komponen indikatif; verifikasi dengan gambar
+  penulangan (BBTB) untuk angka final.
+- **Cakupan IKK kota: 458 dari 514 kab/kota** (semua ~94 kota/municipality tercakup);
+  segelintir kabupaten dengan nama terpotong di PDF BPS jatuh ke IKK provinsi.
+  Sumber: `src/lib/rab/ikk-kabkota-2024.json`.
+

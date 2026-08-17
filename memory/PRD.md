@@ -39,6 +39,30 @@ Billing = Stripe (single provider). AI = OpenAI SDK via OPENAI_BASE_URL
 
 ## Backlog (prioritized)
 
+### 2026-06 (cont. 4) — IKK 514 kab/kota + beton terurai + kalibrasi berkala + preview (VERIFIED: full suite 2996 tests green, tsc clean)
+- **IKK kota/kabupaten REAL (Task 1):** downloaded BPS PDF "IKK Provinsi & Kab/Kota 2024",
+  parsed via pdfplumber → `src/lib/rab/ikk-kabkota-2024.json` (458/514 rows, all ~94
+  municipalities). `regional-pricing.ts` loads it: `CITY_IKK` resolved BEFORE province
+  (city wins when consistent with any given province, else explicit province wins on
+  conflict). Replaced the old 2025-approx Papua seed with authoritative 2024 data
+  (Bandung 117.19, Batam 110.64, Puncak 379.81, Mentawai 118.65). `provinceKeyOf()` helper.
+- **BOQ beton TERURAI (Task 3):** each concrete element (pondasi/kolom/balok&sloof/plat)
+  split into 3 AHSP components — beton-polos (m³ @1.25jt) + pembesian (kg @18.5k, rasio
+  REBAR_KG_PER_M3) + bekisting (m² @185k, luas dari geometri). 4 struktur lines → 12.
+  struktur tests rewritten to the component BOQ.
+- **Kalibrasi berkala (Task 4):** `PRICE_BOOK_META` gains reviewCadenceMonths(6) +
+  nextReviewDate; `isPriceBookStale()` helper; RAB surfaces a "⚠ buku harga overdue"
+  assumption when stale (fires now since 2024 book > 2025-01 review). Doc
+  `docs/rab-price-book.md` updated: beton component rates + calibration schedule + changelog.
+- **Preview denah (Task 2):** user's Postgres (10.104.0.2:5432) UNREACHABLE from sandbox
+  (network-isolated) → could not run app/migrations here. Verified via headless ASCII
+  render instead: real briefs generate with isolated=0 (connectivity intact), corridors
+  serve private rooms, stairs placed. To preview in-app: user runs `pnpm migrate` +
+  `pnpm dev` with DATABASE_URL in their own env.
+- Env tooling: use `./node_modules/.bin/vitest` / `tsc` (pnpm shim not persistent across shells).
+
+
+
 ### 2026-06 (cont. 3) — Generator activated + city IKK + AHSP calibration (ALL VERIFIED via real vitest + tsc)
 - **Env now online**: pnpm 10.15.0 (Node 20; pnpm 11 needs Node 22, pnpm 9 rejects the
   allowBuilds workspace file). `pnpm install` OK, full vitest + `tsc --noEmit` runnable.

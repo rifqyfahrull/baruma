@@ -450,59 +450,82 @@ describe("generateRAB", () => {
     //   sizeBeam(4.0): h=roundUp50(333.3)=350, b=roundUp50(175)=200 mm.
     //   totalBeamLen = ny×W + nx×D = 3×8 + 3×6 = 42 m; sloofLen = 42 m.
 
-    it("Pondasi telapak: 9 × side² × 0.25 = 9 × 1.44 × 0.25 = 3.24 → 3.2 m³ @ 3.5jt", () => {
+    it("Pondasi telapak terurai: beton 3.2 m³ + pembesian 288 kg + bekisting 10.8 m²", () => {
       const rab = generateRAB(sampleProject, sampleBrief, struktur8x6Layout())
-      const item = rab.items.find((i) => i.item === "Pondasi telapak")
-      expect(item).toBeDefined()
-      expect(item!.category).toBe("struktur")
-      expect(item!.unit).toBe("m³")
-      expect(item!.volume).toBe(3.2)
-      expect(item!.unitPriceIDR).toBe(3_500_000)
-      expect(item!.totalIDR).toBe(11_200_000) // 3.2 × 3,500,000
-      expect(item!.confidence).toBe("medium")
-      // footprint shared with the grid: 9 columns → 9 telapak in the note.
-      expect(item!.notes).toContain("9 telapak")
-      expect(item!.notes).toContain("1.2×1.2")
+      const beton = rab.items.find((i) => i.item === "Pondasi telapak — beton")
+      expect(beton).toBeDefined()
+      expect(beton!.category).toBe("struktur")
+      expect(beton!.unit).toBe("m³")
+      expect(beton!.volume).toBe(3.2)
+      expect(beton!.totalIDR).toBe(4_000_000) // 3.2 × 1,250,000
+      expect(beton!.notes).toContain("9 telapak")
+      expect(beton!.notes).toContain("1.2×1.2")
+
+      const besi = rab.items.find((i) => i.item === "Pondasi telapak — pembesian")
+      expect(besi!.unit).toBe("kg")
+      expect(besi!.volume).toBe(288) // 3.2 × 90 kg/m³
+      expect(besi!.totalIDR).toBe(5_328_000) // 288 × 18,500
+
+      const form = rab.items.find((i) => i.item === "Pondasi telapak — bekisting")
+      expect(form!.unit).toBe("m²")
+      expect(form!.volume).toBe(10.8) // 4 × 1.2 × 0.25 × 9
+      expect(form!.totalIDR).toBe(1_998_000) // 10.8 × 185,000
     })
 
-    it("Kolom beton: 9 × (0.2)² × 3.0 × 2 = 9 × 0.24 = 2.16 → 2.2 m³ @ 4.5jt", () => {
+    it("Kolom terurai: beton 2.2 m³ + pembesian 396 kg + bekisting 43.2 m²", () => {
       const rab = generateRAB(sampleProject, sampleBrief, struktur8x6Layout())
-      const item = rab.items.find((i) => i.item === "Kolom beton")
-      expect(item).toBeDefined()
-      expect(item!.unit).toBe("m³")
-      expect(item!.volume).toBe(2.2)
-      expect(item!.unitPriceIDR).toBe(4_500_000)
-      expect(item!.totalIDR).toBe(9_900_000) // 2.2 × 4,500,000
-      expect(item!.notes).toContain("9 kolom")
-      expect(item!.notes).toContain("200×200 mm")
+      const beton = rab.items.find((i) => i.item === "Kolom — beton")
+      expect(beton!.volume).toBe(2.2)
+      expect(beton!.totalIDR).toBe(2_750_000)
+      expect(beton!.notes).toContain("9 kolom")
+      expect(beton!.notes).toContain("200×200 mm")
+
+      const besi = rab.items.find((i) => i.item === "Kolom — pembesian")
+      expect(besi!.unit).toBe("kg")
+      expect(besi!.volume).toBe(396) // 2.2 × 180
+      expect(besi!.totalIDR).toBe(7_326_000)
+
+      const form = rab.items.find((i) => i.item === "Kolom — bekisting")
+      expect(form!.volume).toBe(43.2) // 4 × 0.2 × 3.0 × 9 × 2 lantai
+      expect(form!.totalIDR).toBe(7_992_000)
     })
 
-    it("Balok & sloof: (0.2×0.35×42) + (0.15×0.2×42) = 2.94 + 1.26 = 4.2 m³ @ 4.5jt", () => {
+    it("Balok & sloof terurai: beton 4.2 m³ + pembesian 756 kg + bekisting 60.9 m²", () => {
       const rab = generateRAB(sampleProject, sampleBrief, struktur8x6Layout())
-      const item = rab.items.find((i) => i.item === "Balok & sloof")
-      expect(item).toBeDefined()
-      expect(item!.unit).toBe("m³")
-      expect(item!.volume).toBe(4.2)
-      expect(item!.unitPriceIDR).toBe(4_500_000)
-      expect(item!.totalIDR).toBe(18_900_000) // 4.2 × 4,500,000
-      expect(item!.notes).toContain("200×350 mm")
+      const beton = rab.items.find((i) => i.item === "Balok & sloof — beton")
+      expect(beton!.volume).toBe(4.2)
+      expect(beton!.totalIDR).toBe(5_250_000)
+      expect(beton!.notes).toContain("200×350 mm")
+
+      const besi = rab.items.find((i) => i.item === "Balok & sloof — pembesian")
+      expect(besi!.volume).toBe(756) // 4.2 × 180
+      expect(besi!.totalIDR).toBe(13_986_000)
+
+      const form = rab.items.find((i) => i.item === "Balok & sloof — bekisting")
+      expect(form!.volume).toBe(60.9) // (0.9 × 42) + (0.55 × 42)
+      expect(form!.totalIDR).toBe(11_267_000) // 60.9 × 185,000, round1k
     })
 
-    it("Plat lantai: builtArea 48 × 0.12 = 5.76 → 5.8 m³ @ 3.8jt", () => {
+    it("Plat lantai terurai: beton 5.8 m³ + pembesian 580 kg + bekisting 48 m²", () => {
       const rab = generateRAB(sampleProject, sampleBrief, struktur8x6Layout())
-      const item = rab.items.find((i) => i.item === "Plat lantai")
-      expect(item).toBeDefined()
-      expect(item!.unit).toBe("m³")
-      expect(item!.volume).toBe(5.8)
-      expect(item!.unitPriceIDR).toBe(3_800_000)
-      expect(item!.totalIDR).toBe(22_040_000) // 5.8 × 3,800,000
+      const beton = rab.items.find((i) => i.item === "Plat lantai — beton")
+      expect(beton!.volume).toBe(5.8) // 48 × 0.12
+      expect(beton!.totalIDR).toBe(7_250_000)
+
+      const besi = rab.items.find((i) => i.item === "Plat lantai — pembesian")
+      expect(besi!.volume).toBe(580) // 5.8 × 100
+      expect(besi!.totalIDR).toBe(10_730_000)
+
+      const form = rab.items.find((i) => i.item === "Plat lantai — bekisting")
+      expect(form!.volume).toBe(48) // built area
+      expect(form!.totalIDR).toBe(8_880_000)
     })
 
-    it("footprint shared: grid column count = telapak count in the Pondasi line", () => {
+    it("footprint shared: grid column count = telapak count in the Pondasi beton line", () => {
       const layout = struktur8x6Layout()
       expect(deriveColumnGrid(layout).columns.length).toBe(9)
       const rab = generateRAB(sampleProject, sampleBrief, layout)
-      const item = rab.items.find((i) => i.item === "Pondasi telapak")
+      const item = rab.items.find((i) => i.item === "Pondasi telapak — beton")
       expect(item!.notes).toContain("9 telapak")
     })
 

@@ -19,7 +19,7 @@ import type {
   RAB,
 } from "@/types"
 import { FINISHING_LEVELS, ROOF_MATERIALS, ROOF_PRICES, ROOF_TYPES } from "@/lib/constants"
-import { PRICE_BOOK_META, resolveRegion } from "@/lib/rab/regional-pricing"
+import { PRICE_BOOK_META, isPriceBookStale, resolveRegion } from "@/lib/rab/regional-pricing"
 import { effectiveRoof } from "@/lib/drawings/elevation"
 import {
   isUnpricedFurniture,
@@ -100,6 +100,15 @@ const CEILING_IDR_M2: Record<FinishingLevel, number> = {
   premium: 400_000,
 }
 const INTERIOR_PAINT_IDR_M2 = 35_000
+
+// Struktur beton TERURAI per komponen AHSP (baseline DKI 2026, diskalakan region
+// di toItem). Memecah "beton terpasang" lama menjadi beton-polos + pembesian +
+// bekisting agar bisa dipakai kontraktor untuk BOQ nyata.
+const BETON_POLOS_IDR_M3 = 1_250_000 // K250–300: cor + upah (tanpa besi & bekisting)
+const PEMBESIAN_IDR_KG = 18_500 // besi tulangan + bendrat + fabrikasi + pasang
+const BEKISTING_IDR_M2 = 185_000 // multiplek + rangka, pasang + bongkar (2× pakai)
+// Rasio pembesian (kg besi per m³ beton) — tipikal rumah tinggal 2–3 lantai.
+const REBAR_KG_PER_M3 = { footing: 90, column: 180, beam: 180, slab: 100 } as const
 
 function toItem(spec: Spec, i: number, regionFactor: number): BOQItem {
   const volume = round1(spec.volume) || 1
@@ -406,44 +415,127 @@ export function generateRAB(
   // Plat lantai: built floor area × 12 cm slab thickness m³.
   const slabVol = round1(builtArea * 0.12)
 
+  // Terurai per komponen (beton polos m³ / pembesian kg / bekisting m²).
+  const footingRebarKg = round1(footingVol * REBAR_KG_PER_M3.footing)
+  const footingFormM2 = round1(4 * footing.side * footing.thickness * columnCount)
+  const columnRebarKg = round1(columnVol * REBAR_KG_PER_M3.column)
+  const columnFormM2 = round1(4 * (column.side / 1000) * STOREY_HEIGHT_M * columnCount * floors)
+  const beamRebarKg = round1(beamVol * REBAR_KG_PER_M3.beam)
+  const beamFormM2 = round1(((beam.b + 2 * beam.h) / 1000) * totalBeamLenM + 0.55 * sloofLenM)
+  const slabRebarKg = round1(slabVol * REBAR_KG_PER_M3.slab)
+  const slabFormM2 = round1(builtArea)
+
   const specs: Spec[] = [
     ...wallItems,
-    // Struktur — real concrete volumes (SP6). Unit m³, prices patoked per m³.
+    // Struktur — volume beton nyata (SP6), TERURAI per komponen AHSP:
+    // beton-polos (m³) + pembesian (kg) + bekisting (m²) untuk tiap elemen.
     {
       category: "struktur",
-      item: "Pondasi telapak",
+      item: "Pondasi telapak — beton",
       volume: footingVol,
       unit: "m³",
-      total: footingVol * 3_500_000,
+      total: footingVol * BETON_POLOS_IDR_M3,
       confidence: "medium",
-      notes: `${columnCount} telapak ${footing.side}×${footing.side}×${footing.thickness} m dari σ ${sigmaKPa} kPa (Ps ${load.Ps} kN).${footing.deepNote ? ` ${footing.deepNote}.` : ""}`,
+      notes: `${columnCount} telapak ${footing.side}×${footing.side}×${footing.thickness} m dari σ ${sigmaKPa} kPa (Ps ${load.Ps} kN).${footing.deepNote ? ` ${footing.deepNote}.` : ""} Beton K-250 tanpa besi/bekisting.`,
     },
     {
       category: "struktur",
-      item: "Kolom beton",
+      item: "Pondasi telapak — pembesian",
+      volume: footingRebarKg,
+      unit: "kg",
+      total: footingRebarKg * PEMBESIAN_IDR_KG,
+      confidence: "low",
+      notes: `≈${REBAR_KG_PER_M3.footing} kg/m³ × ${footingVol} m³. Perlu konfirmasi gambar penulangan.`,
+    },
+    {
+      category: "struktur",
+      item: "Pondasi telapak — bekisting",
+      volume: footingFormM2,
+      unit: "m²",
+      total: footingFormM2 * BEKISTING_IDR_M2,
+      confidence: "low",
+      notes: `Sisi telapak ${columnCount} titik.`,
+    },
+    {
+      category: "struktur",
+      item: "Kolom — beton",
       volume: columnVol,
       unit: "m³",
-      total: columnVol * 4_500_000,
+      total: columnVol * BETON_POLOS_IDR_M3,
       confidence: "medium",
-      notes: `${columnCount} kolom ${column.side}×${column.side} mm × ${floors} lantai (Pu ${load.Pu} kN).`,
+      notes: `${columnCount} kolom ${column.side}×${column.side} mm × ${floors} lantai (Pu ${load.Pu} kN). Beton K-300.`,
     },
     {
       category: "struktur",
-      item: "Balok & sloof",
+      item: "Kolom — pembesian",
+      volume: columnRebarKg,
+      unit: "kg",
+      total: columnRebarKg * PEMBESIAN_IDR_KG,
+      confidence: "low",
+      notes: `≈${REBAR_KG_PER_M3.column} kg/m³ × ${columnVol} m³.`,
+    },
+    {
+      category: "struktur",
+      item: "Kolom — bekisting",
+      volume: columnFormM2,
+      unit: "m²",
+      total: columnFormM2 * BEKISTING_IDR_M2,
+      confidence: "low",
+      notes: `Keliling kolom × tinggi × ${floors} lantai.`,
+    },
+    {
+      category: "struktur",
+      item: "Balok & sloof — beton",
       volume: beamVol,
       unit: "m³",
-      total: beamVol * 4_500_000,
+      total: beamVol * BETON_POLOS_IDR_M3,
       confidence: "medium",
-      notes: `Balok ${beam.b}×${beam.h} mm + sloof 150×200 mm, ~${round1(totalBeamLenM)} m grid.`,
+      notes: `Balok ${beam.b}×${beam.h} mm + sloof 150×200 mm, ~${round1(totalBeamLenM)} m grid. Beton K-300.`,
     },
     {
       category: "struktur",
-      item: "Plat lantai",
+      item: "Balok & sloof — pembesian",
+      volume: beamRebarKg,
+      unit: "kg",
+      total: beamRebarKg * PEMBESIAN_IDR_KG,
+      confidence: "low",
+      notes: `≈${REBAR_KG_PER_M3.beam} kg/m³ × ${beamVol} m³.`,
+    },
+    {
+      category: "struktur",
+      item: "Balok & sloof — bekisting",
+      volume: beamFormM2,
+      unit: "m²",
+      total: beamFormM2 * BEKISTING_IDR_M2,
+      confidence: "low",
+      notes: `Bidang bawah + 2 sisi balok & sloof sepanjang grid.`,
+    },
+    {
+      category: "struktur",
+      item: "Plat lantai — beton",
       volume: slabVol,
       unit: "m³",
-      total: slabVol * 3_800_000,
+      total: slabVol * BETON_POLOS_IDR_M3,
       confidence: "medium",
-      notes: `Plat beton t=12 cm seluas ${builtArea} m² lantai.`,
+      notes: `Plat beton t=12 cm seluas ${builtArea} m² lantai. K-250.`,
+    },
+    {
+      category: "struktur",
+      item: "Plat lantai — pembesian",
+      volume: slabRebarKg,
+      unit: "kg",
+      total: slabRebarKg * PEMBESIAN_IDR_KG,
+      confidence: "low",
+      notes: `≈${REBAR_KG_PER_M3.slab} kg/m³ × ${slabVol} m³.`,
+    },
+    {
+      category: "struktur",
+      item: "Plat lantai — bekisting",
+      volume: slabFormM2,
+      unit: "m²",
+      total: slabFormM2 * BEKISTING_IDR_M2,
+      confidence: "low",
+      notes: `Bekisting bawah plat = luas lantai.`,
     },
     // Arsitektur ~22% — dinding bata/plester kini dari `wallItems` (geometri
     // riil: perimeter luar + partisi dalam), bukan builtArea × multiplier.
@@ -977,6 +1069,9 @@ export function generateRAB(
     items,
     assumptions: [
       `Buku harga v${PRICE_BOOK_META.version} — berlaku ${PRICE_BOOK_META.effectiveDate}. Baseline ${PRICE_BOOK_META.baselineRegion}: ${PRICE_BOOK_META.standard}; penyesuaian wilayah: ${PRICE_BOOK_META.regionalIndex}.`,
+      ...(isPriceBookStale()
+        ? [`⚠ Buku harga sudah melewati jadwal tinjau (${PRICE_BOOK_META.nextReviewDate}) — kalibrasi ulang terhadap AHSP/HSPK terbaru sebelum dipakai untuk kontrak.`]
+        : []),
       region.source,
       `Estimasi "mid" dengan margin ketidakpastian ±${Math.round(unc * 100)}% (rentang low–high).${region.matchLevel === "province" ? " Wilayah dikenali di tingkat provinsi — harga kota spesifik bisa berbeda." : region.matchLevel === "none" ? " Wilayah tidak dikenali — verifikasi harga lokal." : ""}`,
       `Level finishing: ${FINISHING_LEVELS[finishing].label}.`,

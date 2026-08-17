@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest"
 
 import {
   BASELINE_IKK,
+  CITY_IKK_COVERAGE,
   IKK_2024,
+  isPriceBookStale,
+  PRICE_BOOK_META,
   resolveRegion,
 } from "./regional-pricing"
 
@@ -61,26 +64,61 @@ describe("resolveRegion", () => {
     expect(Object.keys(IKK_2024)).toHaveLength(38)
   })
 
-  it("city/kabupaten override takes precedence over province (costly kab in province)", () => {
-    const r = resolveRegion("Puncak", "Papua Tengah")
+  it("resolves real city-level IKK 2024 (Kota Bandung) with high confidence", () => {
+    const r = resolveRegion("Bandung", null)
     expect(r.matchLevel).toBe("city")
-    expect(r.regionLabel).toContain("Puncak")
-    expect(r.factor).toBeGreaterThan(3) // 361.36 / 114.79 ≈ 3.15
-    expect(r.confidence).toBe("low") // approx (2025 basis)
-    expect(r.uncertaintyPct).toBe(0.28)
-    expect(r.source).toContain("perkiraan")
+    expect(r.ikk).toBeCloseTo(117.19, 2)
+    expect(r.provinceKey).toBe("jawa_barat")
+    expect(r.confidence).toBe("high")
+    expect(r.uncertaintyPct).toBe(0.12)
+    expect(r.source).not.toContain("perkiraan")
   })
 
-  it("city override beats an explicit (cheaper) province", () => {
-    // Even if province says DKI Jakarta, a known costly kabupaten city wins.
-    const r = resolveRegion("Intan Jaya", "DKI Jakarta")
+  it("city/kabupaten override beats the provincial average (costly kab in province)", () => {
+    // Kab. Puncak (Papua Tengah) IKK 379.81 ≫ its province — priced correctly.
+    const r = resolveRegion("Puncak", null)
     expect(r.matchLevel).toBe("city")
-    expect(r.regionLabel).toContain("Intan Jaya")
+    expect(r.regionLabel).toContain("Puncak")
+    expect(r.factor).toBeGreaterThan(3) // 379.81 / 114.79 ≈ 3.31
+    expect(r.confidence).toBe("low") // extreme remote (ikk ≥ 200)
+    expect(r.uncertaintyPct).toBe(0.22)
+
+    // Kab. Kepulauan Mentawai IKK 118.65 vs Sumbar province 93.06.
+    const m = resolveRegion("Kepulauan Mentawai", null)
+    expect(m.matchLevel).toBe("city")
+    expect(m.ikk).toBeCloseTo(118.65, 2)
+  })
+
+  it("city wins when consistent with the given province, but explicit conflicting province wins", () => {
+    const consistent = resolveRegion("Intan Jaya", "Papua Tengah")
+    expect(consistent.matchLevel).toBe("city")
+    expect(consistent.regionLabel).toContain("Intan Jaya")
+
+    // Contradictory input (Bandung + Bali) → trust the explicit province.
+    const conflict = resolveRegion("Bandung", "Bali")
+    expect(conflict.matchLevel).toBe("province")
+    expect(conflict.provinceKey).toBe("bali")
   })
 
   it("unknown city falls back to the provincial IKK", () => {
     const r = resolveRegion("Kota Antah Berantah", "Jawa Barat")
     expect(r.matchLevel).toBe("province")
     expect(r.provinceKey).toBe("jawa_barat")
+  })
+
+  it("city dataset covers the vast majority of kab/kota (incl. all major cities)", () => {
+    expect(CITY_IKK_COVERAGE).toBeGreaterThan(400)
+    for (const c of ["Batam", "Surabaya", "Medan", "Makassar", "Denpasar", "Jayapura"]) {
+      expect(resolveRegion(c, null).matchLevel).toBe("city")
+    }
+  })
+
+  it("isPriceBookStale flips after nextReviewDate", () => {
+    const before = new Date(PRICE_BOOK_META.nextReviewDate)
+    before.setDate(before.getDate() - 1)
+    expect(isPriceBookStale(before)).toBe(false)
+    const after = new Date(PRICE_BOOK_META.nextReviewDate)
+    after.setDate(after.getDate() + 1)
+    expect(isPriceBookStale(after)).toBe(true)
   })
 })
