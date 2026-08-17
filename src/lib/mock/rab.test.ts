@@ -450,7 +450,7 @@ describe("generateRAB", () => {
     //   sizeBeam(4.0): h=roundUp50(333.3)=350, b=roundUp50(175)=200 mm.
     //   totalBeamLen = ny×W + nx×D = 3×8 + 3×6 = 42 m; sloofLen = 42 m.
 
-    it("Pondasi telapak terurai: beton 3.2 m³ + pembesian 288 kg + bekisting 10.8 m²", () => {
+    it("Pondasi telapak terurai: beton 3.2 m³ + pembesian 202.6 kg (takeoff) + bekisting 10.8 m²", () => {
       const rab = generateRAB(sampleProject, sampleBrief, struktur8x6Layout())
       const beton = rab.items.find((i) => i.item === "Pondasi telapak — beton")
       expect(beton).toBeDefined()
@@ -463,8 +463,9 @@ describe("generateRAB", () => {
 
       const besi = rab.items.find((i) => i.item === "Pondasi telapak — pembesian")
       expect(besi!.unit).toBe("kg")
-      expect(besi!.volume).toBe(288) // 3.2 × 90 kg/m³
-      expect(besi!.totalIDR).toBe(5_328_000) // 288 × 18,500
+      expect(besi!.volume).toBe(202.6) // jaring D13-150 dua arah × 9 telapak
+      expect(besi!.totalIDR).toBe(3_748_000) // 202.6 × 18,500
+      expect(besi!.notes).toContain("D13")
 
       const form = rab.items.find((i) => i.item === "Pondasi telapak — bekisting")
       expect(form!.unit).toBe("m²")
@@ -472,7 +473,7 @@ describe("generateRAB", () => {
       expect(form!.totalIDR).toBe(1_998_000) // 10.8 × 185,000
     })
 
-    it("Kolom terurai: beton 2.2 m³ + pembesian 396 kg + bekisting 43.2 m²", () => {
+    it("Kolom terurai: beton 2.2 m³ + pembesian 310.4 kg (takeoff) + bekisting 43.2 m²", () => {
       const rab = generateRAB(sampleProject, sampleBrief, struktur8x6Layout())
       const beton = rab.items.find((i) => i.item === "Kolom — beton")
       expect(beton!.volume).toBe(2.2)
@@ -482,15 +483,16 @@ describe("generateRAB", () => {
 
       const besi = rab.items.find((i) => i.item === "Kolom — pembesian")
       expect(besi!.unit).toBe("kg")
-      expect(besi!.volume).toBe(396) // 2.2 × 180
-      expect(besi!.totalIDR).toBe(7_326_000)
+      expect(besi!.volume).toBe(310.4) // 4D13 + sengkang D8-150, 9 kolom × 2 lantai
+      expect(besi!.totalIDR).toBe(5_742_000)
+      expect(besi!.notes).toContain("D13")
 
       const form = rab.items.find((i) => i.item === "Kolom — bekisting")
       expect(form!.volume).toBe(43.2) // 4 × 0.2 × 3.0 × 9 × 2 lantai
       expect(form!.totalIDR).toBe(7_992_000)
     })
 
-    it("Balok & sloof terurai: beton 4.2 m³ + pembesian 756 kg + bekisting 60.9 m²", () => {
+    it("Balok & sloof terurai: beton 4.2 m³ + pembesian 621.6 kg (takeoff) + bekisting 60.9 m²", () => {
       const rab = generateRAB(sampleProject, sampleBrief, struktur8x6Layout())
       const beton = rab.items.find((i) => i.item === "Balok & sloof — beton")
       expect(beton!.volume).toBe(4.2)
@@ -498,23 +500,25 @@ describe("generateRAB", () => {
       expect(beton!.notes).toContain("200×350 mm")
 
       const besi = rab.items.find((i) => i.item === "Balok & sloof — pembesian")
-      expect(besi!.volume).toBe(756) // 4.2 × 180
-      expect(besi!.totalIDR).toBe(13_986_000)
+      expect(besi!.volume).toBe(621.6) // 3D16+2D16 + sloof 4D12 + sengkang
+      expect(besi!.totalIDR).toBe(11_500_000)
+      expect(besi!.notes).toContain("D16")
 
       const form = rab.items.find((i) => i.item === "Balok & sloof — bekisting")
       expect(form!.volume).toBe(60.9) // (0.9 × 42) + (0.55 × 42)
       expect(form!.totalIDR).toBe(11_267_000) // 60.9 × 185,000, round1k
     })
 
-    it("Plat lantai terurai: beton 5.8 m³ + pembesian 580 kg + bekisting 48 m²", () => {
+    it("Plat lantai terurai: beton 5.8 m³ + pembesian 394.9 kg (takeoff) + bekisting 48 m²", () => {
       const rab = generateRAB(sampleProject, sampleBrief, struktur8x6Layout())
       const beton = rab.items.find((i) => i.item === "Plat lantai — beton")
       expect(beton!.volume).toBe(5.8) // 48 × 0.12
       expect(beton!.totalIDR).toBe(7_250_000)
 
       const besi = rab.items.find((i) => i.item === "Plat lantai — pembesian")
-      expect(besi!.volume).toBe(580) // 5.8 × 100
-      expect(besi!.totalIDR).toBe(10_730_000)
+      expect(besi!.volume).toBe(394.9) // jaring D10-150 dua arah × 48 m²
+      expect(besi!.totalIDR).toBe(7_306_000)
+      expect(besi!.notes).toContain("D10")
 
       const form = rab.items.find((i) => i.item === "Plat lantai — bekisting")
       expect(form!.volume).toBe(48) // built area

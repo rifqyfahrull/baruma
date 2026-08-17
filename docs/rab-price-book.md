@@ -1,6 +1,6 @@
 # RAB Price Book — baseline & provenance
 
-**Versi:** 2024.1 · **Berlaku:** 2024-07-01 · **Baseline region:** DKI Jakarta
+**Versi:** 2026.1 · **Berlaku:** 2026-06-01 · **Baseline region:** DKI Jakarta
 (faktor regional ×1.0). Nilai di bawah adalah **harga satuan terpasang** (material
 + upah + alat) baseline DKI Jakarta 2024, lalu diskalakan per-wilayah oleh faktor
 **BPS IKK 2024** (`src/lib/rab/regional-pricing.ts`).
@@ -35,8 +35,14 @@ balok & sloof, plat) agar bisa dipakai kontraktor:
 | Pembesian `PEMBESIAN_IDR_KG` | Rp18.500/kg | Besi tulangan + bendrat + fabrikasi + pasang ≈ Rp17–20k/kg | Volume kg = rasio × m³ beton |
 | Bekisting `BEKISTING_IDR_M2` | Rp185.000/m² | Multiplek + rangka, pasang+bongkar (2× pakai) ≈ Rp150–200k/m² | Luas bidang cetak |
 
-Rasio pembesian (`REBAR_KG_PER_M3`, kg besi per m³ beton, tipikal rumah 2–3 lantai):
-pondasi telapak **90**, kolom **180**, balok & sloof **180**, plat lantai **100**.
+Rasio pembesian **tidak lagi memakai kg/m³ selimut** — dihitung dari **takeoff
+batang (BBTB indikatif)**: n × Ø × panjang + sengkang/jaring, dari geometri elemen:
+- **Pondasi:** jaring D13-150 dua arah per telapak.
+- **Kolom:** 4–8 D13 longitudinal (per ukuran) + sengkang D8-150.
+- **Balok:** 3D16 bawah + 2D16 atas + sengkang D8-150; **sloof:** 4D12 + sengkang D8-200.
+- **Plat:** jaring D10-150 dua arah (≈8,23 kg/m²).
+Berat per meter dari tabel `REBAR_KG_PER_M` (D8 0,395 … D16 1,578 kg/m). Angka final
+tetap perlu diverifikasi dengan gambar penulangan (bar bending schedule) aktual.
 Luas bekisting dihitung dari geometri elemen (sisi telapak, keliling kolom × tinggi,
 bidang bawah+sisi balok/sloof, luas bawah plat).
 
@@ -60,12 +66,13 @@ bidang bawah+sisi balok/sloof, luas bawah plat).
 | Versi | Berlaku | Tinjau berikutnya | Catatan |
 |---|---|---|---|
 | 2024.1 | 2024-07-01 | 2025-01-01 | Rilis awal: baseline DKI 2024, IKK provinsi+kab/kota 2024, beton terurai per komponen AHSP |
+| 2026.1 | 2026-06-01 | 2026-12-01 | Tinjau harga: baseline divalidasi dalam rentang SHS/HSPK & pasar 2025 (besi ~Rp16–18k/kg terpasang, multiplek 12mm ~Rp160–209k/lembar, keramik 40×40 ~Rp75–140k/m²) — tetap dalam rentang, tanpa perubahan material. Pembesian pindah dari kg/m³ selimut ke **takeoff batang (BBTB)**. IKK kab/kota diperluas ke 495/514 |
 
 ## Batas & tindak lanjut
 - Beton kini **terurai** (beton-polos + pembesian kg + bekisting m²) — siap untuk BOQ
   kontraktor. Rasio pembesian & harga komponen indikatif; verifikasi dengan gambar
   penulangan (BBTB) untuk angka final.
-- **Cakupan IKK kota: 458 dari 514 kab/kota** (semua ~94 kota/municipality tercakup);
-  segelintir kabupaten dengan nama terpotong di PDF BPS jatuh ke IKK provinsi.
+- **Cakupan IKK kota: 495 dari 514 kab/kota** (semua **98 kota/municipality** tercakup);
+  ~19 kabupaten yang tak terekstrak dari PDF BPS jatuh ke IKK provinsi.
   Sumber: `src/lib/rab/ikk-kabkota-2024.json`.
 

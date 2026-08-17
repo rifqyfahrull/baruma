@@ -39,6 +39,26 @@ Billing = Stripe (single provider). AI = OpenAI SDK via OPENAI_BASE_URL
 
 ## Backlog (prioritized)
 
+### 2026-06 (cont. 5) — 514 coverage + price calibration + rebar takeoff + app preview (verified: 111 touched tests + tsc clean)
+- **IKK kab/kota 495/514 (semua 98 kota):** re-ekstrak PDF BPS via word+table positioning
+  (`ikk-kabkota-2024.json`); ~19 kabupaten obscure tak terekstrak → fallback provinsi.
+- **Kalibrasi buku harga (Task): `PRICE_BOOK_META` → v2026.1**, effective 2026-06-01,
+  nextReview 2026-12-01 (peringatan stale kini bersih). Harga baseline divalidasi dalam
+  rentang SHS/HSPK & pasar 2025 (besi ~16–18k/kg, multiplek 12mm ~160–209k, keramik
+  40×40 ~75–140k) — tetap dalam rentang, tanpa perubahan angka. Changelog di docs.
+- **Angka penulangan (Task): rasio kg/m³ selimut → TAKEOFF batang (BBTB).** `REBAR_KG_PER_M`
+  + `rebarKg()`; kolom nD13+sengkang, balok 3D16+2D16, sloof 4D12, pondasi jaring D13-150,
+  plat jaring D10-150. Nilai fixture: footing 202.6kg, kolom 310.4, balok&sloof 621.6,
+  plat 394.9. Tests struktur diperbarui ke takeoff.
+- **Preview app (Task): DB user (10.104.0.2) tak terjangkau dari sandbox.** Boot mock mode:
+  app compile+route+auth OK (shell ter-screenshot), TAPI kanvas 2D & tabel RAB tidak
+  hidrasi di boot headless pure-mock (nuansa data-layer mock⇄http dari audit awal — butuh
+  sesi interaktif / Postgres nyata). Generator sudah terverifikasi via test suite
+  (auditDesign) + render ASCII (isolated=0). User jalankan `pnpm migrate && pnpm dev`
+  dgn DATABASE_URL untuk lihat denah di UI.
+
+
+
 ### 2026-06 (cont. 4) — IKK 514 kab/kota + beton terurai + kalibrasi berkala + preview (VERIFIED: full suite 2996 tests green, tsc clean)
 - **IKK kota/kabupaten REAL (Task 1):** downloaded BPS PDF "IKK Provinsi & Kab/Kota 2024",
   parsed via pdfplumber → `src/lib/rab/ikk-kabkota-2024.json` (458/514 rows, all ~94

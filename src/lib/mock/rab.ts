@@ -108,7 +108,15 @@ const BETON_POLOS_IDR_M3 = 1_250_000 // K250–300: cor + upah (tanpa besi & bek
 const PEMBESIAN_IDR_KG = 18_500 // besi tulangan + bendrat + fabrikasi + pasang
 const BEKISTING_IDR_M2 = 185_000 // multiplek + rangka, pasang + bongkar (2× pakai)
 // Rasio pembesian (kg besi per m³ beton) — tipikal rumah tinggal 2–3 lantai.
-const REBAR_KG_PER_M3 = { footing: 90, column: 180, beam: 180, slab: 100 } as const
+// Berat besi tulangan per meter (kg/m) untuk Ø umum (BJTS/BJTP).
+const REBAR_KG_PER_M: Record<number, number> = {
+  8: 0.395,
+  10: 0.617,
+  12: 0.888,
+  13: 1.042,
+  16: 1.578,
+}
+const rebarKg = (dia: number, totalLenM: number) => (REBAR_KG_PER_M[dia] ?? 0) * totalLenM
 
 function toItem(spec: Spec, i: number, regionFactor: number): BOQItem {
   const volume = round1(spec.volume) || 1
@@ -415,14 +423,36 @@ export function generateRAB(
   // Plat lantai: built floor area × 12 cm slab thickness m³.
   const slabVol = round1(builtArea * 0.12)
 
-  // Terurai per komponen (beton polos m³ / pembesian kg / bekisting m²).
-  const footingRebarKg = round1(footingVol * REBAR_KG_PER_M3.footing)
+  // Pembesian — TAKEOFF batang (BBTB indikatif): n × Ø × panjang + sengkang/jaring,
+  // dihitung dari geometri elemen, bukan rasio kg/m³ selimut.
+  // Pondasi: jaring D13-150 dua arah per telapak.
+  const footBarsPerWay = footing.side / 0.15 + 1
+  const footingRebarKg = round1(columnCount * rebarKg(13, 2 * footBarsPerWay * footing.side))
+  const footingSchedule = "jaring D13-150 dua arah"
   const footingFormM2 = round1(4 * footing.side * footing.thickness * columnCount)
-  const columnRebarKg = round1(columnVol * REBAR_KG_PER_M3.column)
+  // Kolom: n longitudinal D13 + sengkang D8-150.
+  const colLongN = column.side >= 300 ? 8 : column.side >= 250 ? 6 : 4
+  const colLenM = STOREY_HEIGHT_M * floors
+  const colTieLenM = 2 * (2 * (column.side - 50) / 1000)
+  const columnRebarKg = round1(
+    columnCount * (rebarKg(13, colLongN * colLenM) + rebarKg(8, colTieLenM * (colLenM / 0.15)))
+  )
+  const columnSchedule = `${colLongN}D13 + sengkang D8-150`
   const columnFormM2 = round1(4 * (column.side / 1000) * STOREY_HEIGHT_M * columnCount * floors)
-  const beamRebarKg = round1(beamVol * REBAR_KG_PER_M3.beam)
+  // Balok: 3D16 bawah + 2D16 atas + sengkang D8-150. Sloof: 4D12 + sengkang D8-200.
+  const beamTieLenM = 2 * ((beam.b - 50) / 1000 + (beam.h - 50) / 1000)
+  const sloofTieLenM = 2 * ((150 - 50) / 1000 + (200 - 50) / 1000)
+  const beamRebarKg = round1(
+    rebarKg(16, 5 * totalBeamLenM) +
+      rebarKg(8, beamTieLenM * (totalBeamLenM / 0.15)) +
+      rebarKg(12, 4 * sloofLenM) +
+      rebarKg(8, sloofTieLenM * (sloofLenM / 0.2))
+  )
+  const beamSchedule = "balok 3D16+2D16 sengkang D8-150; sloof 4D12 sengkang D8-200"
   const beamFormM2 = round1(((beam.b + 2 * beam.h) / 1000) * totalBeamLenM + 0.55 * sloofLenM)
-  const slabRebarKg = round1(slabVol * REBAR_KG_PER_M3.slab)
+  // Plat: jaring D10-150 dua arah (≈ 8.23 kg/m²).
+  const slabRebarKg = round1(builtArea * ((2 * REBAR_KG_PER_M[10]) / 0.15))
+  const slabSchedule = "jaring D10-150 dua arah"
   const slabFormM2 = round1(builtArea)
 
   const specs: Spec[] = [
@@ -445,7 +475,7 @@ export function generateRAB(
       unit: "kg",
       total: footingRebarKg * PEMBESIAN_IDR_KG,
       confidence: "low",
-      notes: `≈${REBAR_KG_PER_M3.footing} kg/m³ × ${footingVol} m³. Perlu konfirmasi gambar penulangan.`,
+      notes: `${footingSchedule}, ${columnCount} telapak. Takeoff batang — perlu konfirmasi gambar penulangan (BBTB).`,
     },
     {
       category: "struktur",
@@ -472,7 +502,7 @@ export function generateRAB(
       unit: "kg",
       total: columnRebarKg * PEMBESIAN_IDR_KG,
       confidence: "low",
-      notes: `≈${REBAR_KG_PER_M3.column} kg/m³ × ${columnVol} m³.`,
+      notes: `${columnSchedule}, ${columnCount} kolom × ${floors} lantai.`,
     },
     {
       category: "struktur",
@@ -499,7 +529,7 @@ export function generateRAB(
       unit: "kg",
       total: beamRebarKg * PEMBESIAN_IDR_KG,
       confidence: "low",
-      notes: `≈${REBAR_KG_PER_M3.beam} kg/m³ × ${beamVol} m³.`,
+      notes: `${beamSchedule}.`,
     },
     {
       category: "struktur",
@@ -526,7 +556,7 @@ export function generateRAB(
       unit: "kg",
       total: slabRebarKg * PEMBESIAN_IDR_KG,
       confidence: "low",
-      notes: `≈${REBAR_KG_PER_M3.slab} kg/m³ × ${slabVol} m³.`,
+      notes: `${slabSchedule}, luas ${builtArea} m².`,
     },
     {
       category: "struktur",

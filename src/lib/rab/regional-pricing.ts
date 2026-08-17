@@ -149,17 +149,17 @@ export const CITY_IKK_COVERAGE = Object.keys(CITY_IKK).length
  * RAB assumptions so each estimate carries the date its prices were valid.
  */
 export const PRICE_BOOK_META = {
-  version: "2024.1",
-  effectiveDate: "2024-07-01",
+  version: "2026.1",
+  effectiveDate: "2026-06-01",
   baselineRegion: "DKI Jakarta",
   standard:
-    "AHSP Bidang Cipta Karya & Perumahan 2024 (SE Dirjen Bina Konstruksi No. 68/SE/Dk/2024) — koefisien × harga pasar 2024",
+    "AHSP Bidang Cipta Karya & Perumahan 2024 (SE Dirjen Bina Konstruksi No. 68/SE/Dk/2024) — koefisien × harga pasar; harga baseline ditinjau ke SHS/HSPK & pasar 2025",
   regionalIndex: "BPS Indeks Kemahalan Konstruksi (IKK) 2024",
   /** Kalibrasi berkala: tinjau ulang harga baseline tiap 6 bulan (atau saat
    *  harga semen/besi bergerak >10%). Perbarui version + effectiveDate +
    *  nextReviewDate, catat di docs/rab-price-book.md. */
   reviewCadenceMonths: 6,
-  nextReviewDate: "2025-01-01",
+  nextReviewDate: "2026-12-01",
 } as const
 
 /**
