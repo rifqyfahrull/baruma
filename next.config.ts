@@ -27,6 +27,12 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  allowedDevOrigins: [
+    "baruma-nextjs.preview.emergentagent.com",
+    "baruma-nextjs.cluster-5.preview.emergentcf.cloud",
+    "*.preview.emergentagent.com",
+    "*.cluster-5.preview.emergentcf.cloud",
+  ],
   experimental: {
     // radix-ui (barrel dengan puluhan subpath) tidak masuk daftar default
     // optimizePackageImports Next — tanpa ini seluruh barrel ikut di-resolve
