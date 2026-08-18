@@ -163,3 +163,16 @@ Billing = Stripe (single provider). AI = OpenAI SDK via OPENAI_BASE_URL
 - Env vars: BARUMA_JWT_SECRET, DATABASE_URL, STRIPE_SECRET_KEY,
   STRIPE_WEBHOOK_SECRET, OPENAI_API_KEY/BASE_URL/MODEL, NEXT_PUBLIC_SUPABASE_*,
   NEXT_PUBLIC_SSO_ORIGIN, STORAGE_*, ADMIN_EMAILS, NEXT_PUBLIC_DATA_SOURCE.
+## Deployment Status (Emergent preview, this environment)
+- Repository cloned from `github.com/rifqyfahrull/baruma` (made public) into `/app`.
+- `DATABASE_URL` wired to the provided external Postgres instance — `node scripts/migrate.mjs`
+  reported all 39 migrations already tracked/applied (existing schema + seed data reused).
+- Installed deps with `pnpm install` (corepack pnpm 10, lockfileVersion 9.0 compatible).
+- `.env.local` created with `DATABASE_URL`, `BARUMA_JWT_SECRET` (generated), `NEXT_PUBLIC_APP_URL`,
+  `NEXT_PUBLIC_DATA_SOURCE=http` (real backend, not mock), `ADMIN_EMAILS`.
+- `next.config.ts`: added `allowedDevOrigins` for the preview host.
+- Verified live via screenshot: landing page (`/`) and `/login` render correctly, hitting the
+  real Postgres-backed API through `proxy.ts` middleware, no server errors.
+- Not configured (optional/feature-scoped): `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET` (billing),
+  `OPENAI_API_KEY` (AI assistant), `NEXT_PUBLIC_SUPABASE_*` (Google/SSO login), `STORAGE_*` (asset
+  uploads). Core app (auth via JWT, dashboard, editor, RAB) does not require these.
