@@ -34,10 +34,13 @@ const nextConfig: NextConfig = {
     "*.cluster-5.preview.emergentcf.cloud",
   ],
   experimental: {
-    // radix-ui (barrel dengan puluhan subpath) tidak masuk daftar default
-    // optimizePackageImports Next — tanpa ini seluruh barrel ikut di-resolve
-    // ke module graph (compile dev lambat + bundle lebih besar).
-    optimizePackageImports: ["radix-ui", "@react-three/drei"],
+    optimizePackageImports: [
+      "radix-ui",
+      "@react-three/drei",
+      "lucide-react",
+      "date-fns",
+      "three",
+    ],
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
