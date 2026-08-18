@@ -26,6 +26,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   allowedDevOrigins: [
     "baruma-nextjs.preview.emergentagent.com",
     "baruma-nextjs.cluster-5.preview.emergentcf.cloud",

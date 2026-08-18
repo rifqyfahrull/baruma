@@ -36,6 +36,7 @@ dev-server.log
 wall-dump-*.txt
 
 # env files (committed for Emergent deployment auto-update; local plaintext secrets accepted in this sandbox)
+!.env.example
 
 # vercel
 .vercel
@@ -81,9 +82,9 @@ scripts/test-prod-agent.mjs
 
 # local pnpm content-addressable store (from install)
 .pnpm-store/
+!.env.example
 credentials.json
 *.key
 .credentials
-.pnpm-store/v10/files/85/83286c51a0be84b118c52bfa071f4ad19e158c7c6179f304668f36fd956816e2d83d21354005ad6ad2bf317e806c9a0e7b59c8c1dd95b448e1cc76385b12df
 node_modules/.pnpm/@next+swc-linux-arm64-gnu@16.2.9/node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
-.next/dev/cache/turbopack/f37fad94/00000195.sst
+.pnpm-store/v10/files/85/83286c51a0be84b118c52bfa071f4ad19e158c7c6179f304668f36fd956816e2d83d21354005ad6ad2bf317e806c9a0e7b59c8c1dd95b448e1cc76385b12df
