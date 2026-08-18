@@ -14,7 +14,9 @@
 /coverage
 
 # next.js
-/.next/
+/.next/*
+!/.next/standalone/
+!/.next/static/
 /out/
 
 # production
@@ -35,7 +37,8 @@ dev-server.log
 *-watch.console.log
 wall-dump-*.txt
 
-# env files (committed for Emergent deployment auto-update; local plaintext secrets accepted in this sandbox)
+# env files (can opt-in for committing if needed)
+.env*
 !.env.example
 
 # vercel
@@ -82,9 +85,10 @@ scripts/test-prod-agent.mjs
 
 # local pnpm content-addressable store (from install)
 .pnpm-store/
+.env
+.env.*
 !.env.example
+*.env
 credentials.json
 *.key
 .credentials
-node_modules/.pnpm/@next+swc-linux-arm64-gnu@16.2.9/node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
-.pnpm-store/v10/files/85/83286c51a0be84b118c52bfa071f4ad19e158c7c6179f304668f36fd956816e2d83d21354005ad6ad2bf317e806c9a0e7b59c8c1dd95b448e1cc76385b12df
