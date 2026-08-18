@@ -26,6 +26,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   experimental: {
     // radix-ui (barrel dengan puluhan subpath) tidak masuk daftar default
     // optimizePackageImports Next — tanpa ini seluruh barrel ikut di-resolve

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node .next/standalone/server.js",
     "migrate": "node scripts/migrate.mjs",
     "db:exec": "node scripts/exec-sql.mjs",
     "lint": "eslint",
