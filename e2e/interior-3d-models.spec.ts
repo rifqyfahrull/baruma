@@ -15,8 +15,8 @@ test.describe("Interior 3D models (GLB hybrid)", () => {
     await expect(canvas.or(fallback)).toBeVisible({ timeout: 30_000 })
     await expect(page.getByRole("heading", { name: "Preview 3D" })).toBeVisible({ timeout: 30_000 })
 
-    // Default mode is View — enter Edit so furniture controls activate.
-    await page.getByTitle("Masuk mode Edit (E)").click()
+    // Toggle Edit/View DIHAPUS (Fase 4 rail cleanup) — interactionMode kini
+    // selalu "edit" secara default, jadi kontrol furniture langsung aktif.
 
     // Panel quick-add katalog sengaja dihapus (0066600, 12 Jul) — GLB item
     // ditambahkan lewat "Tambah Model 3D Kustom" → My Library (aset katalog

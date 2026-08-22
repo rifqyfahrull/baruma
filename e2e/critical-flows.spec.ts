@@ -300,9 +300,8 @@ test.describe("Interior in 3D preview", () => {
     const controlsScroll = page.getByTestId("preview-controls-scroll").first()
     await expect(controlsScroll).toHaveCSS("overflow-y", "auto")
 
-    // Default interaction mode is View (orbit/zoom only) — enter Edit mode so
-    // furniture controls (move/rotate/delete) become available.
-    await page.getByTitle("Masuk mode Edit (E)").click()
+    // Mode edit kini default (toggle Edit/View sudah dihapus dari UI) —
+    // kontrol furnitur langsung tersedia tanpa langkah ekstra.
 
     // "Interior Editor" is a collapsed accordion by default — expand it.
     await page.getByRole("button", { name: /Interior Editor/ }).click()

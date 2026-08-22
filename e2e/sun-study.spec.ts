@@ -6,7 +6,8 @@ async function openLightingPopover(page: Page): Promise<void> {
   await page.goto(`/app/projects/${DEMO}/preview-3d`)
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 30_000 })
   await expect(page.getByRole("heading", { name: "Preview 3D" })).toBeVisible({ timeout: 30_000 })
-  await page.getByRole("button", { name: "Pencahayaan" }).click()
+  // "Cahaya" (rename dari "Pencahayaan" — Fase 4 rail).
+  await page.getByRole("button", { name: "Cahaya" }).click()
   await expect(page.getByTestId("sun-study")).toBeVisible()
 }
 

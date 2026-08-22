@@ -69,7 +69,13 @@ type PreviewState = {
    */
   nightMode: boolean
 
-  /** Edit mode: drag & drop furniture. View mode: orbit/zoom only, no editing. */
+  /**
+   * Edit mode: drag & drop furniture + klik cepat bukaan/eksterior. View
+   * mode: orbit/zoom only, no editing. Sejak Fase 4, tidak ada lagi kontrol
+   * UI untuk toggle ini — default selalu "edit"; satu-satunya jalur yang
+   * mengubahnya adalah viewer publik `readOnly` (dipaksa "view" sekali per
+   * mount, lihat preview-3d-view.tsx).
+   */
   interactionMode: InteractionMode
 
   viewPreset: ViewPreset
@@ -186,7 +192,14 @@ export const usePreviewStore = create<PreviewState>((set) => ({
   glassRealistic: false,
   renderMode: "presentation",
   nightMode: false,
-  interactionMode: "view",
+  // Fase 4: konsep UI "Edit/View" dihapus (rail + toggle panel dibongkar) —
+  // user SELALU edit-capable secara default; field ini kini murni gate
+  // `readOnly` (viewer publik) yang memaksanya ke "view" via efek di
+  // preview-3d-view.tsx. Default lama "view" hanya masuk akal saat ada
+  // tombol toggle eksplisit; tanpa itu, default "view" akan mengunci semua
+  // interaksi edit (furniture drag, klik cepat bukaan/eksterior) tanpa jalan
+  // keluar bagi user biasa.
+  interactionMode: "edit",
   viewPreset: "iso",
   viewNonce: 0,
   focusRoomId: null,

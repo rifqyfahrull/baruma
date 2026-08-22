@@ -7,13 +7,9 @@ import {
   Box,
   Building2,
   ChevronDown,
-  Eye,
   Grid2x2,
   Move3d,
-  Pencil,
   Sparkles,
-  Undo2,
-  Redo2,
   Upload,
   Library,
   Waves,
@@ -99,96 +95,16 @@ function AccordionSection({
   );
 }
 
-// ── Header actions (undo/redo · Edit/View toggle · SaveIndicator) ──
-// Hosted by <FloatingPanel actions> on desktop and by the mobile drawer header
-// (via PreviewControls). Owns the Ctrl+Z / Ctrl+Shift+Z shortcut so it stays
-// co-mounted with the undo/redo buttons — same single registration as before.
-
+// ── Header actions ──
+// Hosted by <FloatingPanel actions> on desktop dan header drawer mobile (via
+// PreviewControls). Fase 4: Undo/Redo pindah ke rail ViewToolbar (via hook
+// bersama `useUnifiedUndo`, shortcut Ctrl+Z/Ctrl+Shift+Z kini didaftarkan di
+// level halaman — lihat preview-3d-view.tsx) dan toggle Edit/View dihapus
+// total (interactionMode kini murni gate readOnly, lihat preview-store.ts) —
+// jadi tak ada lagi yang perlu dirender di sini. Fungsi ini dipertahankan
+// (bukan dihapus) supaya kedua pemanggilnya tak perlu disentuh.
 export function PreviewControlsHeaderActions() {
-  // Routing undo terpadu (unifikasi P1): 11 dari 12 quick editor halaman ini
-  // menulis ke EDITOR-store, tapi tombol/shortcut undo dulu terikat interior
-  // saja — Ctrl+Z tampak jalan padahal diam-diam tak meng-undo edit
-  // cladding/atap/kolam/lampu/bukaan. Kini: seleksi furniture/light → undo
-  // interior; selain itu editor-store menang bila punya riwayat, fallback
-  // interior (status-quo saat editor kosong).
-  const interiorUndo = useInteriorStore((s) => s.undo);
-  const interiorRedo = useInteriorStore((s) => s.redo);
-  const interiorCanUndo = useInteriorStore((s) => s.history.length > 0);
-  const interiorCanRedo = useInteriorStore((s) => s.future.length > 0);
-  const editorUndo = useEditorStore((s) => s.undo);
-  const editorRedo = useEditorStore((s) => s.redo);
-  const editorCanUndo = useEditorStore((s) => s.past.length > 0);
-  const editorCanRedo = useEditorStore((s) => s.future.length > 0);
-  const selectedKind = useEditorStore((s) => s.selected?.kind ?? null);
-  const interiorSelected = selectedKind === "furniture" || selectedKind === "light";
-  const furnitureFocused = useInteriorStore((s) => s.selectedFurnitureId !== null || s.selectedLightId !== null);
-  const useInterior = interiorSelected || furnitureFocused;
-  const undo = useInterior && interiorCanUndo ? interiorUndo : editorCanUndo ? editorUndo : interiorUndo;
-  const redo = useInterior && interiorCanRedo ? interiorRedo : editorCanRedo ? editorRedo : interiorRedo;
-  const canUndo = useInterior ? interiorCanUndo || editorCanUndo : editorCanUndo || interiorCanUndo;
-  const canRedo = useInterior ? interiorCanRedo || editorCanRedo : editorCanRedo || interiorCanRedo;
-  const interactionMode = usePreviewStore((s) => s.interactionMode);
-  const isEditMode = interactionMode === "edit";
-  const setInteractionMode = usePreviewStore((s) => s.setInteractionMode);
-
-  // Keyboard shortcuts: Ctrl+Z / Ctrl+Shift+Z
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (!e.ctrlKey && !e.metaKey) return;
-      if (e.key === "z" || e.key === "Z") {
-        e.preventDefault();
-        if (e.shiftKey) redo();
-        else undo();
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [undo, redo]);
-
-  return (
-    <div className="flex items-center gap-1">
-      <Button
-        size="icon"
-        variant="ghost"
-        className="size-7"
-        disabled={!canUndo}
-        onClick={undo}
-        aria-label="Undo"
-        title="Undo (Ctrl+Z)"
-      >
-        <Undo2 className="size-3.5" />
-      </Button>
-      <Button
-        size="icon"
-        variant="ghost"
-        className="size-7"
-        disabled={!canRedo}
-        onClick={redo}
-        aria-label="Redo"
-        title="Redo (Ctrl+Shift+Z)"
-      >
-        <Redo2 className="size-3.5" />
-      </Button>
-      <Button
-        size="sm"
-        variant={isEditMode ? "default" : "outline"}
-        className="h-7 gap-1 px-2 text-[11px]"
-        onClick={() => setInteractionMode(isEditMode ? "view" : "edit")}
-        title={isEditMode ? "Kembali ke mode View (E)" : "Masuk mode Edit (E)"}
-      >
-        {isEditMode ? (
-          <>
-            <Pencil className="size-3" /> Edit
-          </>
-        ) : (
-          <>
-            <Eye className="size-3" /> View
-          </>
-        )}
-      </Button>
-      {/* Status autosave pindah ke header workspace (di bawah nama project). */}
-    </div>
-  );
+  return null;
 }
 
 // ── Body (inspector cards + accordion sections) ──

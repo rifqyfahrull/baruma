@@ -41,6 +41,8 @@ test.describe("Optimasi 3D — regresi", () => {
   test("tombol Screenshot mengunduh PNG berisi gambar (bukan kanvas kosong)", async ({ page }) => {
     await openPreview(page)
     const downloadPromise = page.waitForEvent("download", { timeout: 15_000 })
+    // Screenshot pindah ke dalam flyout "Kamera" (Fase 4 rail) — buka dulu.
+    await page.getByRole("button", { name: "Kamera" }).click()
     await page.getByRole("button", { name: "Screenshot", exact: true }).click()
     const download = await downloadPromise
     expect(download.suggestedFilename()).toMatch(/\.png$/)

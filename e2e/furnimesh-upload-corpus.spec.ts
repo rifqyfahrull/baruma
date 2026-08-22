@@ -46,7 +46,8 @@ test.describe("FurniMesh upload corpus (real converted GLBs)", () => {
 
     await page.goto(`/app/projects/${DEMO}/preview-3d`)
     await expect(page.getByRole("heading", { name: "Preview 3D" })).toBeVisible({ timeout: 30_000 })
-    await page.getByTitle("Masuk mode Edit (E)").click()
+    // Toggle Edit/View DIHAPUS (Fase 4 rail cleanup) — interactionMode kini
+    // selalu "edit" secara default, tak ada lagi langkah masuk mode Edit.
     return errors
   }
 

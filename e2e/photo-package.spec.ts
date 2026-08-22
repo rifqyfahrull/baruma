@@ -17,7 +17,9 @@ test.describe("Paket foto presentasi", () => {
 
     await openPreview(page)
 
-    // Buka dialog paket foto.
+    // Paket foto pindah ke dalam flyout "Kamera" (Fase 4 rail) — buka dulu,
+    // lalu klik baris "Paket Foto Presentasi" (testid dipertahankan).
+    await page.getByRole("button", { name: "Kamera" }).click()
     await page.getByTestId("photo-package-open").click()
     await expect(page.getByRole("heading", { name: "Paket Foto Presentasi" })).toBeVisible()
 

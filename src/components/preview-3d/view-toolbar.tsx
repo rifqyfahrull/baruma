@@ -2,12 +2,25 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Activity, Box, Building2, Camera, Eye, Focus, Grid2x2, Home, Moon, MoreVertical, Sun } from "lucide-react"
+import {
+  Activity,
+  Box,
+  Building2,
+  Camera,
+  Eye,
+  Focus,
+  Grid2x2,
+  Home,
+  Redo2,
+  Sun,
+  Undo2,
+} from "lucide-react"
 
 import type { DesignLayout, Project } from "@/types"
 import { usePreviewStore, type ViewPreset } from "@/stores/preview-store"
 import { useProjectCapabilities } from "@/hooks/use-project-capabilities"
-import { useNarrowViewport } from "@/hooks/use-narrow-viewport"
+import { useToolbarCompact } from "@/hooks/use-toolbar-compact"
+import { useUnifiedUndo } from "@/hooks/use-unified-undo"
 import { isPartialRooftop } from "@/lib/geometry/rooftop"
 import {
   cityLatitude,
@@ -24,12 +37,9 @@ import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { FloatingBar, FloatingBarSeparator } from "@/components/chrome/floating-bar"
+import { ToolButton } from "@/components/chrome/tool-button"
+import { ToolbarMore } from "@/components/chrome/toolbar-more"
 
 const VIEWS: { id: ViewPreset; label: string; icon: typeof Box }[] = [
   { id: "iso", label: "Isometrik", icon: Box },
@@ -38,24 +48,60 @@ const VIEWS: { id: ViewPreset; label: string; icon: typeof Box }[] = [
   { id: "rooftop", label: "Rooftop", icon: Building2 },
 ]
 
-function ToggleLine({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+function ToggleLine({
+  label,
+  checked,
+  onChange,
+  switchTestId,
+}: {
+  label: string
+  checked: boolean
+  onChange: (v: boolean) => void
+  /** testid pada elemen Switch — dipakai saat toggle punya jangkar e2e/unit
+   * test sendiri (mis. mode malam), bukan dicari lewat label teks. */
+  switchTestId?: string
+}) {
   return (
     <label className="flex items-center justify-between gap-3 py-1 text-xs">
       <span>{label}</span>
-      <Switch checked={checked} onCheckedChange={onChange} />
+      <Switch checked={checked} onCheckedChange={onChange} data-testid={switchTestId} />
     </label>
   )
 }
 
+/** Satu baris menu di dalam flyout Popover (Kamera/Tampilan) — tombol lebar
+ * penuh, ikon + label kiri, dipakai alih-alih idiom `DropdownMenuItem` (rail
+ * ini konsisten pakai `Popover`, bukan menu — lihat catatan di ToolbarMore). */
+function FlyoutRow({
+  icon: Icon,
+  children,
+  ...rest
+}: React.ComponentProps<typeof Button> & { icon: typeof Camera }) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      className="w-full justify-start gap-2 text-xs"
+      {...rest}
+    >
+      <Icon className="size-3.5" />
+      {children}
+    </Button>
+  )
+}
+
 /**
- * Simple floating toolbar on the LEFT of the 3D canvas: view presets +
- * screenshot, a lighting popover (realistic + sun sliders), and a display
- * options popover. Replaces the old "Sudut pandang", "Pencahayaan", and
- * "Opsi tampilan" accordion sections in the floating panel.
+ * Rail kiri kanvas 3D: `FloatingBar` vertikal berisi 10 `ToolButton` — undo/
+ * redo terpadu (§Fase 4, dipindah dari header panel via `useUnifiedUndo`),
+ * 4 preset sudut, tiga flyout Popover (Kamera/Cahaya/Tampilan), dan toggle
+ * Fokus (mode bersih). Menggantikan idiom lama "Sudut pandang", "Pencahayaan",
+ * "Opsi tampilan" di floating panel.
  *
- * Responsive: pada viewport pendek/sempit (tinggi tak cukup untuk semua icon)
- * kontrol sekunder diciutkan ke tombol "More" (⋯) yang membuka DropdownMenu —
- * kontrol yang sama dipakai ulang, jadi popover & toggle tetap berfungsi.
+ * Responsive: grup sekunder (Kamera/Cahaya/Tampilan/Fokus) menciut ke
+ * `ToolbarMore` saat `useToolbarCompact` mendeteksi viewport sempit ATAU
+ * tinggi rail nyata melebihi ruang tersisa — kontrol yang sama dipakai ulang
+ * persis, tanpa duplikasi JSX.
  */
 export function ViewToolbar({
   layout,
@@ -97,9 +143,14 @@ export function ViewToolbar({
   const cleanMode = usePreviewStore((s) => s.cleanMode)
   const toggleCleanMode = usePreviewStore((s) => s.toggleCleanMode)
   const nightMode = usePreviewStore((s) => s.nightMode)
-  const toggleNightMode = usePreviewStore((s) => s.toggleNightMode)
-  // Gating rollout §21: preset Edit/Presentasi hanya UI — scene tetap render.
+  // Gating rollout §21: preset Tampilan Kerja/Presentasi hanya UI — scene tetap render.
   const capabilities = useProjectCapabilities(project.id)
+
+  // Undo/redo terpadu (§Fase 4): heuristik routing 2D/interior TIDAK diubah
+  // di sini — hanya dipindah ke `useUnifiedUndo`, dipakai bersama rail 2D.
+  // Shortcut Ctrl+Z/Ctrl+Shift+Z didaftarkan terpisah di preview-3d-view.tsx
+  // (level halaman, survive walau rail ini unmount/scroll).
+  const { undo, redo, canUndo, canRedo } = useUnifiedUndo()
 
   const hasRooftop = layout.floors.some((f) => f.id === "floor-rooftop")
   const showRoofToggle = !hasRooftop || isPartialRooftop(layout)
@@ -129,97 +180,54 @@ export function ViewToolbar({
     a.click()
   }
 
-  // Table/sempit → sekunder menciut ke tombol More; desktop lebar → inline.
-  const compact = useNarrowViewport()
+  // Rail sempit/pendek → grup sekunder (Kamera/Cahaya/Tampilan/Fokus) menciut
+  // ke ToolbarMore; desktop lebar+tinggi → inline. Diukur langsung dari DOM
+  // rail (bukan cuma breakpoint lebar) — lihat use-toolbar-compact.ts.
+  const railRef = React.useRef<HTMLDivElement>(null)
+  const compact = useToolbarCompact(railRef)
 
-  // Kontrol sekunder — dipakai baik inline (layar tinggi) maupun di dalam
-  // dropdown More (layar pendek). Logika identik, tanpa duplikasi.
+  // Grup sekunder — dipakai baik inline (rail lega) maupun di dalam
+  // ToolbarMore (rail sempit/pendek). Logika identik, tanpa duplikasi.
   const secondaryControls = (
     <>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button size="icon" variant="ghost" className="size-8" onClick={screenshot} aria-label="Screenshot">
+      {/* Kamera — flyout: Screenshot langsung, atau buka dialog Paket Foto. */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <ToolButton label="Kamera">
             <Camera />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="right">Screenshot PNG</TooltipContent>
-      </Tooltip>
-
-      {/* Paket foto presentasi — render multi-sudut siang+senja sekali klik */}
-      <PhotoPackage project={project} />
+          </ToolButton>
+        </PopoverTrigger>
+        <PopoverContent side="right" align="start" className="w-56 space-y-1">
+          <p className="pb-1 text-xs font-semibold">Kamera</p>
+          <FlyoutRow icon={Camera} onClick={screenshot}>
+            Screenshot
+          </FlyoutRow>
+          {/* Dialog "Paket Foto Presentasi" — trigger-nya dirender sebagai baris
+              flyout (testid photo-package-open dipertahankan di baris ini). */}
+          <PhotoPackage project={project} trigger="row" />
+        </PopoverContent>
+      </Popover>
 
       {/* Render AI — visualisasi bergaya foto (Fase 8). Digerbangi
           ai_render_v1 DI DALAM komponen (return null bila nonaktif). */}
       <AiRenderDialog project={project} layout={layout} />
 
-      {sceneStats && (
-        <Popover>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <PopoverTrigger asChild>
-                <Button
-                  size="icon"
-                  variant={sceneStats.ok ? "ghost" : "destructive"}
-                  className="size-8"
-                  aria-label="Scene stats"
-                  data-testid="scene-stats-button"
-                >
-                  <Activity />
-                </Button>
-              </PopoverTrigger>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              {sceneStats.ok ? "Scene stats — budget aman" : "Scene stats — budget terlampaui"}
-            </TooltipContent>
-          </Tooltip>
-          <PopoverContent side="right" align="start" className="w-72 space-y-3">
-            <div>
-              <p className="text-xs font-semibold">Scene stats · dev only</p>
-              <p className="text-[11px] text-muted-foreground">
-                Estimasi pure dari prim 3D; GPU FPS tetap perlu browser benchmark.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-              <span className="text-muted-foreground">Semantic objects</span>
-              <span className="text-right tabular-nums">{sceneStats.semanticObjects}</span>
-              <span className="text-muted-foreground">Meshes / prims</span>
-              <span className="text-right tabular-nums">{sceneStats.meshes}</span>
-              <span className="text-muted-foreground">Draw calls</span>
-              <span className="text-right tabular-nums">
-                {sceneStats.drawCalls} / {sceneStats.budgets.drawCalls.limit}
-              </span>
-              <span className="text-muted-foreground">Triangles</span>
-              <span className="text-right tabular-nums">{sceneStats.triangles.toLocaleString("id-ID")}</span>
-              <span className="text-muted-foreground">Textures</span>
-              <span className="text-right tabular-nums">
-                {sceneStats.textureCount} · {formatBytes(sceneStats.textureMemoryBytes)}
-              </span>
-            </div>
-            {!sceneStats.ok && (
-              <div className="rounded-md border border-destructive/40 bg-destructive/10 p-2 text-[11px] text-destructive">
-                Budget scene terlampaui. Kurangi elemen repetitif atau pakai instancing/LOD sebelum presentasi rendering.
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
-      )}
-
-      {/* Pencahayaan */}
+      {/* Cahaya (dulu "Pencahayaan") */}
       <Popover>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <PopoverTrigger asChild>
-              <Button size="icon" variant={realistic ? "default" : "ghost"} className="size-8" aria-label="Pencahayaan">
-                <Sun />
-              </Button>
-            </PopoverTrigger>
-          </TooltipTrigger>
-          <TooltipContent side="right">Pencahayaan</TooltipContent>
-        </Tooltip>
+        <PopoverTrigger asChild>
+          <ToolButton label="Cahaya" pressed={realistic}>
+            <Sun />
+          </ToolButton>
+        </PopoverTrigger>
         <PopoverContent side="right" align="start" className="w-72 space-y-3">
-          <p className="text-xs font-semibold">Pencahayaan</p>
+          <p className="text-xs font-semibold">Cahaya</p>
           <ToggleLine label="Realistis (bayangan & langit)" checked={realistic} onChange={setRealistic} />
-          <ToggleLine label="Mode malam (senja)" checked={nightMode} onChange={(v) => usePreviewStore.getState().setNightMode(v)} />
+          <ToggleLine
+            label="Mode malam (senja)"
+            checked={nightMode}
+            onChange={(v) => usePreviewStore.getState().setNightMode(v)}
+            switchTestId="night-mode-toggle"
+          />
 
           <SunStudySection project={project} />
 
@@ -238,40 +246,19 @@ export function ViewToolbar({
         </PopoverContent>
       </Popover>
 
-      {/* Mode malam — toggle cepat (juga di popover Pencahayaan) */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            size="icon"
-            variant={nightMode ? "default" : "ghost"}
-            className="size-8"
-            aria-pressed={nightMode}
-            aria-label="Mode malam"
-            data-testid="night-mode-toggle"
-            onClick={toggleNightMode}
-          >
-            <Moon />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="right">
-          {nightMode ? "Kembali ke siang" : "Mode malam — jendela menyala"}
-        </TooltipContent>
-      </Tooltip>
-
-      {/* Opsi tampilan */}
+      {/* "Tampilan" (nama rail di plan §Fase 4) — trigger tetap berlabel
+          "Opsi tampilan" (TIDAK di-rename, beda dgn Cahaya): banyak spec e2e
+          lain di luar cakupan fase ini (critical-flows, facade-shapes,
+          certification-visual) masih mereferensikan nama tombol ini. Yang
+          berubah cuma isinya — preset direlabel + scene-stats pindah masuk. */}
       <Popover>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <PopoverTrigger asChild>
-              <Button size="icon" variant="ghost" className="size-8" aria-label="Opsi tampilan">
-                <Eye />
-              </Button>
-            </PopoverTrigger>
-          </TooltipTrigger>
-          <TooltipContent side="right">Opsi tampilan</TooltipContent>
-        </Tooltip>
+        <PopoverTrigger asChild>
+          <ToolButton label="Opsi tampilan">
+            <Eye />
+          </ToolButton>
+        </PopoverTrigger>
         <PopoverContent side="right" align="start" className="w-60 space-y-0.5">
-          <p className="pb-1 text-xs font-semibold">Opsi tampilan</p>
+          <p className="pb-1 text-xs font-semibold">Tampilan</p>
           {capabilities.presentation_mode_v1 && (
             <div className="grid grid-cols-2 gap-1 pb-2">
               <Button
@@ -283,7 +270,7 @@ export function ViewToolbar({
                 aria-pressed={renderMode === "edit"}
                 onClick={() => applyRenderModePreset("edit")}
               >
-                Edit
+                Tampilan Kerja
               </Button>
               <Button
                 type="button"
@@ -316,115 +303,128 @@ export function ViewToolbar({
           <p className="pb-1 text-[10px] leading-tight text-muted-foreground">
             Kaca bukaan/curtain wall/railing jadi tembus pandang & membias cahaya (transmisi). Lebih berat di GPU — biarkan nonaktif di perangkat lemah/tablet.
           </p>
+
+          {/* Scene stats — dev-only, baris footer (dulu tombol rail terpisah). */}
+          {sceneStats && (
+            <>
+              <div className="my-1 h-px bg-border" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant={sceneStats.ok ? "ghost" : "destructive"}
+                    size="sm"
+                    className="w-full justify-start gap-2 text-xs"
+                    data-testid="scene-stats-button"
+                  >
+                    <Activity className="size-3.5" />
+                    Scene stats · dev only
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent side="right" align="start" className="w-72 space-y-3">
+                  <div>
+                    <p className="text-xs font-semibold">Scene stats · dev only</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Estimasi pure dari prim 3D; GPU FPS tetap perlu browser benchmark.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                    <span className="text-muted-foreground">Semantic objects</span>
+                    <span className="text-right tabular-nums">{sceneStats.semanticObjects}</span>
+                    <span className="text-muted-foreground">Meshes / prims</span>
+                    <span className="text-right tabular-nums">{sceneStats.meshes}</span>
+                    <span className="text-muted-foreground">Draw calls</span>
+                    <span className="text-right tabular-nums">
+                      {sceneStats.drawCalls} / {sceneStats.budgets.drawCalls.limit}
+                    </span>
+                    <span className="text-muted-foreground">Triangles</span>
+                    <span className="text-right tabular-nums">{sceneStats.triangles.toLocaleString("id-ID")}</span>
+                    <span className="text-muted-foreground">Textures</span>
+                    <span className="text-right tabular-nums">
+                      {sceneStats.textureCount} · {formatBytes(sceneStats.textureMemoryBytes)}
+                    </span>
+                  </div>
+                  {!sceneStats.ok && (
+                    <div className="rounded-md border border-destructive/40 bg-destructive/10 p-2 text-[11px] text-destructive">
+                      Budget scene terlampaui. Kurangi elemen repetitif atau pakai instancing/LOD sebelum presentasi rendering.
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+            </>
+          )}
         </PopoverContent>
       </Popover>
 
-      <div className="mx-1 h-px bg-border" />
+      <FloatingBarSeparator />
 
-      {/* Mode bersih — sembunyikan header, tab, sidebar kiri, & panel mengambang */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            size="icon"
-            variant={cleanMode ? "default" : "ghost"}
-            className="size-8"
-            aria-pressed={cleanMode}
-            aria-label="Mode bersih"
-            data-testid="clean-mode-toggle"
-            onClick={toggleCleanMode}
-          >
-            <Focus />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="right">
-          {cleanMode ? "Keluar mode bersih (Esc)" : "Mode bersih — sembunyikan panel"}
-        </TooltipContent>
-      </Tooltip>
+      {/* Fokus (mode bersih) — perilaku & testid PERSIS sama seperti sebelumnya
+          (rename/pemindahan state ditunda ke Fase 5). */}
+      <ToolButton
+        label="Mode bersih"
+        pressed={cleanMode}
+        data-testid="clean-mode-toggle"
+        onClick={toggleCleanMode}
+      >
+        <Focus />
+      </ToolButton>
     </>
   )
 
   return (
-    <div
-      data-testid="view-toolbar"
-      className="flex flex-col gap-1 rounded-lg border bg-background/95 p-1 shadow-sm backdrop-blur"
-    >
+    <FloatingBar ref={railRef} data-testid="view-toolbar">
       {/* Mode bersih menyembunyikan ProjectTabs (satu-satunya navigasi 2D↔3D)
-          — sediakan jalan pintas ke editor 2D di sini. Inline di atas (bukan di
-          secondaryControls) supaya tak terlipat ke dropdown More di layar
-          sempit. Navigasi keluar halaman otomatis mengakhiri mode bersih. */}
+          — sediakan jalan pintas ke editor 2D di sini. Inline di atas (bukan
+          di secondaryControls) supaya tak terlipat ke ToolbarMore di rail
+          sempit.
+          TODO(Fase 5): dihapus begitu switcher [2D|3D] pill bar (floor-
+          switcher/floor-toggle-bar) sudah jadi jalan keluar 2D yang selalu
+          ada — sampai saat itu, link ini adalah satu-satunya cara keluar
+          mode bersih ke 2D. */}
       {cleanMode && !readOnly && (
         <>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                asChild
-                size="icon"
-                variant="ghost"
-                className="size-8"
-                aria-label="Buka 2D Editor"
-                data-testid="clean-mode-2d-link"
-              >
-                <Link href={`/app/projects/${project.id}/editor`}>
-                  <span className="text-xs font-bold">2D</span>
-                </Link>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">Buka 2D Editor</TooltipContent>
-          </Tooltip>
-          <div className="mx-1 h-px bg-border" />
+          <ToolButton asChild label="Buka 2D Editor" data-testid="clean-mode-2d-link">
+            <Link href={`/app/projects/${project.id}/editor`}>
+              <span className="text-xs font-bold">2D</span>
+            </Link>
+          </ToolButton>
+          <FloatingBarSeparator />
         </>
       )}
 
+      {/* Undo/redo terpadu — selalu inline di puncak rail. */}
+      <ToolButton label="Undo" shortcut=" (Ctrl+Z)" onClick={undo} disabled={!canUndo}>
+        <Undo2 />
+      </ToolButton>
+      <ToolButton label="Redo" shortcut=" (Ctrl+Shift+Z)" onClick={redo} disabled={!canRedo}>
+        <Redo2 />
+      </ToolButton>
+
+      <FloatingBarSeparator />
+
       {/* Sudut pandang — selalu inline */}
       {VIEWS.map((v) => (
-        <Tooltip key={v.id}>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              size="icon"
-              variant={viewPreset === v.id ? "default" : "ghost"}
-              className="size-8"
-              aria-label={`Sudut pandang ${v.label}`}
-              aria-pressed={viewPreset === v.id}
-              onClick={() => requestView(v.id)}
-            >
-              <v.icon />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="right">{v.label}</TooltipContent>
-        </Tooltip>
+        <ToolButton
+          key={v.id}
+          label={`Sudut pandang ${v.label}`}
+          pressed={viewPreset === v.id}
+          exclusive
+          onClick={() => requestView(v.id)}
+        >
+          <v.icon />
+        </ToolButton>
       ))}
 
-      <div className="mx-1 h-px bg-border" />
+      <FloatingBarSeparator />
 
-      {/* Kontrol sekunder: inline di layar tinggi, atau di dropdown "More"
-          ketika tinggi viewport tak mencukupi (tablet/pendek). */}
+      {/* Grup sekunder: inline di rail lega, atau di dalam ToolbarMore (⋯)
+          ketika ruang tak mencukupi (tablet/pendek). */}
       {compact ? (
-        <DropdownMenu>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="size-8"
-                  aria-label="Kontrol lainnya"
-                  data-testid="view-toolbar-more"
-                >
-                  <MoreVertical />
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent side="right">Kontrol lainnya</TooltipContent>
-          </Tooltip>
-          <DropdownMenuContent side="right" align="start" className="max-h-[min(60vh,28rem)] w-11 overflow-y-auto p-1">
-            <div className="flex flex-col gap-1">{secondaryControls}</div>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ToolbarMore data-testid="view-toolbar-more">{secondaryControls}</ToolbarMore>
       ) : (
         secondaryControls
       )}
-    </div>
+    </FloatingBar>
   )
 }
 

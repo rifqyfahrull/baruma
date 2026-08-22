@@ -17,9 +17,14 @@ test.describe("Presentation mode + scene stats", () => {
 
     await openPreview(page)
 
+    // Tombol popover TETAP "Opsi tampilan" (Fase 4 sengaja tidak me-rename
+    // trigger-nya — banyak spec lain di luar cakupan fase ini bergantung
+    // pada nama ini); label preset DI DALAMNYA jadi "Tampilan Kerja" /
+    // "Presentasi" (testid tetap).
     await page.getByRole("button", { name: "Opsi tampilan" }).click()
     const edit = page.getByTestId("render-mode-edit")
     const presentation = page.getByTestId("render-mode-presentation")
+    await expect(edit).toHaveText("Tampilan Kerja")
 
     await expect(presentation).toHaveAttribute("aria-pressed", "true")
     await edit.click()
@@ -30,13 +35,15 @@ test.describe("Presentation mode + scene stats", () => {
     await expect(presentation).toHaveAttribute("aria-pressed", "true")
     await expect(edit).toHaveAttribute("aria-pressed", "false")
 
-    // Close options popover, then open dev-only scene stats.
-    await page.keyboard.press("Escape")
+    // Scene stats (dev-only) kini baris footer DI DALAM popover Tampilan
+    // (bukan tombol rail berdiri sendiri) — klik tanpa menutup popover induk
+    // dulu, karena tombolnya cuma reachable selagi popover itu terbuka.
     const statsButton = page.getByTestId("scene-stats-button")
     await expect(statsButton).toBeVisible()
     await statsButton.click()
 
-    await expect(page.getByText("Scene stats · dev only")).toBeVisible()
+    // Trigger row & isi popover sama-sama memuat teks ini — assert yang di popover.
+    await expect(page.getByText("Scene stats · dev only").last()).toBeVisible()
     await expect(page.getByText("Semantic objects")).toBeVisible()
     await expect(page.getByText("Draw calls")).toBeVisible()
     await expect(page.getByText("Triangles")).toBeVisible()

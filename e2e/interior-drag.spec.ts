@@ -14,9 +14,9 @@ test.describe("Interior drag in 3D", () => {
     await expect(canvas.or(fallback)).toBeVisible({ timeout: 30_000 })
     await expect(page.getByRole("heading", { name: "Preview 3D" })).toBeVisible({ timeout: 30_000 })
 
-    // Default mode is View (orbit/zoom only) — enter Edit so canvas drag
-    // actually moves furniture.
-    await page.getByTitle("Masuk mode Edit (E)").click()
+    // Toggle Edit/View DIHAPUS (Fase 4 rail cleanup) — interactionMode kini
+    // selalu "edit" secara default (murni gate readOnly untuk viewer publik),
+    // jadi canvas drag langsung aktif tanpa langkah masuk mode Edit lagi.
 
     // Panel quick-add katalog sengaja dihapus (0066600, 12 Jul) — furniture
     // baru ditambahkan lewat "Tambah Model 3D Kustom" → My Library. Item baru

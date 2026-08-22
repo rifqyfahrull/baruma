@@ -43,9 +43,10 @@ test.describe("Preview 3D realistis", () => {
     await expect(page.getByRole("heading", { name: "Preview 3D" })).toBeVisible({ timeout: 30_000 })
 
     // Kontrol pencahayaan pindah ke ViewToolbar kiri (2026-07-11): tombol
-    // popover "Pencahayaan"; isinya (switch Realistis + slider matahari)
-    // dirender via portal Radix di level page, bukan di dalam toolbar.
-    await page.getByTestId("view-toolbar").getByRole("button", { name: "Pencahayaan" }).click()
+    // popover "Cahaya" (rename dari "Pencahayaan" — Fase 4 rail); isinya
+    // (switch Realistis + slider matahari) dirender via portal Radix di
+    // level page, bukan di dalam toolbar.
+    await page.getByTestId("view-toolbar").getByRole("button", { name: "Cahaya" }).click()
 
     const realistic = page.getByRole("switch", { name: /Realistis/ })
     await expect(realistic).toBeVisible()

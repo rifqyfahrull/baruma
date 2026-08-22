@@ -14,6 +14,8 @@ async function openCertificationPreview(page: Page, sceneId: string): Promise<vo
 
 async function downloadedBytes(page: Page): Promise<number> {
   const downloadPromise = page.waitForEvent("download", { timeout: 15_000 })
+  // Screenshot pindah ke dalam flyout "Kamera" (Fase 4 rail) — buka dulu.
+  await page.getByRole("button", { name: "Kamera" }).click()
   await page.getByRole("button", { name: "Screenshot", exact: true }).click()
   const download = await downloadPromise
   const stream = await download.createReadStream()
@@ -68,15 +70,18 @@ test.describe("Certification exterior scenes", () => {
       await openCertificationPreview(page, scene.id)
       await expect(page.getByText(scene.name)).toBeVisible()
 
+      // Tombol popover TETAP "Opsi tampilan" (Fase 4 tidak me-rename trigger-nya).
       await page.getByRole("button", { name: "Opsi tampilan" }).click()
       await expect(page.getByTestId("render-mode-presentation")).toHaveAttribute("aria-pressed", "true")
-      await page.keyboard.press("Escape")
 
+      // Scene stats kini baris footer DI DALAM popover Tampilan — klik tanpa
+      // menutup popover induk dulu (tombolnya hanya reachable selagi terbuka).
       await page.getByTestId("scene-stats-button").click()
-      await expect(page.getByText("Scene stats · dev only")).toBeVisible()
+      await expect(page.getByText("Scene stats · dev only").last()).toBeVisible()
       await expect(page.getByText("Draw calls")).toBeVisible()
       await expect(page.getByText("Triangles")).toBeVisible()
       await expect(page.getByText("Budget scene terlampaui")).toHaveCount(0)
+      await page.keyboard.press("Escape")
       await page.keyboard.press("Escape")
 
       expect(await downloadedBytes(page)).toBeGreaterThan(20_000)

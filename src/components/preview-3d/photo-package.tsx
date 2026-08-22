@@ -40,7 +40,19 @@ function triggerDownload(dataUrl: string, filename: string): void {
  * Bridge me-render ulang → aman di frameloop "demand"), lalu menampilkan galeri
  * yang bisa diunduh. State preview dipulihkan setelah selesai.
  */
-export function PhotoPackage({ project }: { project: Project }) {
+export function PhotoPackage({
+  project,
+  trigger = "icon",
+}: {
+  project: Project
+  /**
+   * "icon" (default): tombol ikon bundar + Tooltip — dipakai lepas di rail.
+   * "row" (§Fase 4): baris flyout lebar-penuh berlabel — dipakai di dalam
+   * Popover Kamera (`view-toolbar.tsx`). testid `photo-package-open`
+   * dipertahankan di kedua varian.
+   */
+  trigger?: "icon" | "row"
+}) {
   const [open, setOpen] = React.useState(false)
   const [busy, setBusy] = React.useState(false)
   const [progress, setProgress] = React.useState(0)
@@ -105,16 +117,31 @@ export function PhotoPackage({ project }: { project: Project }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <DialogTrigger asChild>
-            <Button size="icon" variant="ghost" className="size-8" aria-label="Paket foto presentasi" data-testid="photo-package-open">
-              <Images />
-            </Button>
-          </DialogTrigger>
-        </TooltipTrigger>
-        <TooltipContent side="right">Paket foto presentasi</TooltipContent>
-      </Tooltip>
+      {trigger === "row" ? (
+        <DialogTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 text-xs"
+            data-testid="photo-package-open"
+          >
+            <Images className="size-3.5" />
+            Paket Foto Presentasi
+          </Button>
+        </DialogTrigger>
+      ) : (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <Button size="icon" variant="ghost" className="size-8" aria-label="Paket foto presentasi" data-testid="photo-package-open">
+                <Images />
+              </Button>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="right">Paket foto presentasi</TooltipContent>
+        </Tooltip>
+      )}
 
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>

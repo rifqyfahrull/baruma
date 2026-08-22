@@ -14,6 +14,7 @@ import { usePreviewStore } from "@/stores/preview-store"
 import { useInterior } from "@/lib/api/hooks"
 import { useInteriorAutosave } from "@/hooks/use-interior-autosave"
 import { useLayoutAutosave } from "@/hooks/use-layout-autosave"
+import { routeRedo, routeUndo } from "@/hooks/use-unified-undo"
 import { useEditorStore } from "@/stores/editor-store"
 import { actionsForContext } from "@/components/editor/context-menu/action-registry"
 import {
@@ -212,19 +213,30 @@ export function Preview3DView({
     }
   }, [floorIdsSig, layout, initFloors, setShowRoof])
 
-  // Keyboard shortcuts: "E" toggles Edit ↔ View; "Escape" exits clean mode,
-  // else membersihkan seleksi terpadu (kontrak sama dgn 2D — unifikasi P1).
+  // Keyboard shortcuts: "Escape" exits clean mode, else membersihkan seleksi
+  // terpadu (kontrak sama dgn 2D — unifikasi P1). Ctrl+Z / Ctrl+Shift+Z =
+  // undo/redo terpadu (Fase 4): tombolnya kini di rail ViewToolbar via
+  // useUnifiedUndo, tapi shortcut-nya perlu tetap hidup di level halaman —
+  // dipindah ke sini dari listener lokal PreviewControlsHeaderActions yang
+  // dihapus. readOnly: tak ada mutasi yang boleh terjadi, jadi shortcut ini
+  // di-skip sepenuhnya (samakan dgn guard "E" lama).
+  //
+  // "E" (toggle Edit/View) DIHAPUS — konsep interactionMode di UI dihapus;
+  // user selalu edit-capable, interactionMode kini murni gate readOnly
+  // (lihat efek di atas & komentar di preview-store.ts).
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return
-      if (e.metaKey || e.ctrlKey || e.altKey) return
-      if (e.key.toLowerCase() === "e") {
+      if ((e.ctrlKey || e.metaKey) && (e.key === "z" || e.key === "Z")) {
         if (readOnly) return
         e.preventDefault()
-        const s = usePreviewStore.getState()
-        s.setInteractionMode(s.interactionMode === "edit" ? "view" : "edit")
-      } else if (e.key === "Escape") {
+        if (e.shiftKey) routeRedo()
+        else routeUndo()
+        return
+      }
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      if (e.key === "Escape") {
         if (usePreviewStore.getState().cleanMode) {
           usePreviewStore.getState().setCleanMode(false)
         } else {
@@ -308,7 +320,10 @@ export function Preview3DView({
             ke PITA di antara toolbar kiri (left-14) & drawer kanan (right-14)
             dan bisa di-scroll — dulu `left-1/2 -translate-x-1/2` meluber ke kiri
             di layar sempit dan menumpuk ViewToolbar (bug "2 bar kiri berantakan"). */}
-        <div className="absolute left-14 right-14 top-3 z-10 overflow-x-auto lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:overflow-visible">
+        {/* Bar di-center di RUANG BEBAS antara rail kiri & panel kanan
+            (w-[24rem]) — center viewport penuh membuat ujung kanan bar
+            tertutup panel saat pill lantai banyak (mis. 1280×720). */}
+        <div className="absolute left-14 right-14 top-3 z-10 overflow-x-auto lg:left-16 lg:right-[26rem] lg:overflow-visible">
           <div className="mx-auto w-max">
             <FloorToggleBar floors={layout.floors} />
           </div>
