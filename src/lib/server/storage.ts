@@ -81,6 +81,34 @@ export async function createSignedGetUrl(key: string): Promise<string> {
   return signed.url
 }
 
+/**
+ * Tulis langsung ke storage server-side (bukan lewat signed URL + fetch
+ * klien) — dipakai `finalizeRenderJob` (AI Render Fase 5/6) untuk menaruh
+ * output PNG/WebP hasil provider. Sama seperti createSignedUploadUrl, tanda
+ * tangan lewat aws4fetch, tapi request-nya langsung dieksekusi di sini
+ * (bukan cuma di-sign lalu dikembalikan) karena tak ada klien browser yang
+ * perlu meng-upload — server sudah punya bytes-nya di tangan.
+ */
+export async function putObject(
+  key: string,
+  bytes: Uint8Array,
+  contentType: string
+): Promise<void> {
+  const client = getStorageClient()
+  const url = new URL(`${storageEndpoint()}/${bucket()}/${key}`)
+  const res = await client.fetch(url, {
+    method: "PUT",
+    headers: { "Content-Type": contentType, "x-amz-acl": "private" },
+    // Buffer.from(...): lib DOM RequestInit.body (BodyInit) di TS versi repo
+    // ini tak mengenali Uint8Array<ArrayBufferLike> generik secara langsung;
+    // Buffer (Node) sudah lama diterima sbg BodyInit oleh runtime fetch kita.
+    body: Buffer.from(bytes),
+  })
+  if (!res.ok) {
+    throw new Error(`putObject gagal: HTTP ${res.status}`)
+  }
+}
+
 /** Build the public GET URL for an uploaded asset. Without STORAGE_PUBLIC_URL
  *  the bucket stays private and assets are served through the app's
  *  same-origin proxy (/api/v1/assets/file/<key>) — no bucket CORS/public
@@ -116,4 +144,17 @@ export function safeAssetFilename(filename: string): string {
 export function assetKey(userId: string, projectId: string, filename: string): string {
   const ts = Date.now()
   return `uploads/${userId}/${projectId}/${ts}-${safeAssetFilename(filename)}`
+}
+
+/**
+ * Key input render AI (beauty/depth pass PNG) — prefix TERPISAH dari
+ * `uploads/` supaya proxy (assets/file/[...key]/route.ts) bisa memberi aturan
+ * MIME/ukuran berbeda (image/png, cap lebih kecil) tanpa menyentuh regex GLB
+ * yang sudah ada. Bentuk key sama polanya dgn assetKey (userId/projectId/ts-
+ * nama), route POST .../renders memvalidasi ulang prefix ini sebelum submit
+ * ke provider (anti-SSRF/anti-pinjam-key milik user lain).
+ */
+export function renderInputKey(userId: string, projectId: string, filename: string): string {
+  const ts = Date.now()
+  return `renders/${userId}/${projectId}/${ts}-${safeAssetFilename(filename)}`
 }

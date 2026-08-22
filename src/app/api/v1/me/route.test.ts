@@ -62,6 +62,7 @@ const fakePlan = {
     maxProjects: 10,
     exportPdf: true,
     glbUpload: true,
+    aiRenderHd: true,
   },
 }
 
@@ -286,6 +287,7 @@ describe("GET /api/v1/me — lazy subscription expiry", () => {
         maxProjects: 1,
         exportPdf: false,
         glbUpload: false,
+        aiRenderHd: false,
       },
     }
     // Called twice: once inside the downgrade branch (getPlan("free") for the

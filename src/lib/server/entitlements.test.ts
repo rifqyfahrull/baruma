@@ -46,7 +46,7 @@ function fakePlan(overrides: Partial<PlanRow> = {}): PlanRow {
     active: true,
     features: [],
     limits: [],
-    entitlements: { creditsPerPeriod: 100, maxProjects: 10, exportPdf: true, glbUpload: true },
+    entitlements: { creditsPerPeriod: 100, maxProjects: 10, exportPdf: true, glbUpload: true, aiRenderHd: true },
     ...overrides,
   }
 }
@@ -61,14 +61,14 @@ describe("getEntitlements", () => {
     vi.mocked(getProfileById).mockResolvedValueOnce(fakeProfile({ plan: "pro" }))
     vi.mocked(getPlan).mockResolvedValueOnce(fakePlan())
     const ent = await getEntitlements("user-1")
-    expect(ent).toEqual({ creditsPerPeriod: 100, maxProjects: 10, exportPdf: true, glbUpload: true })
+    expect(ent).toEqual({ creditsPerPeriod: 100, maxProjects: 10, exportPdf: true, glbUpload: true, aiRenderHd: true })
     expect(getPlan).toHaveBeenCalledWith("pro")
   })
 
   it("falls back to the free-tier defaults when the profile is missing", async () => {
     vi.mocked(getProfileById).mockResolvedValueOnce(null)
     const ent = await getEntitlements("ghost")
-    expect(ent).toEqual({ creditsPerPeriod: 10, maxProjects: 1, exportPdf: false, glbUpload: false })
+    expect(ent).toEqual({ creditsPerPeriod: 10, maxProjects: 1, exportPdf: false, glbUpload: false, aiRenderHd: false })
     expect(getPlan).not.toHaveBeenCalled()
   })
 
@@ -76,7 +76,7 @@ describe("getEntitlements", () => {
     vi.mocked(getProfileById).mockResolvedValueOnce(fakeProfile({ plan: "pro" }))
     vi.mocked(getPlan).mockResolvedValueOnce(null)
     const ent = await getEntitlements("user-1")
-    expect(ent).toEqual({ creditsPerPeriod: 10, maxProjects: 1, exportPdf: false, glbUpload: false })
+    expect(ent).toEqual({ creditsPerPeriod: 10, maxProjects: 1, exportPdf: false, glbUpload: false, aiRenderHd: false })
   })
 })
 
@@ -84,7 +84,7 @@ describe("requirePlanFeature", () => {
   it("throws PlanFeatureLockedError when the flag is false", async () => {
     vi.mocked(getProfileById).mockResolvedValueOnce(fakeProfile({ plan: "free" }))
     vi.mocked(getPlan).mockResolvedValueOnce(
-      fakePlan({ id: "free", entitlements: { creditsPerPeriod: 10, maxProjects: 1, exportPdf: false, glbUpload: false } })
+      fakePlan({ id: "free", entitlements: { creditsPerPeriod: 10, maxProjects: 1, exportPdf: false, glbUpload: false, aiRenderHd: false } })
     )
     await expect(requirePlanFeature("user-1", "glbUpload")).rejects.toBeInstanceOf(
       PlanFeatureLockedError
@@ -100,7 +100,7 @@ describe("requirePlanFeature", () => {
   it("PlanFeatureLockedError carries the feature name and an Indonesian message", async () => {
     vi.mocked(getProfileById).mockResolvedValueOnce(fakeProfile({ plan: "free" }))
     vi.mocked(getPlan).mockResolvedValueOnce(
-      fakePlan({ entitlements: { creditsPerPeriod: 10, maxProjects: 1, exportPdf: false, glbUpload: false } })
+      fakePlan({ entitlements: { creditsPerPeriod: 10, maxProjects: 1, exportPdf: false, glbUpload: false, aiRenderHd: false } })
     )
     try {
       await requirePlanFeature("user-1", "exportPdf")

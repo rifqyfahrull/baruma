@@ -19,6 +19,7 @@ const FALLBACK_ENTITLEMENTS: Entitlements = {
   maxProjects: 1,
   exportPdf: false,
   glbUpload: false,
+  aiRenderHd: false,
 }
 
 /** Resolve the entitlements for a profile's current plan (fallback-safe). */
@@ -42,7 +43,7 @@ export class PlanFeatureLockedError extends Error {
 /** Throws PlanFeatureLockedError when the profile's plan doesn't have `feature`. */
 export async function requirePlanFeature(
   profileId: string,
-  feature: "exportPdf" | "glbUpload"
+  feature: "exportPdf" | "glbUpload" | "aiRenderHd"
 ): Promise<void> {
   const ent = await getEntitlements(profileId)
   if (!ent[feature]) throw new PlanFeatureLockedError(feature)

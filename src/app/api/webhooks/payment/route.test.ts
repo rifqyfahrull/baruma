@@ -76,6 +76,7 @@ function fakePlan(overrides: Partial<PlanRow> = {}): PlanRow {
       maxProjects: 10,
       exportPdf: true,
       glbUpload: true,
+      aiRenderHd: true,
     },
     ...overrides,
   }
@@ -236,6 +237,7 @@ describe("POST /api/webhooks/payment", () => {
           maxProjects: 50,
           exportPdf: true,
           glbUpload: true,
+          aiRenderHd: true,
         },
       })
     )

@@ -59,6 +59,7 @@ function fakePlan(overrides: Partial<PlanRow> = {}): PlanRow {
       maxProjects: 10,
       exportPdf: true,
       glbUpload: true,
+      aiRenderHd: true,
     },
     ...overrides,
   }

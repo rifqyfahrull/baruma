@@ -101,12 +101,14 @@ export async function spendCredits(
 
 /**
  * Spend once for a retryable request. `refId` is a client-generated request id
- * protected by migration 0016's partial unique ledger index.
+ * protected by a partial unique ledger index — migration 0016 for
+ * `project_agent`, migration 0038 for `ai_render` (setiap reason baru wajib
+ * index parsialnya sendiri, lihat komentar di 0038_ai_renders.sql).
  */
 export async function spendCreditsOnce(
   profileId: string,
   n: number,
-  reason: "project_agent",
+  reason: "project_agent" | "ai_render",
   refId: string
 ): Promise<"ok" | "insufficient" | "already_spent"> {
   const opKey = `${profileId}:${reason}:${refId}`
@@ -186,7 +188,7 @@ export async function refundCredits(
 export async function refundCreditsOnce(
   profileId: string,
   n: number,
-  reason: "project_agent_refund",
+  reason: "project_agent_refund" | "ai_render_refund",
   refId: string
 ): Promise<"ok" | "already_refunded"> {
   const opKey = `${profileId}:${reason}:${refId}`

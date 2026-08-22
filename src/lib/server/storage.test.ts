@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 
-import { safeAssetFilename, assetKey } from "@/lib/server/storage"
+import { safeAssetFilename, assetKey, renderInputKey } from "@/lib/server/storage"
 
 describe("safeAssetFilename", () => {
   it("mengganti '+' & spasi jadi '-' (penyebab SignatureDoesNotMatch 403 di S3)", () => {
@@ -27,5 +27,10 @@ describe("safeAssetFilename", () => {
     expect(key).toMatch(/^uploads\/usr-1\/proj-1\/\d+-Washing-Machine-AEG\.glb$/)
     expect(key).not.toContain("+")
     expect(key).not.toContain(" ")
+  })
+
+  it("renderInputKey: prefix renders/ terpisah dari uploads/, nama tersanitasi", () => {
+    const key = renderInputKey("usr-1", "proj-1", "beauty pass.png")
+    expect(key).toMatch(/^renders\/usr-1\/proj-1\/\d+-beauty-pass\.png$/)
   })
 })

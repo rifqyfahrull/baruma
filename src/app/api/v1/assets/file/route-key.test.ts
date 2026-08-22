@@ -14,6 +14,13 @@ describe("asset file route key allowlist", () => {
     expect(joinAssetFileKey(["asset-library", "objaverse", "thumbnails", "abc123.webp"])).toBe(
       "asset-library/objaverse/thumbnails/abc123.webp"
     )
+    // input (PNG) & output (WebP) AI Render — renders/<userId>/<projectId>/…
+    expect(joinAssetFileKey(["renders", "user-1", "proj-1", "123-beauty.png"])).toBe(
+      "renders/user-1/proj-1/123-beauty.png"
+    )
+    expect(joinAssetFileKey(["renders", "user-1", "proj-1", "rnd-abc123-output.webp"])).toBe(
+      "renders/user-1/proj-1/rnd-abc123-output.webp"
+    )
   })
 
   it("rejects traversal, wrong folders, and non-glb keys", () => {
@@ -23,11 +30,16 @@ describe("asset file route key allowlist", () => {
     // webp hanya di folder thumbnails, bukan furniture/buildings
     expect(joinAssetFileKey(["asset-library", "objaverse", "furniture", "x.webp"])).toBeNull()
     expect(joinAssetFileKey(["uploads", "user-1", "proj-1", "123-x.webp"])).toBeNull()
+    // renders/ hanya png/webp, bukan glb/obj lain
+    expect(joinAssetFileKey(["renders", "user-1", "proj-1", "123-beauty.glb"])).toBeNull()
+    expect(joinAssetFileKey(["renders", "..", "proj-1", "x.png"])).toBeNull()
   })
 
-  it("assetKeyOwnerId: userId dari kunci uploads/, null utk katalog publik", () => {
-    // Otorisasi proxy: uploads/<userId> = privat milik userId; asset-library = publik.
+  it("assetKeyOwnerId: userId dari kunci uploads/ ATAU renders/, null utk katalog publik", () => {
+    // Otorisasi proxy: uploads/<userId> & renders/<userId> = privat milik
+    // userId; asset-library = publik.
     expect(assetKeyOwnerId("uploads/usr-ABC/proj-1/123-x.glb")).toBe("usr-ABC")
+    expect(assetKeyOwnerId("renders/usr-ABC/proj-1/123-beauty.png")).toBe("usr-ABC")
     expect(assetKeyOwnerId("asset-library/global/furniture/w2-x.glb")).toBeNull()
     expect(assetKeyOwnerId("asset-library/user-1/buildings/x.glb")).toBeNull()
   })

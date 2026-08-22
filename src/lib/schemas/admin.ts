@@ -11,6 +11,7 @@ export const entitlementsSchema = z.object({
   maxProjects: z.number().int().min(0, "Tidak boleh negatif"),
   exportPdf: z.boolean(),
   glbUpload: z.boolean(),
+  aiRenderHd: z.boolean(),
 })
 
 /** Full PlanRow — validated on PUT /api/v1/admin/plans (create or update). */

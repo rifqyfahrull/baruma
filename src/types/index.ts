@@ -96,6 +96,41 @@ export type Entitlements = {
   maxProjects: number;
   exportPdf: boolean;
   glbUpload: boolean;
+  /** Render AI mode Presisi (HD, tanpa watermark) — lihat src/lib/server/ai-render. */
+  aiRenderHd: boolean;
+};
+
+/* ------------------------------------------------------------------ */
+/* AI Image Renderer (Fase 8 — docs/plan-integrasi-ai-renderer-2026-08.md) */
+/* ------------------------------------------------------------------ */
+
+/** Siklus hidup job render AI — mirror kolom `render_jobs.status`. */
+export type AiRenderStatus =
+  | "queued"
+  | "submitted"
+  | "processing"
+  | "succeeded"
+  | "failed";
+
+/** Mode render AI — Cepat (draft, Nano Banana) vs Presisi (HD, FLUX Depth). */
+export type AiRenderModeId = "cepat" | "presisi";
+
+/**
+ * Bentuk job render yang dikirim server ke klien (lihat
+ * `RenderJobView`/`renderJobView` di src/lib/server/ai-render/view.ts).
+ * Didefinisikan ULANG di sini alih-alih diimpor — view.ts mengimpor
+ * `src/lib/server/repo/renders.ts` (pg), yang TIDAK boleh masuk bundle klien.
+ */
+export type AiRenderJob = {
+  id: string;
+  status: AiRenderStatus;
+  mode: AiRenderModeId;
+  preset: string;
+  shotId: string;
+  watermarked: boolean;
+  outputUrl: string | null;
+  errorMessage?: string;
+  createdAt: string;
 };
 
 /** One row of the `plans` table — the single DB-driven source for pricing. */

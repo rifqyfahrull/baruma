@@ -32,6 +32,7 @@ const EMPTY_ENTITLEMENTS: Entitlements = {
   maxProjects: 0,
   exportPdf: false,
   glbUpload: false,
+  aiRenderHd: false,
 }
 
 function mapStringArray(v: unknown): string[] {

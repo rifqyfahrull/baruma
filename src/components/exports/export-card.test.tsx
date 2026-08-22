@@ -13,6 +13,7 @@ const studioEntitlements: Entitlements = {
   maxProjects: 50,
   exportPdf: true,
   glbUpload: true,
+  aiRenderHd: true,
 }
 
 const freeEntitlements: Entitlements = {
@@ -20,6 +21,7 @@ const freeEntitlements: Entitlements = {
   maxProjects: 1,
   exportPdf: false,
   glbUpload: false,
+  aiRenderHd: false,
 }
 
 describe("ExportCard", () => {

@@ -20,6 +20,11 @@ export const EXTERIOR_FEATURE_FLAGS = [
   "exterior_elements_v1",
   "roof_zones_v1",
   "presentation_mode_v1",
+  // AI Image Renderer (Fase 9 — docs/plan-integrasi-ai-renderer-2026-08.md).
+  // Sama seperti flag lain: hanya menyembunyikan UI PEMBUATAN render baru;
+  // galeri render lama tetap tampil walau flag dimatikan (rollback tak
+  // menghapus data). Kill switch = FEATURE_AI_RENDER_V1=false.
+  "ai_render_v1",
 ] as const
 
 export type ExteriorFeatureFlag = (typeof EXTERIOR_FEATURE_FLAGS)[number]
@@ -39,6 +44,7 @@ export const DEFAULT_FEATURE_CAPABILITIES: FeatureCapabilities = {
   exterior_elements_v1: true,
   roof_zones_v1: true,
   presentation_mode_v1: true,
+  ai_render_v1: true,
 }
 
 /**

@@ -249,6 +249,16 @@ export function PlanForm({
                 onCheckedChange={(v) => setEntitlement("glbUpload", v)}
               />
             </div>
+
+            <div className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2">
+              <Label htmlFor="plan-ai-render-hd">Render AI HD (Presisi)</Label>
+              <Switch
+                id="plan-ai-render-hd"
+                aria-label="Izinkan render AI mode Presisi (HD, tanpa watermark)"
+                checked={form.entitlements.aiRenderHd}
+                onCheckedChange={(v) => setEntitlement("aiRenderHd", v)}
+              />
+            </div>
           </div>
 
           <DialogFooter>

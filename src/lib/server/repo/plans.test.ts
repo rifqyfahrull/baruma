@@ -96,18 +96,21 @@ describe("DEFAULT_PLANS content is locked verbatim (pixel-parity contract for T2
       maxProjects: 1,
       exportPdf: false,
       glbUpload: false,
+      aiRenderHd: false,
     })
     expect(byId.get("pro")?.entitlements).toEqual({
       creditsPerPeriod: 100,
       maxProjects: 10,
       exportPdf: true,
       glbUpload: true,
+      aiRenderHd: true,
     })
     expect(byId.get("studio")?.entitlements).toEqual({
       creditsPerPeriod: 500,
       maxProjects: 50,
       exportPdf: true,
       glbUpload: true,
+      aiRenderHd: true,
     })
   })
 })
@@ -180,6 +183,7 @@ describe("upsertPlan (memory fallback)", () => {
         maxProjects: 100,
         exportPdf: true,
         glbUpload: true,
+        aiRenderHd: true,
       },
     })
     const plans = await getPlans()

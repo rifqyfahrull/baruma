@@ -84,7 +84,14 @@ const validBody = {
 }
 
 function entitlements(overrides: Partial<Entitlements> = {}): Entitlements {
-  return { creditsPerPeriod: 10, maxProjects: 1, exportPdf: false, glbUpload: false, ...overrides }
+  return {
+    creditsPerPeriod: 10,
+    maxProjects: 1,
+    exportPdf: false,
+    glbUpload: false,
+    aiRenderHd: false,
+    ...overrides,
+  }
 }
 
 function postRequest(token: string, body: unknown) {

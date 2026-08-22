@@ -37,6 +37,7 @@ export const DEFAULT_PLANS: PlanRow[] = [
       maxProjects: 1,
       exportPdf: false,
       glbUpload: false,
+      aiRenderHd: false,
     },
   },
   {
@@ -62,6 +63,7 @@ export const DEFAULT_PLANS: PlanRow[] = [
       maxProjects: 10,
       exportPdf: true,
       glbUpload: true,
+      aiRenderHd: true,
     },
   },
   {
@@ -86,6 +88,7 @@ export const DEFAULT_PLANS: PlanRow[] = [
       maxProjects: 50,
       exportPdf: true,
       glbUpload: true,
+      aiRenderHd: true,
     },
   },
 ]

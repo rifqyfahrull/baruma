@@ -8,6 +8,7 @@ const capabilitiesRef: { current: FeatureCapabilities } = {
     exterior_elements_v1: true,
     roof_zones_v1: true,
     presentation_mode_v1: true,
+    ai_render_v1: true,
   },
 }
 vi.mock("@/hooks/use-project-capabilities", () => ({
@@ -33,6 +34,7 @@ describe("EditorToolbar capability gating (roadmap §21)", () => {
       exterior_elements_v1: true,
       roof_zones_v1: true,
       presentation_mode_v1: true,
+    ai_render_v1: true,
     }
     useEditorStore.setState({ layout: makeLayout() })
   })
@@ -144,6 +146,7 @@ describe("EditorToolbar responsive compact mode (More dropdown)", () => {
       exterior_elements_v1: true,
       roof_zones_v1: true,
       presentation_mode_v1: true,
+    ai_render_v1: true,
     }
     Object.defineProperty(window, "innerWidth", {
       value: WIDE,
@@ -233,6 +236,7 @@ describe("EditorToolbar responsive compact mode (height overflow)", () => {
       exterior_elements_v1: true,
       roof_zones_v1: true,
       presentation_mode_v1: true,
+    ai_render_v1: true,
     }
     Object.defineProperty(window, "innerWidth", { value: WIDE, configurable: true, writable: true })
     Object.defineProperty(window, "innerHeight", { value: 500, configurable: true, writable: true })

@@ -42,6 +42,8 @@ const FLAG_ENV_KEYS = [
   "FEATURE_ROOF_ZONES_V1_ROLLOUT",
   "FEATURE_PRESENTATION_MODE_V1",
   "FEATURE_PRESENTATION_MODE_V1_ROLLOUT",
+  "FEATURE_AI_RENDER_V1",
+  "FEATURE_AI_RENDER_V1_ROLLOUT",
 ]
 
 describe("GET /api/v1/projects/[id]/capabilities", () => {
@@ -65,6 +67,7 @@ describe("GET /api/v1/projects/[id]/capabilities", () => {
       exterior_elements_v1: true,
       roof_zones_v1: true,
       presentation_mode_v1: true,
+      ai_render_v1: true,
     })
   })
 
