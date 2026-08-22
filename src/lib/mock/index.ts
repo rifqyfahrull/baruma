@@ -9,6 +9,8 @@ import { nanoid } from "nanoid"
 import type {
   AdminSubscriptionRow,
   AdminUserRow,
+  AiRenderJob,
+  AiRenderModeId,
   Alternative,
   BOQItem,
   Brief,
@@ -1238,6 +1240,100 @@ export async function listMyAssets(params?: {
   const offset = Math.max(0, Math.floor(params?.offset ?? 0))
   const limit = Math.min(Math.max(1, Math.floor(params?.limit ?? 30)), 100)
   return { total, items: filtered.slice(offset, offset + limit) }
+}
+
+/* ----- service: AI Image Renderer (Fase 8 — docs/plan-integrasi-ai-renderer-2026-08.md) ----- */
+
+/**
+ * Placeholder hasil render mode mock — SVG gradien inline (data URI). Mock
+ * tak punya object storage nyata utk membaca kembali PNG beauty/depth yang
+ * "diupload" klien (uploadUrl mock cuma host palsu, lihat
+ * `requestRenderUploadUrl`), jadi hasil render selalu placeholder statis ini
+ * — cukup utk demo alur UI (progress → hasil → unduh) tanpa provider AI nyata.
+ */
+const MOCK_RENDER_PLACEHOLDER = `data:image/svg+xml;utf8,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540">' +
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+    '<stop offset="0" stop-color="#dbeafe"/><stop offset="1" stop-color="#bfdbfe"/>' +
+    "</linearGradient></defs>" +
+    '<rect width="960" height="540" fill="url(#g)"/>' +
+    '<text x="480" y="270" font-family="sans-serif" font-size="28" fill="#1e3a8a" text-anchor="middle">' +
+    "Visualisasi AI (mock)</text></svg>"
+)}`
+
+const mockRenders: Record<string, AiRenderJob[]> = {}
+// paramsHash -> job — cermin `findCachedRender` (mock single-user, jadi global
+// sudah cukup merepresentasikan "milik user ini").
+const mockRenderCache: Record<string, AiRenderJob> = {}
+
+export async function requestRenderUploadUrl(input: {
+  projectId: string
+  filename: string
+  contentType: string
+}): Promise<{ key: string; uploadUrl: string }> {
+  await delay(150)
+  const key = `renders/mock-user/${input.projectId}/${Date.now()}-${input.filename}`
+  // Host palsu — sama pola dgn requestUploadUrl (assets); e2e mengintersep
+  // PUT ke sini via page.route agar tidak menyentuh jaringan nyata.
+  return { key, uploadUrl: `https://mock-storage.example.com/upload/${key}` }
+}
+
+export async function createRender(
+  projectId: string,
+  input: {
+    mode: AiRenderModeId
+    preset: string
+    shotId: string
+    clientRequestId: string
+    inputKeys: { beauty: string; depth?: string }
+    paramsHash: string
+    sceneMeta: {
+      facadeMaterials: string[]
+      roofType: string
+      floors: number
+      landscape?: string
+    }
+  }
+): Promise<{ job: AiRenderJob; cached: boolean }> {
+  await delay(600)
+
+  const cachedJob = mockRenderCache[input.paramsHash]
+  if (cachedJob) return { job: structuredClone(cachedJob), cached: true }
+
+  // Mock TIDAK menegakkan billing/plan (paritas createProject dkk di file
+  // ini — enforcement kredit/plan hanya diuji lewat route.test.ts server,
+  // bukan mode mock). Kredit tetap dipotong utk paritas visual sidebar.
+  const cost = input.mode === "presisi" ? 2 : 1
+  db.user.creditsUsed = Math.min(db.user.creditsTotal, db.user.creditsUsed + cost)
+
+  const job: AiRenderJob = {
+    id: `rnd-${nanoid(10)}`,
+    status: "succeeded",
+    mode: input.mode,
+    preset: input.preset,
+    shotId: input.shotId,
+    watermarked: db.user.plan === "free",
+    outputUrl: MOCK_RENDER_PLACEHOLDER,
+    createdAt: nowISO(),
+  }
+  const bucket = (mockRenders[projectId] ??= [])
+  bucket.unshift(job)
+  mockRenderCache[input.paramsHash] = job
+  return { job: structuredClone(job), cached: false }
+}
+
+export async function listRenders(projectId: string): Promise<AiRenderJob[]> {
+  await delay(200)
+  return structuredClone(mockRenders[projectId] ?? [])
+}
+
+export async function getRender(
+  projectId: string,
+  renderId: string
+): Promise<AiRenderJob | null> {
+  await delay(150)
+  const job = (mockRenders[projectId] ?? []).find((j) => j.id === renderId)
+  return job ? structuredClone(job) : null
 }
 
 /* ----- service: templates ----- */

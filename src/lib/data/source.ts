@@ -1,6 +1,8 @@
 import type {
   AdminSubscriptionRow,
   AdminUserRow,
+  AiRenderJob,
+  AiRenderModeId,
   Alternative,
   BOQItem,
   Brief,
@@ -212,6 +214,47 @@ export interface DataSource {
       editable?: boolean
     }>
   }>
+
+  // ── AI Image Renderer (Fase 8 — docs/plan-integrasi-ai-renderer-2026-08.md) ──
+
+  /** Signed-upload leg utk input render (beauty/depth PNG) — pola sama dgn
+   *  `requestUploadUrl`, tapi endpoint & bentuk balikan lebih sederhana
+   *  (`uploadUrl` sudah berupa path proxy same-origin, bukan {uploadUrl,
+   *  fileUrl, expiresIn}). Lihat POST .../renders/upload-url/route.ts. */
+  requestRenderUploadUrl(input: {
+    projectId: string
+    filename: string
+    contentType: "image/png"
+  }): Promise<{ key: string; uploadUrl: string }>
+
+  /** Buat job render AI. `cached: true` = hit params_hash lama, job lama
+   *  dikembalikan TANPA memotong kredit lagi. */
+  createRender(
+    projectId: string,
+    input: {
+      mode: AiRenderModeId
+      preset: string
+      shotId: string
+      /** Idempotency key (nanoid) — dipakai server sbg kunci spendCreditsOnce
+       *  DAN id job (retry dgn id sama = tidak dipotong kredit dobel). */
+      clientRequestId: string
+      inputKeys: { beauty: string; depth?: string }
+      paramsHash: string
+      sceneMeta: {
+        facadeMaterials: string[]
+        roofType: string
+        floors: number
+        landscape?: string
+      }
+    }
+  ): Promise<{ job: AiRenderJob; cached: boolean }>
+
+  /** Galeri render per proyek — tetap terbaca walau flag ai_render_v1 mati
+   *  (flag hanya menggerbangi UI pembuatan render baru, bukan data lama). */
+  listRenders(projectId: string): Promise<AiRenderJob[]>
+
+  /** Detail satu job — dipakai polling klien (self-terminating refetchInterval). */
+  getRender(projectId: string, renderId: string): Promise<AiRenderJob | null>
 
   // ── admin backoffice (Task 8) ──
 

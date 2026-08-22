@@ -49,6 +49,12 @@ export const mockSource: DataSource = {
   detachAssetFromSlot: mock.detachAssetFromSlot,
   listMyAssets: mock.listMyAssets,
 
+  // AI Image Renderer (Fase 8)
+  requestRenderUploadUrl: mock.requestRenderUploadUrl,
+  createRender: mock.createRender,
+  listRenders: mock.listRenders,
+  getRender: mock.getRender,
+
   // admin backoffice (Task 8)
   getAdminPlans: mock.getAdminPlans,
   updatePlan: mock.updatePlan,

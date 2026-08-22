@@ -667,3 +667,87 @@ export function useDeleteComponentPreset() {
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.componentPresets }),
   })
 }
+
+/* ----- AI Image Renderer (Fase 8 — docs/plan-integrasi-ai-renderer-2026-08.md) ----- */
+
+/** Galeri render per proyek ("Riwayat Render" di dalam dialog). */
+export function useProjectRenders(projectId: string) {
+  return useQuery({
+    queryKey: queryKeys.renders(projectId),
+    queryFn: () => data.listRenders(projectId),
+    enabled: !!projectId,
+  })
+}
+
+/**
+ * Polling detail satu job — `refetchInterval` self-terminating persis
+ * `useIngestionJob` (~line 433): berhenti begitu status final (succeeded/
+ * failed), selain itu 2000ms. `enabled` hanya saat `renderId` terisi (mis.
+ * setelah `useCreateRender` sukses).
+ */
+export function useRenderJob(projectId: string, renderId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.render(projectId, renderId ?? ""),
+    queryFn: () => data.getRender(projectId, renderId!),
+    enabled: !!projectId && !!renderId,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status
+      if (!status || status === "succeeded" || status === "failed") return false
+      return 2000
+    },
+  })
+}
+
+/**
+ * Buat job render AI. Sukses → invalidasi galeri render + `useCurrentUser`
+ * (kredit berubah, sidebar ter-update otomatis lewat invalidasi itu).
+ * Penanganan error 402/403 (`handlePlanError`) SENGAJA ditaruh di komponen
+ * pemanggil (pola `project-agent-panel.tsx`: `if (!handlePlanError(e))
+ * toast.error(...)`), bukan di sini — supaya hanya ada SATU jalur toast
+ * (menghindari toast dobel bila hook & komponen sama-sama memanggilnya).
+ */
+export function useCreateRender(projectId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: Parameters<typeof data.createRender>[1]) =>
+      data.createRender(projectId, input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.renders(projectId) })
+      qc.invalidateQueries({ queryKey: queryKeys.user })
+    },
+  })
+}
+
+/** Data URL PNG (`captureRenderInputs()`) → Blob, siap di-PUT ke signed URL. */
+async function dataUrlToBlob(dataUrl: string): Promise<Blob> {
+  const res = await fetch(dataUrl)
+  return res.blob()
+}
+
+/**
+ * Upload dua-langkah input render (beauty/depth PNG): minta signed URL lalu
+ * PUT byte-nya — pola sama dgn leg upload `ModelUploadDialog.startUpload`
+ * (model-upload-dialog.tsx), hanya beda payload (PNG data URL, bukan File
+ * GLB). Fungsi biasa (bukan hook) — dipanggil di dalam orkestrasi submit
+ * `ai-render-dialog.tsx`, bukan lifecycle React.
+ */
+export async function uploadRenderInput(
+  projectId: string,
+  dataUrl: string,
+  filename: string
+): Promise<string> {
+  const signed = await data.requestRenderUploadUrl({
+    projectId,
+    filename,
+    contentType: "image/png",
+  })
+  if (!signed) throw new Error("Endpoint upload render tidak tersedia di server")
+  const blob = await dataUrlToBlob(dataUrl)
+  const res = await fetch(signed.uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": "image/png" },
+    body: blob,
+  })
+  if (!res.ok) throw new Error("Gagal mengupload input render ke storage")
+  return signed.key
+}

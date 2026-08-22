@@ -21,6 +21,10 @@ export const queryKeys = {
   myAssets: (category?: string, search?: string) =>
     ["assets", "my-library", category ?? "all", search ?? ""] as const,
 
+  // AI Image Renderer (Fase 8 — docs/plan-integrasi-ai-renderer-2026-08.md)
+  renders: (projectId: string) => ["renders", projectId] as const,
+  render: (projectId: string, renderId: string) => ["renders", projectId, renderId] as const,
+
   // admin backoffice (Task 8)
   adminPlans: ["admin", "plans"] as const,
   adminSubscriptions: ["admin", "subscriptions"] as const,

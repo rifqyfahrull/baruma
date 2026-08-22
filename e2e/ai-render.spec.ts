@@ -1,0 +1,115 @@
+import { test, expect, type Page } from "@playwright/test"
+
+/**
+ * E2E Render AI (Fase 8/9 — docs/plan-integrasi-ai-renderer-2026-08.md).
+ *
+ * Seperti spec 3D lain di repo ini (lihat photo-package.spec.ts,
+ * furnimesh-upload-corpus.spec.ts), env e2e default TIDAK mengeset
+ * NEXT_PUBLIC_API_URL/NEXT_PUBLIC_DATA_SOURCE (lihat playwright.config.ts) —
+ * jadi `@/lib/data` jatuh ke in-memory mock CLIENT (lazyMockSource,
+ * src/lib/data/mock-source.ts), BUKAN route handler server nyata. Mode
+ * "cepat"/"presisi" di mock (`src/lib/mock/index.ts` createRender) selalu
+ * resolve instan ke "succeeded" dengan placeholder SVG — tanpa provider AI
+ * eksternal, persis prinsip "AI_RENDER_PROVIDER=mock" di sisi server.
+ *
+ * Satu-satunya panggilan jaringan nyata dalam alur ini adalah PUT ke
+ * signed-upload URL — mock mengembalikan host palsu
+ * `https://mock-storage.example.com/...` (sama seperti requestUploadUrl aset
+ * GLB), jadi diintersep persis pola furnimesh-upload-corpus.spec.ts.
+ *
+ * Menjalankan lokal: `pnpm exec playwright test e2e/ai-render.spec.ts`
+ * (server dev otomatis dijalankan oleh playwright.config.ts's `webServer`).
+ */
+
+const DEMO = "proj-demo-8x8"
+
+async function openPreview(page: Page): Promise<void> {
+  await page.goto(`/app/projects/${DEMO}/preview-3d`)
+  await expect(page.locator("canvas").first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByRole("heading", { name: "Preview 3D" })).toBeVisible({ timeout: 30_000 })
+  await page.waitForTimeout(1500)
+}
+
+test.describe("Render AI", () => {
+  test("tombol Render AI tampil di toolbar preview 3D", async ({ page }) => {
+    await openPreview(page)
+    await expect(page.getByTestId("ai-render-open")).toBeVisible()
+  })
+
+  test("dialog terbuka, mode/preset/bidikan bisa dipilih", async ({ page }) => {
+    await openPreview(page)
+
+    await page.getByTestId("ai-render-open").click()
+    await expect(page.getByRole("heading", { name: "Render AI" })).toBeVisible()
+
+    // Mode: default Cepat (1 kredit) — pilih Presisi lalu kembali ke Cepat.
+    await expect(page.getByTestId("ai-render-submit")).toContainText("Render — 1 kredit")
+    await page.getByTestId("ai-render-mode-presisi").click()
+    await expect(page.getByTestId("ai-render-submit")).toContainText("Render — 2 kredit")
+    await page.getByTestId("ai-render-mode-cepat").click()
+    await expect(page.getByTestId("ai-render-submit")).toContainText("Render — 1 kredit")
+
+    // Preset suasana — 4 pilihan tetap (RENDER_PRESETS).
+    await expect(page.getByTestId("ai-render-preset-tropis-siang")).toBeVisible()
+    await expect(page.getByTestId("ai-render-preset-tropis-senja")).toBeVisible()
+    await expect(page.getByTestId("ai-render-preset-skandinavia-siang")).toBeVisible()
+    await expect(page.getByTestId("ai-render-preset-malam")).toBeVisible()
+    await page.getByTestId("ai-render-preset-tropis-senja").click()
+
+    // Bidikan — reuse PHOTO_SHOTS.
+    await page.getByTestId("ai-render-shot-depan-siang").click()
+
+    // Kredit tersisa tampil (demo user studio, tak akan 0/terkunci).
+    await expect(page.getByTestId("ai-render-credits-remaining")).toContainText("Sisa kredit")
+  })
+
+  test("buat render → hasil muncul, label kejujuran tampil, muncul di Riwayat Render", async ({
+    page,
+  }) => {
+    const errors: string[] = []
+    page.on("console", (m) => {
+      if (m.type() === "error") errors.push(m.text())
+    })
+    page.on("pageerror", (e) => errors.push(String(e)))
+
+    // Host storage mock — sama pola dengan furnimesh-upload-corpus.spec.ts.
+    await page.route("https://mock-storage.example.com/**", (route) =>
+      route.fulfill({ status: 200, body: "" })
+    )
+
+    await openPreview(page)
+    await page.getByTestId("ai-render-open").click()
+    await expect(page.getByRole("heading", { name: "Render AI" })).toBeVisible()
+
+    // Mode Cepat + preset/bidikan default cukup untuk alur happy path.
+    await page.getByTestId("ai-render-submit").click()
+
+    // Capture (WebGL beauty+depth pass) → upload → POST job → hasil (mock
+    // resolve instan ke succeeded).
+    await expect(page.getByTestId("ai-render-result-image")).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByText("Visualisasi konsep — bukan gambar kerja")).toBeVisible()
+
+    // Unduh hasil memicu download nyata.
+    const downloadPromise = page.waitForEvent("download", { timeout: 10_000 })
+    await page.getByTestId("ai-render-download").click()
+    const download = await downloadPromise
+    expect(download.suggestedFilename()).toMatch(/\.png$/)
+
+    // Riwayat Render — job yang baru dibuat muncul di galeri. Playwright's
+    // .click() melakukan interaksi mouse nyata (mousedown+mouseup+click),
+    // beda dgn fireEvent.click sintetis di vitest — jadi tak perlu workaround
+    // khusus utk Radix Tabs (yang berpindah lewat onMouseDown) di sini.
+    await page.getByTestId("ai-render-tab-riwayat").click()
+    await expect(page.getByTestId("ai-render-gallery")).toBeVisible({ timeout: 10_000 })
+
+    // Noise 404 GLB lokal (furnitur showcase) & mock:// bukan kegagalan produk
+    // — pola sama dgn photo-package.spec.ts.
+    const real = errors.filter(
+      (e) =>
+        !/favicon|ResizeObserver|mock:\/\/|Could not load \/models\/.+\.glb|Failed to load resource.*404/i.test(
+          e
+        )
+    )
+    expect(real, real.join("\n")).toEqual([])
+  })
+})

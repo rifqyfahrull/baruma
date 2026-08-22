@@ -5,7 +5,10 @@ import { totalStackHeightM } from "@/lib/geometry/vertical"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { OrbitControls, Sky } from "@react-three/drei"
 
+import * as THREE from "three"
+
 import { silenceKnownThreeNoise } from "@/lib/three/console-noise"
+import { depthPixelsToGrayscale, unpackRGBADepth } from "@/lib/three/render-capture"
 
 // r3f masih memakai THREE.Clock (deprecated r184) per <Canvas> — tanpa ini
 // tiap mount canvas menambah satu warning konsol (ribuan per sesi).
@@ -29,11 +32,59 @@ type Site = { widthM: number; depthM: number }
  * toDataURL — maka capture harus me-render ulang frame tepat sebelum membaca
  * pixel. Komponen ini hidup DI DALAM Canvas agar punya akses gl/scene/camera.
  */
+/** Batas sisi terpanjang capture depth — cukup untuk FLUX Depth, menjaga memori GPU. */
+const DEPTH_CAPTURE_MAX_EDGE = 2048
+
+/**
+ * Kloning kamera aktif dengan near/far DIPERKETAT ke bounding sphere scene
+ * (dilihat dari posisi kamera saat ini), lalu render-ulang pass depth pakai
+ * kamera ini — BUKAN kamera asli (near:0.3/far:300).
+ *
+ * Kenapa kloning kamera, bukan sekadar menormalisasi ulang hasil near:0.3/
+ * far:300: `gl_FragCoord.z` (kurva depth non-linear yang ditulis
+ * MeshDepthMaterial) dihitung GPU dari matriks proyeksi kamera yang
+ * SEBENARNYA dipakai saat render — jika kita pakai frustum utuh (0.3–300)
+ * lalu "menormalisasi ulang" hasilnya seolah rentangnya lebih sempit, itu
+ * bukan re-normalisasi yang valid (kurva non-linear sudah kadung dibentuk
+ * oleh near/far penuh, mengonversinya lagi dengan near/far lain memutar-balik
+ * matematikanya, bukan sekadar meregangkan kontras). Dengan kamera terpisah
+ * yang near/far-nya SUDAH diperketat ke bounding sphere rumah (~10–30 m),
+ * `gl_FragCoord.z` yang dihasilkan GPU memang dibentuk dari frustum sempit
+ * itu — sehingga `linearizeDepth`/`depthPixelsToGrayscale` dgn near/far yang
+ * SAMA persis benar secara matematis, DAN presisi 8-bit-per-channel yang
+ * terbatas kini terpakai penuh untuk rentang jarak yang relevan (bukan
+ * terbuang pada 270 m ruang kosong di antara rumah dan far plane 300 m).
+ * Pass beauty (warna) tidak terpengaruh — tetap pakai kamera asli.
+ */
+function tightDepthCamera(
+  scene: THREE.Scene,
+  camera: THREE.PerspectiveCamera
+): THREE.PerspectiveCamera {
+  const depthCamera = camera.clone()
+  const box = new THREE.Box3().setFromObject(scene)
+  if (!box.isEmpty()) {
+    const sphere = box.getBoundingSphere(new THREE.Sphere())
+    const dist = camera.position.distanceTo(sphere.center)
+    // Margin 10% agar geometri di tepi bounding sphere (kesalahan pembulatan,
+    // atau titik yang sedikit di luar sphere pada bentuk cekung) tidak
+    // ter-clip dari pass depth.
+    const tightNear = Math.max(0.01, dist - sphere.radius * 1.1)
+    const tightFar = dist + sphere.radius * 1.1
+    if (tightFar > tightNear) {
+      depthCamera.near = tightNear
+      depthCamera.far = tightFar
+      depthCamera.updateProjectionMatrix()
+    }
+  }
+  return depthCamera
+}
+
 function ScreenshotBridge() {
   const gl = useThree((s) => s.gl)
   const scene = useThree((s) => s.scene)
   const camera = useThree((s) => s.camera)
   const setCaptureFrame = usePreviewStore((s) => s.setCaptureFrame)
+  const setCaptureRenderInputs = usePreviewStore((s) => s.setCaptureRenderInputs)
 
   React.useEffect(() => {
     setCaptureFrame(() => {
@@ -42,6 +93,74 @@ function ScreenshotBridge() {
     })
     return () => setCaptureFrame(null)
   }, [gl, scene, camera, setCaptureFrame])
+
+  React.useEffect(() => {
+    setCaptureRenderInputs(async () => {
+      // 1) Beauty: pola sama dgn captureFrame — render ulang lalu baca segera
+      // (preserveDrawingBuffer:false bisa mengosongkan buffer sebelum dibaca).
+      gl.render(scene, camera)
+      const beauty = gl.domElement.toDataURL("image/png")
+
+      // Ukuran capture depth: ikuti resolusi drawing-buffer saat ini (sudah
+      // memperhitungkan dpr), dijepit ke sisi terpanjang DEPTH_CAPTURE_MAX_EDGE
+      // agar target+readback tidak membengkak di layar dpr=2 beresolusi tinggi.
+      const bufW = gl.domElement.width
+      const bufH = gl.domElement.height
+      const longEdge = Math.max(bufW, bufH)
+      const scale = longEdge > DEPTH_CAPTURE_MAX_EDGE ? DEPTH_CAPTURE_MAX_EDGE / longEdge : 1
+      const width = Math.max(1, Math.round(bufW * scale))
+      const height = Math.max(1, Math.round(bufH * scale))
+
+      const depthCamera = tightDepthCamera(scene, camera as THREE.PerspectiveCamera)
+      const target = new THREE.WebGLRenderTarget(width, height)
+      // MeshDepthMaterial dgn RGBADepthPacking: depth float dipak ke 4 channel
+      // RGBA 8-bit (~24-bit presisi efektif) — jauh lebih halus daripada
+      // BasicDepthPacking (1 channel 8-bit, banding kasar di scene 10–30 m).
+      // Tetap kompatibel dgn readRenderTargetPixels di target UnsignedByteType
+      // biasa — tak perlu depthTexture + fullscreen unpack pass yang lebih
+      // rumit (lihat komentar renderParamsHash/unpack di render-capture.ts).
+      scene.overrideMaterial = new THREE.MeshDepthMaterial({
+        depthPacking: THREE.RGBADepthPacking,
+      })
+
+      let depth = ""
+      try {
+        gl.setRenderTarget(target)
+        gl.render(scene, depthCamera)
+        const rgba = new Uint8Array(width * height * 4)
+        gl.readRenderTargetPixels(target, 0, 0, width, height, rgba)
+
+        // Unpack RGBA→depth mentah per pixel sebelum linearisasi+grayscale.
+        const rawDepth = new Float32Array(width * height)
+        for (let i = 0; i < rawDepth.length; i++) {
+          const o = i * 4
+          rawDepth[i] = unpackRGBADepth(rgba[o], rgba[o + 1], rgba[o + 2], rgba[o + 3])
+        }
+        const grayscale = depthPixelsToGrayscale(
+          rawDepth,
+          width,
+          height,
+          depthCamera.near,
+          depthCamera.far
+        )
+
+        const canvas = document.createElement("canvas")
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext("2d")
+        if (!ctx) throw new Error("Konteks 2D tidak tersedia untuk encode depth PNG")
+        ctx.putImageData(new ImageData(grayscale, width, height), 0, 0)
+        depth = canvas.toDataURL("image/png")
+      } finally {
+        scene.overrideMaterial = null
+        gl.setRenderTarget(null)
+        target.dispose()
+      }
+
+      return { beauty, depth, width, height }
+    })
+    return () => setCaptureRenderInputs(null)
+  }, [gl, scene, camera, setCaptureRenderInputs])
 
   return null
 }

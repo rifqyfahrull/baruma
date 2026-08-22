@@ -1,6 +1,7 @@
 import type {
   AdminSubscriptionRow,
   AdminUserRow,
+  AiRenderJob,
   Alternative,
   BOQItem,
   Brief,
@@ -302,6 +303,19 @@ export const httpSource: DataSource = {
     const q = qs.toString()
     return req("GET", `/assets/my-library${q ? `?${q}` : ""}`)
   },
+
+  // ── AI Image Renderer (Fase 8 — docs/plan-integrasi-ai-renderer-2026-08.md) ──
+  requestRenderUploadUrl: (input) =>
+    req("POST", `/projects/${input.projectId}/renders/upload-url`, {
+      filename: input.filename,
+      contentType: input.contentType,
+    }),
+  createRender: (projectId, input) =>
+    req("POST", `/projects/${projectId}/renders`, input),
+  listRenders: async (projectId) =>
+    (await req<AiRenderJob[] | null>("GET", `/projects/${projectId}/renders`)) ?? [],
+  getRender: (projectId, renderId) =>
+    req("GET", `/projects/${projectId}/renders/${renderId}`),
 
   // ── admin backoffice (Task 8) ──
   // NOTE: same BASE-relative convention as the rest of this file — these

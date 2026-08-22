@@ -16,6 +16,7 @@ describe("mock getCurrentUser", () => {
       maxProjects: 50,
       exportPdf: true,
       glbUpload: true,
+      aiRenderHd: true,
     })
   })
 

@@ -18,6 +18,7 @@ import {
 } from "@/lib/three/solar"
 import { buildPreviewSceneStats, formatBytes } from "@/lib/three/scene-stats"
 import { PhotoPackage } from "@/components/preview-3d/photo-package"
+import { AiRenderDialog } from "@/components/preview-3d/ai-render-dialog"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -146,6 +147,10 @@ export function ViewToolbar({
 
       {/* Paket foto presentasi — render multi-sudut siang+senja sekali klik */}
       <PhotoPackage project={project} />
+
+      {/* Render AI — visualisasi bergaya foto (Fase 8). Digerbangi
+          ai_render_v1 DI DALAM komponen (return null bila nonaktif). */}
+      <AiRenderDialog project={project} layout={layout} />
 
       {sceneStats && (
         <Popover>

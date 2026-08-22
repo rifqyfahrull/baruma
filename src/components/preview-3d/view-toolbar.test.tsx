@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { cleanup, render, screen, fireEvent } from "@testing-library/react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 import type { FeatureCapabilities } from "@/lib/features"
 import type { Project } from "@/types"
@@ -9,10 +10,37 @@ const capabilitiesRef: { current: FeatureCapabilities } = {
     exterior_elements_v1: true,
     roof_zones_v1: true,
     presentation_mode_v1: true,
+    ai_render_v1: true,
   },
 }
 vi.mock("@/hooks/use-project-capabilities", () => ({
   useProjectCapabilities: () => capabilitiesRef.current,
+}))
+
+// ViewToolbar kini merender AiRenderDialog (Fase 8), yang query
+// useCurrentUser/useProjectRenders lewat `@/lib/data` — mock minimal supaya
+// query resolve tanpa menyentuh jaringan/mock-source asli (yang lazy-import
+// ~570KB & async, tak relevan utk tes toolbar ini).
+vi.mock("@/lib/data", () => ({
+  data: {
+    getCurrentUser: () =>
+      Promise.resolve({
+        id: "u1",
+        name: "Uji",
+        email: "uji@example.com",
+        plan: "free",
+        creditsUsed: 2,
+        creditsTotal: 10,
+        entitlements: {
+          creditsPerPeriod: 10,
+          maxProjects: 1,
+          exportPdf: false,
+          glbUpload: false,
+          aiRenderHd: false,
+        },
+      }),
+    listRenders: () => Promise.resolve([]),
+  },
 }))
 
 import { ViewToolbar } from "./view-toolbar"
@@ -27,12 +55,19 @@ const project = {
   site: { widthM: 8, depthM: 10, areaM2: 80 },
 } as Project
 
-function openViewOptions() {
-  render(
-    <TooltipProvider>
-      <ViewToolbar layout={makeLayout()} project={project} />
-    </TooltipProvider>
+function renderToolbar() {
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  return render(
+    <QueryClientProvider client={qc}>
+      <TooltipProvider>
+        <ViewToolbar layout={makeLayout()} project={project} />
+      </TooltipProvider>
+    </QueryClientProvider>
   )
+}
+
+function openViewOptions() {
+  renderToolbar()
   fireEvent.click(screen.getByLabelText("Opsi tampilan"))
 }
 
@@ -42,6 +77,7 @@ describe("ViewToolbar presentation preset gating (roadmap §21)", () => {
       exterior_elements_v1: true,
       roof_zones_v1: true,
       presentation_mode_v1: true,
+    ai_render_v1: true,
     }
   })
   afterEach(() => cleanup())
@@ -73,21 +109,13 @@ describe("ViewToolbar clean-mode 2D link", () => {
   })
 
   it("hides the 2D link in normal mode (ProjectTabs already provides navigation)", () => {
-    render(
-      <TooltipProvider>
-        <ViewToolbar layout={makeLayout()} project={project} />
-      </TooltipProvider>
-    )
+    renderToolbar()
     expect(screen.queryByTestId("clean-mode-2d-link")).toBeNull()
   })
 
   it("shows a 2D editor link while clean mode hides the project tabs", () => {
     usePreviewStore.getState().setCleanMode(true)
-    render(
-      <TooltipProvider>
-        <ViewToolbar layout={makeLayout()} project={project} />
-      </TooltipProvider>
-    )
+    renderToolbar()
     const link = screen.getByTestId("clean-mode-2d-link")
     expect(link.getAttribute("href")).toBe("/app/projects/p1/editor")
   })
@@ -116,11 +144,7 @@ describe("ViewToolbar responsive compact mode (More dropdown)", () => {
 
   it("renders all secondary controls inline on a wide (desktop) viewport (no More)", () => {
     Object.defineProperty(window, "innerWidth", { value: WIDE, configurable: true, writable: true })
-    render(
-      <TooltipProvider>
-        <ViewToolbar layout={makeLayout()} project={project} />
-      </TooltipProvider>
-    )
+    renderToolbar()
     expect(screen.queryByTestId("view-toolbar-more")).toBeNull()
     expect(screen.getByLabelText("Opsi tampilan")).toBeTruthy()
     expect(screen.getByTestId("night-mode-toggle")).toBeTruthy()
@@ -128,11 +152,7 @@ describe("ViewToolbar responsive compact mode (More dropdown)", () => {
 
   it("collapses secondary controls into the More dropdown on a narrow (tablet) viewport", () => {
     Object.defineProperty(window, "innerWidth", { value: NARROW, configurable: true, writable: true })
-    render(
-      <TooltipProvider>
-        <ViewToolbar layout={makeLayout()} project={project} />
-      </TooltipProvider>
-    )
+    renderToolbar()
 
     // Sekunder tak lagi inline — hanya tombol More yang tampil.
     const more = screen.getByTestId("view-toolbar-more")

@@ -105,6 +105,22 @@ type PreviewState = {
   captureFrame: (() => string) | null
   setCaptureFrame: (fn: (() => string) | null) => void
 
+  /**
+   * Capture pasangan input render AI (beauty + depth), didaftarkan dari
+   * DALAM Canvas oleh ScreenshotBridge (lihat komentar di sana untuk detail
+   * presisi depth). Async karena render depth memakai WebGLRenderTarget +
+   * readback yang lebih berat dari toDataURL biasa. Null saat canvas
+   * belum/sudah unmount — sama seperti captureFrame.
+   */
+  captureRenderInputs:
+    | (() => Promise<{ beauty: string; depth: string; width: number; height: number }>)
+    | null
+  setCaptureRenderInputs: (
+    fn:
+      | (() => Promise<{ beauty: string; depth: string; width: number; height: number }>)
+      | null
+  ) => void
+
   initFloors: (floorIds: string[]) => void
   toggleFloor: (id: string) => void
   setFloorVisible: (id: string, visible: boolean) => void
@@ -179,10 +195,12 @@ export const usePreviewStore = create<PreviewState>((set) => ({
   canvasEl: null,
   compassEl: null,
   captureFrame: null,
+  captureRenderInputs: null,
 
   setCanvas: (el) => set({ canvasEl: el }),
   setCompassEl: (el) => set({ compassEl: el }),
   setCaptureFrame: (fn) => set({ captureFrame: fn }),
+  setCaptureRenderInputs: (fn) => set({ captureRenderInputs: fn }),
 
   // initFloors TIDAK lagi menge-null selectedRoomId: seleksi kini milik
   // editor-store (ref basi dibersihkan validateSelection di sana), dan
