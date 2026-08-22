@@ -1,8 +1,9 @@
 // @vitest-environment node
 /**
- * Route tests for POST /api/webhooks/payment — Stripe webhook. Provider +
- * repos are mocked; the real Stripe parseWebhook/signature verification is
- * covered by src/lib/billing/providers/stripe.test.ts, not this file.
+ * Route tests for POST /api/webhooks/payment — Mayar webhook, ported from
+ * the parent tampil.dev pattern (Task 5). Provider + repos are mocked; the
+ * real Mayar parseWebhook/token verification is covered by
+ * src/lib/billing/providers/mayar.test.ts, not this file.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -87,7 +88,7 @@ function fakeSub(overrides: Partial<SubRow> = {}): SubRow {
     profileId: "profile-1",
     planId: "pro",
     status: "pending",
-    provider: "stripe",
+    provider: "mayar",
     providerRef: "brm-order-1",
     currentPeriodEnd: null,
     createdAt: now,
@@ -100,7 +101,7 @@ function fakeEvent(
   overrides: Partial<NormalizedWebhookEvent> = {}
 ): NormalizedWebhookEvent {
   return {
-    provider: "stripe",
+    provider: "mayar",
     providerOrderId: "brm-order-1",
     transactionStatusRaw: "paid",
     outcome: "paid",
@@ -110,7 +111,7 @@ function fakeEvent(
 
 function mockProvider(parseResult: ParsedWebhookResult): BillingProvider {
   const provider: BillingProvider = {
-    name: "stripe",
+    name: "mayar",
     createCheckout: vi.fn(),
     parseWebhook: vi.fn().mockReturnValue(parseResult),
   }
@@ -134,14 +135,14 @@ describe("POST /api/webhooks/payment", () => {
   it("returns 401 when the token is invalid, without recording an event", async () => {
     mockProvider({
       isValid: false,
-      errorMessage: "Invalid Stripe signature",
+      errorMessage: "Invalid Mayar webhook token",
     })
     const res = await POST(jsonRequest({ any: "thing" }))
     expect(res.status).toBe(401)
     expect(recordPaymentEvent).not.toHaveBeenCalled()
   })
 
-  it("returns 200 with no side effects for an unknown providerOrderId", async () => {
+  it("returns 200 with no side effects for an unknown providerOrderId (shared merchant account)", async () => {
     mockProvider({ isValid: true, event: fakeEvent() })
     vi.mocked(recordPaymentEvent).mockResolvedValueOnce("inserted")
     vi.mocked(getSubscriptionByProviderRef).mockResolvedValueOnce(null)
@@ -286,7 +287,7 @@ describe("POST /api/webhooks/payment", () => {
     }
   )
 
-  it("no-ops on the 'ignored' outcome (an event type Baruma doesn't act on)", async () => {
+  it("no-ops on the 'ignored' outcome (Mayar testing event)", async () => {
     mockProvider({ isValid: true, event: fakeEvent({ outcome: "ignored" }) })
     vi.mocked(recordPaymentEvent).mockResolvedValueOnce("inserted")
     vi.mocked(getSubscriptionByProviderRef).mockResolvedValueOnce(fakeSub())
@@ -340,7 +341,7 @@ describe("POST /api/webhooks/payment", () => {
 
   describe("CRITICAL regression (C1): payment_events must never gate processing", () => {
     it("an 'ignored' webhook recorded first must not block a later genuine 'paid' webhook for the same order", async () => {
-      // (a) First delivery: an "ignored" event for order X.
+      // (a) First delivery: Mayar's own "testing" ping for order X.
       mockProvider({
         isValid: true,
         event: fakeEvent({

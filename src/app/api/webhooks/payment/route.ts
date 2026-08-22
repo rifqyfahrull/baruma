@@ -17,21 +17,28 @@ import {
 import type { Plan } from "@/types"
 
 /**
- * Stripe payment webhook. The `subscriptions` row created 'pending' by
- * checkout, keyed by `provider_ref`, is the record this activates/expires.
+ * Payment webhook — Baruma is a CHILD app, so this endpoint is NOT called by
+ * Mayar. It is called by the tampil.dev PARENT, which receives the Mayar
+ * webhook, resolves that the order belongs to Baruma, and relays a normalized
+ * event here (Baruma → tampil.dev → Mayar, in reverse). The gate is therefore
+ * the parent's shared secret, verified in `parentBillingProvider.parseWebhook`
+ * (src/lib/billing/providers/parent.ts), not a Mayar token.
  *
- * SECURITY: this endpoint is NOT protected by requireUser. Verifying the
- * Stripe webhook signature (provider.parseWebhook, HMAC over the raw body —
- * see stripe.ts) is the only gate.
+ * There is no separate `invoices` table here — the `subscriptions` row created
+ * 'pending' by checkout, keyed by `provider_ref`, IS the equivalent "invoice"
+ * record we look up.
  *
- * Fidelity notes:
- *  - Invalid signature → 401. This is the ONE failure that is NOT swallowed
- *    to 200 — a bad signature is a caller-auth problem, not a downstream
+ * SECURITY: this endpoint is NOT protected by requireUser. Verifying the parent
+ * relay signature (provider.parseWebhook) is the only gate.
+ *
+ * Failure handling (deliberate):
+ *  - Invalid signature → 401. This is the ONE failure that is NOT swallowed to
+ *    200 — a bad signature is a caller-auth problem, not a downstream
  *    side-effect problem. It's a plain `return` inside the try block below
  *    (not a `throw`), so it never reaches the catch-all.
  *  - Everything else — including a malformed JSON body — is swallowed to
- *    200 {ok:true}, which prevents Stripe's own retry storm on transient
- *    failures.
+ *    200 {ok:true}: JSON.parse throws → caught below → 200. This (plus every
+ *    other exception) prevents the parent's relay from retry-storming.
  *
  * IDEMPOTENCY (post Task 5 CRITICAL fix): `recordPaymentEvent` is an AUDIT
  * LOG ONLY — its "duplicate" result must never gate whether this handler
@@ -56,7 +63,7 @@ export async function POST(req: Request): Promise<Response> {
     const payload = JSON.parse(raw) as unknown
 
     const provider = getBillingProvider()
-    const parsed = provider.parseWebhook({ payload, headers: req.headers, rawBody: raw })
+    const parsed = provider.parseWebhook({ payload, headers: req.headers })
 
     if (!parsed.isValid || !parsed.event) {
       console.error(
@@ -88,8 +95,8 @@ export async function POST(req: Request): Promise<Response> {
 
     const sub = await getSubscriptionByProviderRef(providerOrderId)
     if (!sub) {
-      // No matching pending/active subscription (e.g. a Stripe event type
-      // Baruma doesn't act on, mapped to a synthetic order id) — silent no-op.
+      // The parent only relays orders it resolved to Baruma, but an
+      // unrecognized ref (stale/replayed relay) is still a safe silent no-op.
       return NextResponse.json({ ok: true })
     }
 
@@ -138,7 +145,7 @@ export async function POST(req: Request): Promise<Response> {
       await expireSubscription(sub.id)
       await markPaymentEventProcessed(`${providerOrderId}:${outcome}`)
     }
-    // outcome "ignored" (a Stripe event type Baruma doesn't act on) → no-op, fall through.
+    // outcome "ignored" (Mayar's own "testing" event) → no-op, fall through.
 
     return NextResponse.json({ ok: true })
   } catch (e) {

@@ -91,7 +91,7 @@ export function ProjectWorkspaceHeader({ projectId }: { projectId: string }) {
   const origin = React.useSyncExternalStore(
     React.useCallback(() => () => {}, []),
     () => window.location.origin,
-    () => "https://baruma.tampil.dev"
+    () => process.env.NEXT_PUBLIC_APP_URL || "https://proj-upgrade.emergent.host"
   );
   const cleanMode = usePreviewStore((s) => s.cleanMode);
   const openAgent = useProjectAgentUiStore((s) => s.setOpen);

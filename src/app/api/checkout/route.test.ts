@@ -2,9 +2,13 @@
 /**
  * Route tests for POST /api/checkout — auth-guarded via `requireUser()`, the
  * same helper every `/api/v1/*` route uses (it accepts the shared Supabase
- * session cookie or a Bearer JWT). The Stripe provider + repos are mocked
- * here — the real Stripe SDK call is covered by
- * src/lib/billing/providers/stripe.test.ts, not this file.
+ * session cookie or a Bearer JWT). The parent-billing provider + repos are
+ * mocked here — the real parent HTTP call is covered by
+ * src/lib/billing/providers/parent.test.ts, not this file.
+ *
+ * Baruma is a child app: checkout delegates to the tampil.dev parent, so the
+ * "payment configured" gate is PARENT_BILLING_URL + PARENT_BILLING_SECRET and
+ * the recorded subscription provider is "parent".
  */
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -77,7 +81,7 @@ function fakeProfile(overrides: Partial<ProfileRow> = {}): ProfileRow {
 }
 
 function fakeProvider(createCheckout: BillingProvider["createCheckout"]): BillingProvider {
-  return { name: "stripe", createCheckout, parseWebhook: vi.fn() }
+  return { name: "parent", createCheckout, parseWebhook: vi.fn() }
 }
 
 function jsonRequest(body: unknown = { planId: "pro" }): Request {
@@ -88,19 +92,27 @@ function jsonRequest(body: unknown = { planId: "pro" }): Request {
   })
 }
 
-const ORIGINAL_STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY
+const ENV_KEYS = [
+  "PARENT_BILLING_URL",
+  "PARENT_BILLING_SECRET",
+  "NEXT_PUBLIC_APP_URL",
+] as const
+const ORIGINAL_ENV = Object.fromEntries(
+  ENV_KEYS.map((k) => [k, process.env[k]])
+) as Record<(typeof ENV_KEYS)[number], string | undefined>
 
 describe("POST /api/checkout", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    process.env.STRIPE_SECRET_KEY = "test-key"
+    process.env.PARENT_BILLING_URL = "https://tampil.dev"
+    process.env.PARENT_BILLING_SECRET = "test-secret"
+    process.env.NEXT_PUBLIC_APP_URL = "https://app.test"
   })
 
   afterAll(() => {
-    if (ORIGINAL_STRIPE_SECRET_KEY === undefined) {
-      delete process.env.STRIPE_SECRET_KEY
-    } else {
-      process.env.STRIPE_SECRET_KEY = ORIGINAL_STRIPE_SECRET_KEY
+    for (const k of ENV_KEYS) {
+      if (ORIGINAL_ENV[k] === undefined) delete process.env[k]
+      else process.env[k] = ORIGINAL_ENV[k]
     }
   })
 
@@ -151,8 +163,9 @@ describe("POST /api/checkout", () => {
     expect(res.status).toBe(400)
   })
 
-  it("returns 503 when STRIPE_SECRET_KEY is not configured", async () => {
-    delete process.env.STRIPE_SECRET_KEY
+  it("returns 503 when the parent-billing bridge is not configured", async () => {
+    delete process.env.PARENT_BILLING_URL
+    delete process.env.PARENT_BILLING_SECRET
     vi.mocked(requireUser).mockResolvedValueOnce({
       userId: "user-checkout-test",
     })
@@ -184,7 +197,7 @@ describe("POST /api/checkout", () => {
     vi.mocked(getBillingProvider).mockReturnValueOnce(
       fakeProvider(
         vi.fn().mockRejectedValueOnce(
-          new Error("Mayar create invoice failed: boom")
+          new Error("Parent billing checkout failed (502): boom")
         )
       )
     )
@@ -192,7 +205,7 @@ describe("POST /api/checkout", () => {
     expect(res.status).toBe(502)
     const body = await res.json()
     expect(body.error).toBe("checkout_failed")
-    expect(body.message).toContain("Mayar create invoice failed")
+    expect(body.message).toContain("Parent billing checkout failed")
   })
 
   it("returns 200 + redirectUrl and records a pending subscription on success", async () => {
@@ -202,7 +215,7 @@ describe("POST /api/checkout", () => {
     vi.mocked(getPlan).mockResolvedValueOnce(fakePlan())
     vi.mocked(getProfileById).mockResolvedValueOnce(fakeProfile())
     const createCheckout = vi.fn<() => Promise<CreateCheckoutResult>>().mockResolvedValueOnce({
-      provider: "stripe",
+      provider: "parent",
       providerOrderId: "brm-user-che-123",
       amountIdr: 149000,
       checkoutUrl: "https://myr.id/pay/brm-user-che-123",
@@ -214,17 +227,23 @@ describe("POST /api/checkout", () => {
     const body = await res.json()
     expect(body.redirectUrl).toBe("https://myr.id/pay/brm-user-che-123")
 
+    // Baruma is the source of truth for its plan price/name and passes the
+    // billing-return URL through to the parent.
     expect(createCheckout).toHaveBeenCalledWith({
       userId: "user-checkout-test",
       email: "checkout@example.com",
       fullName: "Checkout User",
       plan: "pro",
       mobile: "081200000000",
+      amountIdr: 149000,
+      planName: "Pro",
+      period: "month",
+      redirectUrl: "https://app.test/app/billing",
     })
     expect(createPendingSubscription).toHaveBeenCalledWith({
       profileId: "user-checkout-test",
       planId: "pro",
-      provider: "stripe",
+      provider: "parent",
       providerRef: "brm-user-che-123",
     })
   })
@@ -238,7 +257,7 @@ describe("POST /api/checkout", () => {
       fakeProfile({ phone: null })
     )
     const createCheckout = vi.fn<() => Promise<CreateCheckoutResult>>().mockResolvedValueOnce({
-      provider: "stripe",
+      provider: "parent",
       providerOrderId: "brm-x",
       amountIdr: 149000,
       checkoutUrl: "https://myr.id/pay/x",

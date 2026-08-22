@@ -21,7 +21,7 @@ export function ssoOrigin(): string {
 /** Absolute URL on this app to return to after a brokered flow. */
 export function absoluteUrl(path: string): string {
   if (typeof window !== "undefined") return new URL(path, window.location.origin).toString()
-  const base = process.env.NEXT_PUBLIC_APP_URL || "https://baruma.tampil.dev"
+  const base = process.env.NEXT_PUBLIC_APP_URL || "https://proj-upgrade.emergent.host"
   return new URL(path, base).toString()
 }
 

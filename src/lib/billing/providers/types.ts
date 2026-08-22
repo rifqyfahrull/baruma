@@ -1,15 +1,24 @@
 /**
- * Billing-provider abstraction. The wire contract (request/response shapes,
- * webhook event shape) is provider-agnostic — `src/lib/billing/providers/stripe.ts`
- * is the current implementation (branch `emergent`: Stripe Checkout replaces
- * the Mayar invoice flow the rest of the codebase used before).
+ * Billing-provider abstraction.
  *
- * `BillingPlan` is a bare `string`, not a fixed compile-time union — Baruma
- * plan ids are arbitrary rows in the DB-driven `plans` table (see
- * src/lib/server/repo/plans.ts).
+ * Baruma is a CHILD of the tampil.dev parent app. It does NOT talk to Mayar
+ * directly — the parent owns the single shared Mayar merchant account and acts
+ * as the financial/subscription manager for every VibeCoding.ID child. The
+ * money path is therefore:
+ *
+ *     Baruma  →  tampil.dev (parent)  →  Mayar
+ *
+ * So the only provider Baruma wires is `parentBillingProvider`
+ * (src/lib/billing/providers/parent.ts): `createCheckout` calls the parent's
+ * child-billing endpoint, and `parseWebhook` verifies a relay POST the parent
+ * fans out after Mayar notifies it. See
+ * docs/superpowers/specs/2026-08-22-parent-billing-orchestration-design.md.
+ *
+ * `BillingPlan` is a bare `string` (Baruma plan ids are arbitrary rows in the
+ * DB-driven `plans` table, not a fixed compile-time union).
  */
 
-export type BillingProviderName = "stripe"
+export type BillingProviderName = "mayar" | "parent"
 export type BillingPlan = string
 export type PaymentOutcome =
   | "paid"
@@ -23,9 +32,20 @@ export interface CreateCheckoutInput {
   email?: string
   fullName?: string
   plan: BillingPlan
-  /** Caller-provided phone number (e.g. profile.phone). Not required by
-   *  Stripe Checkout but kept for provider-input parity / future providers. */
+  /** Caller-provided phone number (e.g. profile.phone). Mayar requires
+   *  `mobile`; when absent the parent falls back to an env default. */
   mobile?: string
+  /** Price in IDR — Baruma is the source of truth for its own (admin-editable)
+   *  plan prices, so it tells the parent how much to charge rather than the
+   *  parent guessing from a hardcoded catalog. */
+  amountIdr: number
+  /** Human-readable plan name for the Mayar invoice description. */
+  planName?: string
+  /** Billing period ("month" | "year") — controls the invoice label. */
+  period?: string
+  /** Where Mayar should return the user after paying. Defaults, on the parent
+   *  side, to Baruma's `/app/billing` when omitted. */
+  redirectUrl?: string
 }
 
 export interface CreateCheckoutResult {
@@ -54,10 +74,6 @@ export interface ParsedWebhookResult {
 export interface ParseWebhookInput {
   payload: unknown
   headers?: Headers
-  /** Raw request body string — Stripe's signature verification
-   *  (`stripe.webhooks.constructEvent`) hashes the exact bytes sent, so the
-   *  already-JSON.parsed `payload` above isn't enough on its own. */
-  rawBody?: string
 }
 
 export interface BillingProvider {

@@ -210,7 +210,7 @@ export default function BillingPage() {
       </div>
 
       <p className="text-center text-xs text-muted-foreground">
-        Pembayaran diproses via Stripe. Langganan aktif 1 periode, perpanjang
+        Pembayaran diproses via Mayar. Langganan aktif 1 periode, perpanjang
         manual saat mendekati atau setelah berakhir.
       </p>
     </div>
