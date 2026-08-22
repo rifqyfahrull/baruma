@@ -10,6 +10,7 @@ import {
 
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/sonner"
+import { ConfirmDialogProvider } from "@/components/ui/confirm-dialog"
 import { PhantomSessionBootstrap } from "@/components/auth/phantom-session-bootstrap"
 
 function makeQueryClient() {
@@ -45,7 +46,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
     >
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
+        <TooltipProvider delayDuration={200}>
+          <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
+        </TooltipProvider>
         <PhantomSessionBootstrap />
         <Toaster richColors closeButton position="top-right" />
       </QueryClientProvider>

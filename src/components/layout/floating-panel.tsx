@@ -9,6 +9,16 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import {
+  ACTIVE_SOFT_CLASS,
+  CHROME_SURFACE_CLASS,
+} from "@/components/chrome/floating-bar"
 import { cn } from "@/lib/utils"
 
 type FloatingPanelProps = {
@@ -63,7 +73,7 @@ export function PanelTab({
         // min-w-0 + truncate: the header shares its width with the Simpan control,
         // so tabs must shrink gracefully instead of overflowing onto it.
         "flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors",
-        active ? "bg-primary/10 text-foreground" : "text-muted-foreground hover:bg-muted"
+        active ? ACTIVE_SOFT_CLASS : "text-muted-foreground hover:bg-muted"
       )}
     >
       {Icon && <Icon className="size-3.5 shrink-0" />}
@@ -154,7 +164,11 @@ export function FloatingPanel({
           }
         }}
         className={cn(
-          "absolute top-4 z-30 hidden items-center gap-2 rounded-full border bg-card/95 px-3 py-2 text-sm shadow-lg backdrop-blur lg:flex",
+          // CHROME_SURFACE_CLASS untuk border/bg/backdrop bersama; radius
+          // pil SENGAJA tetap rounded-full (bentuk pil, bukan kartu) dan
+          // shadow tetap -lg — hanya aside (di bawah) naik ke rounded-xl.
+          CHROME_SURFACE_CLASS,
+          "absolute top-4 z-30 hidden items-center gap-2 rounded-full px-3 py-2 text-sm shadow-lg backdrop-blur lg:flex",
           side === "left" ? "left-4" : "right-4"
         )}
       >
@@ -174,7 +188,11 @@ export function FloatingPanel({
         // would let the panel grow past the screen. Capping height here keeps
         // the panel on-screen and forces its own body to scroll instead of the
         // page.
-        "absolute inset-y-4 z-30 hidden max-h-[calc(100svh-2rem)] flex-col overflow-hidden rounded-lg border bg-card/95 shadow-2xl backdrop-blur lg:flex",
+        // CHROME_SURFACE_CLASS naikkan radius rounded-lg → rounded-xl (satu-
+        // satunya delta visual); shadow tetap -2xl (lebih tegas dari default
+        // -sm karena panel ini mengambang di atas kanvas, bukan sekadar popover).
+        CHROME_SURFACE_CLASS,
+        "absolute inset-y-4 z-30 hidden max-h-[calc(100svh-2rem)] flex-col overflow-hidden shadow-2xl lg:flex",
         side === "left" ? "left-4" : "right-4",
         widthClass ?? "w-[24rem]"
       )}
@@ -210,5 +228,45 @@ export function FloatingPanel({
         {children}
       </div>
     </aside>
+  )
+}
+
+export type PanelDrawerProps = {
+  title: string
+  triggerLabel: string
+  triggerIcon?: React.ReactNode
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  children: React.ReactNode
+}
+
+/**
+ * Satu drawer mobile untuk versi kecil dari `FloatingPanel` (properti 2D/3D
+ * di layar sempit, di mana panel floating fixed-width tidak muat). SATU
+ * idiom judul + body scroll — menggantikan drawer ad-hoc yang sebelumnya
+ * ditulis ulang berbeda-beda per halaman.
+ */
+export function PanelDrawer({
+  title,
+  triggerLabel,
+  triggerIcon,
+  open,
+  onOpenChange,
+  children,
+}: PanelDrawerProps) {
+  return (
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerTrigger asChild>
+        <Button type="button" size="icon" variant="outline" aria-label={triggerLabel}>
+          {triggerIcon}
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent className="data-[vaul-drawer-direction=bottom]:max-h-[82svh]">
+        <DrawerTitle className="px-4 pt-4 text-sm font-semibold">
+          {title}
+        </DrawerTitle>
+        <div className="min-h-0 overflow-y-auto p-3">{children}</div>
+      </DrawerContent>
+    </Drawer>
   )
 }

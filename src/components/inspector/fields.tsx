@@ -69,6 +69,24 @@ export function Field({
   );
 }
 
+/** Kartu pengelompok field — satu idiom kontainer di dalam panel inspector
+ * (mis. mengelompokkan field material/geometry per entitas), menggantikan
+ * `<div className="space-y-3 rounded-lg border ...">` yang ditulis ulang
+ * lokal di tiap file inspector. */
+export function InspectorCard({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={cn("space-y-3 rounded-lg border bg-background p-3", className)}>
+      {children}
+    </div>
+  );
+}
+
 /**
  * Input angka dengan kontrak commit terpadu: blur + Enter (BUKAN per-keystroke
  * — satu entri undo per edit, tak mengetik-ulang state saat mengetik).
