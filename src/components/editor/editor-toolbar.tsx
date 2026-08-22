@@ -1,31 +1,35 @@
 "use client";
 
+/**
+ * Rail 2D — direstrukturisasi total di Fase 3 (unifikasi UI editor, lihat
+ * plan `dynamic-enchanting-alpaca.md` §Fase 3): dari ~25 tombol ikon tanpa
+ * label dalam satu kolom (meluber di 720p, e2e terpaksa pakai viewport
+ * 1280×1400) menjadi 11 tombol + 2 label grup di atas primitif Fase 1
+ * (`FloatingBar`/`ToolButton`/`ToolbarMore`, satu spec surface & state
+ * aktif). Tipe yang dulu punya dropdown/tombol sendiri (ruang, listrik,
+ * air, elemen eksterior, template fasad) sekarang hidup di dalam palette
+ * searchable (`ui/command`) di balik SATU tombol kategori — pilihan
+ * men-set `pendingPlacement {tool, variant}` di store (menggantikan 5
+ * field `pending*Type` terpisah) + tampilkan chip kecil di rail sampai
+ * ditempatkan/dibatalkan.
+ */
+
 import * as React from "react";
 import {
   AppWindow,
+  ArrowDownToDot,
   DoorOpen,
-  Droplet,
   Fence,
   Hand,
-  Eye,
-  House,
-  Magnet,
-  Maximize,
-  MoreVertical,
   MousePointer2,
-  PanelsTopLeft,
   Plug,
   Redo2,
-  Ruler,
+  Settings2,
   SquarePlus,
-  ArrowDownToDot,
-  Trash2,
   Undo2,
-  ZoomIn,
-  ZoomOut,
+  X,
 } from "lucide-react";
 
-import type { EditorTool } from "@/types";
 import type {
   ElectricalPointType,
   ExteriorElementKind,
@@ -35,8 +39,8 @@ import type {
 } from "@/types";
 import { useEditorStore } from "@/stores/editor-store";
 import { useProjectCapabilities } from "@/hooks/use-project-capabilities";
-import { useNarrowViewport } from "@/hooks/use-narrow-viewport";
-import { useToolbarOverflow } from "@/hooks/use-toolbar-overflow";
+import { useToolbarCompact } from "@/hooks/use-toolbar-compact";
+import { useUnifiedUndo } from "@/hooks/use-unified-undo";
 import {
   ELECTRICAL_POINT_TYPES,
   ROOM_TYPES,
@@ -44,36 +48,36 @@ import {
 } from "@/lib/constants";
 import { track } from "@/lib/analytics";
 import { LENGTH_UNITS, type LengthUnit } from "@/lib/format";
-import { cn } from "@/lib/utils";
 import { FACADE_COMPOSER_TEMPLATES } from "@/lib/exterior/facade-templates";
-import { EDITOR_EXTERIOR_KIND_LABELS } from "@/lib/exterior/labels";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { EXTERIOR_KIND_LABELS } from "@/lib/exterior/labels";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  FloatingBar,
+  FloatingBarSeparator,
+} from "@/components/chrome/floating-bar";
+import { ToolButton } from "@/components/chrome/tool-button";
+import { ToolbarMore } from "@/components/chrome/toolbar-more";
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-const TOOLS: { id: EditorTool; icon: typeof Hand; label: string }[] = [
-  { id: "select", icon: MousePointer2, label: "Pilih / geser (V)" },
-  { id: "pan", icon: Hand, label: "Geser kanvas (Space)" },
-  { id: "door", icon: DoorOpen, label: "Tambah pintu" },
-  { id: "window", icon: AppWindow, label: "Tambah jendela" },
-];
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 const ROOF_ZONE_LABELS: Record<RoofZone["type"], string> = {
   datar: "Dak datar",
@@ -82,692 +86,565 @@ const ROOF_ZONE_LABELS: Record<RoofZone["type"], string> = {
   miring: "Atap miring",
 };
 
-function ToolButton({
-  active,
+/** Pengelompokan 27 kind elemen eksterior (`EXTERIOR_KIND_LABELS`) untuk
+ *  palette searchable — kategori murni UI, tidak mengubah model data. */
+const EXTERIOR_ELEMENT_GROUPS: {
+  heading: string;
+  kinds: ExteriorElementKind[];
+}[] = [
+  {
+    heading: "Dinding & pagar",
+    kinds: [
+      "boundary_wall",
+      "fence",
+      "sliding_gate",
+      "swing_gate",
+      "pedestrian_gate",
+      "solid_wall",
+    ],
+  },
+  {
+    heading: "Struktur",
+    kinds: [
+      "column",
+      "chimney",
+      "beam",
+      "slab",
+      "portal_frame",
+      "gable_frame",
+      "exterior_stair",
+    ],
+  },
+  {
+    heading: "Kanopi & panel",
+    kinds: ["facade_panel", "canopy", "overhang_slab", "pergola", "planter"],
+  },
+  {
+    heading: "Permukaan",
+    kinds: ["driveway", "walkway", "terrace_surface", "garden_bed"],
+  },
+  {
+    heading: "Aset & vegetasi",
+    kinds: ["asset", "plant", "tree", "exterior_decor", "vehicle"],
+  },
+];
+
+/** Label grup kecil (10px, uppercase) di dalam rail vertikal — lokal di
+ *  toolbar ini (bukan di `floating-bar.tsx`) supaya tidak bentrok dgn agen
+ *  paralel Fase 4 yang juga mungkin menambahkannya untuk rail 3D. */
+function GroupLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="px-1.5 pt-1 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+      {children}
+    </div>
+  );
+}
+
+/** Baris toggle di dalam popover — idiom yang sama dengan `view-toolbar.tsx`
+ *  (dibaca sebagai referensi, tidak diimpor — tetap dua permukaan berdiri
+ *  sendiri sampai unifikasi rail 3D di Fase 4). */
+function ToggleLine({
   label,
-  onClick,
-  disabled,
-  children,
+  checked,
+  onChange,
 }: {
-  active?: boolean;
   label: string;
-  onClick: () => void;
-  disabled?: boolean;
-  children: React.ReactNode;
+  checked: boolean;
+  onChange: (v: boolean) => void;
 }) {
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant={active ? "default" : "ghost"}
-          size="icon"
-          onClick={onClick}
-          disabled={disabled}
-          aria-label={label}
-          aria-pressed={active}
-        >
-          {children}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="right">{label}</TooltipContent>
-    </Tooltip>
+    <label className="flex items-center justify-between gap-3 py-1 text-xs">
+      <span>{label}</span>
+      <Switch checked={checked} onCheckedChange={onChange} />
+    </label>
+  );
+}
+
+/** Chip kecil di bawah tombol kategori aktif, menampilkan label varian
+ *  `pendingPlacement` yang sedang menunggu ditempatkan di kanvas —
+ *  menggantikan caption teks mengambang lama. */
+function PendingChip({
+  label,
+  onClear,
+}: {
+  label: string;
+  onClear: () => void;
+}) {
+  return (
+    <div className="flex w-full items-center justify-between gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] leading-tight text-foreground">
+      <span className="truncate">{label}</span>
+      <button
+        type="button"
+        aria-label="Batalkan pilihan penempatan"
+        onClick={onClear}
+        className="shrink-0 rounded-sm text-muted-foreground hover:text-foreground"
+      >
+        <X className="size-2.5" />
+      </button>
+    </div>
   );
 }
 
 export function EditorToolbar() {
   const activeTool = useEditorStore((s) => s.activeTool);
   const setTool = useEditorStore((s) => s.setTool);
-  const deleteSelected = useEditorStore((s) => s.deleteSelected);
-  const selectedId = useEditorStore((s) => s.selectedObjectId);
-  const undo = useEditorStore((s) => s.undo);
-  const redo = useEditorStore((s) => s.redo);
-  const canUndo = useEditorStore((s) => s.past.length > 0);
-  const canRedo = useEditorStore((s) => s.future.length > 0);
-  const zoomBy = useEditorStore((s) => s.zoomBy);
-  const resetView = useEditorStore((s) => s.resetView);
+  const pendingPlacement = useEditorStore((s) => s.pendingPlacement);
+  const setPendingPlacement = useEditorStore((s) => s.setPendingPlacement);
   const snapEnabled = useEditorStore((s) => s.snapEnabled);
   const toggleSnap = useEditorStore((s) => s.toggleSnap);
   const showDimensions = useEditorStore((s) => s.showDimensions);
   const toggleDimensions = useEditorStore((s) => s.toggleDimensions);
+  const dimensionUnit = useEditorStore((s) => s.dimensionUnit);
+  const setDimensionUnit = useEditorStore((s) => s.setDimensionUnit);
+  const showCrossFloorRooms = useEditorStore((s) => s.showCrossFloorRooms);
+  const setShowCrossFloorRooms = useEditorStore(
+    (s) => s.setShowCrossFloorRooms,
+  );
   const showHiddenExteriorElements = useEditorStore(
-    (s) => s.showHiddenExteriorElements
+    (s) => s.showHiddenExteriorElements,
   );
   const setShowHiddenExteriorElements = useEditorStore(
-    (s) => s.setShowHiddenExteriorElements
+    (s) => s.setShowHiddenExteriorElements,
   );
   const showRoofZones = useEditorStore((s) => s.showRoofZones);
   const setShowRoofZones = useEditorStore((s) => s.setShowRoofZones);
   const showHiddenRoofZones = useEditorStore((s) => s.showHiddenRoofZones);
   const setShowHiddenRoofZones = useEditorStore(
-    (s) => s.setShowHiddenRoofZones
+    (s) => s.setShowHiddenRoofZones,
   );
-  const dimensionUnit = useEditorStore((s) => s.dimensionUnit);
-  const setDimensionUnit = useEditorStore((s) => s.setDimensionUnit);
-  const setPendingRoomType = useEditorStore((s) => s.setPendingRoomType);
-  const adding = useEditorStore((s) => s.activeTool === "room");
-  const pendingElectricalType = useEditorStore((s) => s.pendingElectricalType);
-  const setPendingElectricalType = useEditorStore(
-    (s) => s.setPendingElectricalType,
-  );
-  const pendingWaterType = useEditorStore((s) => s.pendingWaterType);
-  const setPendingWaterType = useEditorStore((s) => s.setPendingWaterType);
-  const pendingRoofZoneType = useEditorStore((s) => s.pendingRoofZoneType);
-  const setPendingRoofZoneType = useEditorStore(
-    (s) => s.setPendingRoofZoneType,
-  );
-  const pendingExteriorKind = useEditorStore((s) => s.pendingExteriorKind);
-  const setPendingExteriorKind = useEditorStore(
-    (s) => s.setPendingExteriorKind,
-  );
-  const addingExterior = useEditorStore((s) => s.activeTool === "exterior");
-  const showCrossFloorRooms = useEditorStore((s) => s.showCrossFloorRooms);
-  const setShowCrossFloorRooms = useEditorStore((s) => s.setShowCrossFloorRooms);
-  const addingRoofZone = useEditorStore((s) => s.activeTool === "roofZone");
   const applyExteriorTemplate = useEditorStore((s) => s.applyExteriorTemplate);
   // Gating rollout §21: hanya creation UI yang disembunyikan saat flag off —
   // elemen existing tetap dirender/di-edit (rollback tidak menghapus data).
   const projectId = useEditorStore((s) => s.layout?.projectId);
   const capabilities = useProjectCapabilities(projectId);
+  const confirm = useConfirm();
 
-  // Table/mobile (<1024px) → alat sekunder menciut ke tombol More (⋯). Sinyal
-  // kedua — independen dari lebar — mengukur tinggi toolbar yang SEBENARNYA
-  // dirender: di desktop lebar tapi window pendek (atau setelah toolbar
-  // bertambah panjang), lebar saja tidak pernah memicu compact meski konten
-  // meluber ke luar viewport.
-  const narrow = useNarrowViewport();
+  // Undo/redo terpadu — di 2D stack interior nyaris tak relevan (tak ada
+  // furniture/light di sini), tapi memakai hook yang sama menjaga paritas
+  // dgn rail 3D & satu sumber kebenaran routing (lihat use-unified-undo.ts).
+  const { undo, redo, canUndo, canRedo } = useUnifiedUndo();
+
+  const [roomOpen, setRoomOpen] = React.useState(false);
+  const [utilityOpen, setUtilityOpen] = React.useState(false);
+  const [exteriorOpen, setExteriorOpen] = React.useState(false);
+
   const toolbarRef = React.useRef<HTMLDivElement>(null);
-  const overflowsHeight = useToolbarOverflow(toolbarRef, narrow);
-  const compact = narrow || overflowsHeight;
+  const compact = useToolbarCompact(toolbarRef);
 
-  // ── Alat primer (selalu inline) ────────────────────────────────────────
-  const primaryControls = (
+  const clearPending = () => setPendingPlacement(null);
+
+  // ── Grup "Bangun" + "Tampilan" — SATU fragmen dipakai inline (desktop)
+  // ATAU di dalam ToolbarMore (compact/tablet), tidak pernah diduplikasi.
+  // Undo/Redo di luar fragmen ini (selalu inline, lihat return di bawah).
+  const secondaryFragment = (
     <>
-      {TOOLS.map((t) => (
-        <ToolButton
-          key={t.id}
-          active={activeTool === t.id}
-          label={t.label}
-          onClick={() => setTool(t.id)}
-        >
-          <t.icon className="size-4" />
-        </ToolButton>
-      ))}
+      <FloatingBarSeparator />
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant={adding ? "default" : "ghost"}
-            size="icon"
-            aria-label="Tambah ruang"
-            title="Tambah ruang"
+      <ToolButton
+        label="Pilih / geser (V)"
+        pressed={activeTool === "select"}
+        exclusive
+        onClick={() => setTool("select")}
+      >
+        <MousePointer2 className="size-4" />
+      </ToolButton>
+      <ToolButton
+        label="Geser kanvas (Space)"
+        pressed={activeTool === "pan"}
+        exclusive
+        onClick={() => setTool("pan")}
+      >
+        <Hand className="size-4" />
+      </ToolButton>
+
+      <GroupLabel>Bangun</GroupLabel>
+
+      <Popover open={roomOpen} onOpenChange={setRoomOpen}>
+        <PopoverTrigger asChild>
+          <ToolButton
+            label="Tambah ruang"
+            pressed={activeTool === "room"}
+            exclusive
           >
             <SquarePlus className="size-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          side="right"
-          align="start"
-          className="max-h-72 overflow-y-auto"
-        >
-          {(Object.keys(ROOM_TYPES) as RoomType[]).map((t) => (
-            <DropdownMenuItem
-              key={t}
-              onClick={() => {
-                setTool("room");
-                setPendingRoomType(t);
-              }}
-            >
-              {ROOM_TYPES[t].label}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+          </ToolButton>
+        </PopoverTrigger>
+        <PopoverContent side="right" align="start" className="w-64 p-0">
+          <Command>
+            <CommandInput placeholder="Cari tipe ruang…" />
+            <CommandList>
+              <CommandEmpty>Tidak ada hasil.</CommandEmpty>
+              <CommandGroup>
+                {(Object.keys(ROOM_TYPES) as RoomType[]).map((t) => (
+                  <CommandItem
+                    key={t}
+                    value={ROOM_TYPES[t].label}
+                    onSelect={() => {
+                      setPendingPlacement({ tool: "room", variant: t });
+                      setTool("room");
+                      setRoomOpen(false);
+                    }}
+                  >
+                    {ROOM_TYPES[t].label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {pendingPlacement &&
+        pendingPlacement.tool === "room" &&
+        pendingPlacement.variant && (
+          <PendingChip
+            label={ROOM_TYPES[pendingPlacement.variant as RoomType].label}
+            onClear={clearPending}
+          />
+        )}
 
       <ToolButton
-        active={activeTool === "electrical"}
-        label="Titik listrik"
-        onClick={() => setTool("electrical")}
+        label="Tambah pintu"
+        pressed={activeTool === "door"}
+        exclusive
+        onClick={() => setTool("door")}
       >
-        <Plug className="size-4" />
+        <DoorOpen className="size-4" />
       </ToolButton>
-
-      {activeTool === "electrical" && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="text-[10px] font-semibold uppercase"
-              aria-label="Pilih tipe titik listrik"
-            >
-              {ELECTRICAL_POINT_TYPES[
-                pendingElectricalType ?? "stopkontak"
-              ].slice(0, 3)}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            side="right"
-            align="start"
-            className="max-h-72 overflow-y-auto"
-          >
-            <DropdownMenuRadioGroup
-              value={pendingElectricalType ?? "stopkontak"}
-              onValueChange={(v) =>
-                setPendingElectricalType(v as ElectricalPointType)
-              }
-            >
-              {(
-                Object.keys(ELECTRICAL_POINT_TYPES) as ElectricalPointType[]
-              ).map((t) => (
-                <DropdownMenuRadioItem key={t} value={t}>
-                  {ELECTRICAL_POINT_TYPES[t]}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-
       <ToolButton
-        active={activeTool === "water"}
-        label="Titik air"
-        onClick={() => setTool("water")}
+        label="Tambah jendela"
+        pressed={activeTool === "window"}
+        exclusive
+        onClick={() => setTool("window")}
       >
-        <Droplet className="size-4" />
+        <AppWindow className="size-4" />
       </ToolButton>
-
       <ToolButton
-        active={showCrossFloorRooms}
-        label={`Tampilkan lantai lain: ${showCrossFloorRooms ? "aktif" : "mati"}`}
-        onClick={() => setShowCrossFloorRooms(!showCrossFloorRooms)}
-      >
-        <Eye className="size-4" />
-      </ToolButton>
-
-      {activeTool === "water" && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="text-[10px] font-semibold uppercase"
-              aria-label="Pilih tipe titik air"
-            >
-              {WATER_POINT_TYPES[pendingWaterType ?? "kran"].slice(0, 3)}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            side="right"
-            align="start"
-            className="max-h-72 overflow-y-auto"
-          >
-            <DropdownMenuRadioGroup
-              value={pendingWaterType ?? "kran"}
-              onValueChange={(v) => setPendingWaterType(v as WaterPointType)}
-            >
-              {(Object.keys(WATER_POINT_TYPES) as WaterPointType[]).map((t) => (
-                <DropdownMenuRadioItem key={t} value={t}>
-                  {WATER_POINT_TYPES[t]}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-
-      <ToolButton
-        active={activeTool === "stair"}
         label="Tambah tangga"
+        pressed={activeTool === "stair"}
+        exclusive
         onClick={() => setTool("stair")}
       >
         <ArrowDownToDot className="size-4" />
       </ToolButton>
 
-      <Separator className="my-1 w-6" />
-
-      <ToolButton
-        label="Hapus (Del)"
-        onClick={deleteSelected}
-        disabled={!selectedId}
-      >
-        <Trash2 className="size-4" />
-      </ToolButton>
-
-      <Separator className="my-1 w-6" />
-
-      <ToolButton label="Undo (Ctrl+Z)" onClick={undo} disabled={!canUndo}>
-        <Undo2 className="size-4" />
-      </ToolButton>
-      <ToolButton label="Redo (Ctrl+Y)" onClick={redo} disabled={!canRedo}>
-        <Redo2 className="size-4" />
-      </ToolButton>
-
-      <Separator className="my-1 w-6" />
-
-      <ToolButton label="Perbesar" onClick={() => zoomBy(1.2)}>
-        <ZoomIn className="size-4" />
-      </ToolButton>
-      <ToolButton label="Perkecil" onClick={() => zoomBy(1 / 1.2)}>
-        <ZoomOut className="size-4" />
-      </ToolButton>
-      <ToolButton label="Pas ke layar" onClick={resetView}>
-        <Maximize className="size-4" />
-      </ToolButton>
-
-      {capabilities.roof_zones_v1 &&
-        activeTool === "roofZone" &&
-        pendingRoofZoneType && (
-          <div className="text-center text-[10px] leading-tight text-muted-foreground">
-            {ROOF_ZONE_LABELS[pendingRoofZoneType]}
-          </div>
-        )}
-
-      {capabilities.exterior_elements_v1 &&
-        activeTool === "exterior" &&
-        pendingExteriorKind && (
-          <div className="text-[10px] text-center leading-tight text-muted-foreground">
-            {EDITOR_EXTERIOR_KIND_LABELS[pendingExteriorKind]}
-          </div>
-        )}
-    </>
-  );
-
-  // ── Alat sekunder — inline di layar lebar, atau di dalam dropdown More ──
-  const secondaryInline = (
-    <>
-      {(capabilities.roof_zones_v1 || capabilities.exterior_elements_v1) && (
-        <Separator className="my-1 w-6" />
-      )}
-
-      {capabilities.roof_zones_v1 && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant={addingRoofZone ? "default" : "ghost"}
-                  size="icon"
-                  aria-label="Tambah zona atap"
-                >
-                  <House className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="start">
-                {(Object.keys(ROOF_ZONE_LABELS) as RoofZone["type"][]).map((t) => (
-                  <DropdownMenuItem
+      <Popover open={utilityOpen} onOpenChange={setUtilityOpen}>
+        <PopoverTrigger asChild>
+          <ToolButton
+            label="Utilitas (listrik & air)"
+            pressed={activeTool === "electrical" || activeTool === "water"}
+            exclusive
+          >
+            <Plug className="size-4" />
+          </ToolButton>
+        </PopoverTrigger>
+        <PopoverContent side="right" align="start" className="w-64 p-0">
+          <Command>
+            <CommandInput placeholder="Cari titik listrik/air…" />
+            <CommandList>
+              <CommandEmpty>Tidak ada hasil.</CommandEmpty>
+              <CommandGroup heading="Listrik">
+                {(
+                  Object.keys(ELECTRICAL_POINT_TYPES) as ElectricalPointType[]
+                ).map((t) => (
+                  <CommandItem
                     key={t}
-                    onClick={() => {
-                      setTool("roofZone");
-                      setPendingRoofZoneType(t);
+                    value={ELECTRICAL_POINT_TYPES[t]}
+                    onSelect={() => {
+                      setPendingPlacement({ tool: "electrical", variant: t });
+                      setTool("electrical");
+                      setUtilityOpen(false);
                     }}
                   >
-                    {ROOF_ZONE_LABELS[t]}
-                  </DropdownMenuItem>
+                    {ELECTRICAL_POINT_TYPES[t]}
+                  </CommandItem>
                 ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </TooltipTrigger>
-          <TooltipContent side="right">Tambah zona atap</TooltipContent>
-        </Tooltip>
-      )}
-
-      {capabilities.roof_zones_v1 && (
-        <>
-          <ToolButton
-            active={showRoofZones}
-            label={`Tampilkan area atap: ${showRoofZones ? "aktif" : "mati"}`}
-            onClick={() => setShowRoofZones(!showRoofZones)}
-          >
-            <House
-              className={cn("size-4", showRoofZones && "text-primary-foreground")}
-            />
-          </ToolButton>
-
-          <ToolButton
-            active={showHiddenRoofZones}
-            label={`Tampilkan zona atap tersembunyi: ${showHiddenRoofZones ? "aktif" : "mati"}`}
-            onClick={() => setShowHiddenRoofZones(!showHiddenRoofZones)}
-          >
-            <Eye
-              className={cn("size-4", showHiddenRoofZones && "text-primary-foreground")}
-            />
-          </ToolButton>
-        </>
-      )}
-
-      {capabilities.exterior_elements_v1 && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant={addingExterior ? "default" : "ghost"}
-                  size="icon"
-                  aria-label="Tambah elemen eksterior"
-                >
-                  <Fence className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side="right"
-                align="start"
-                className="max-h-72 overflow-y-auto"
-              >
-                {(Object.keys(EDITOR_EXTERIOR_KIND_LABELS) as ExteriorElementKind[]).map(
-                  (k) => (
-                    <DropdownMenuItem
-                      key={k}
-                      onClick={() => {
-                        setTool("exterior");
-                        setPendingExteriorKind(k);
+              </CommandGroup>
+              <CommandGroup heading="Air">
+                {(Object.keys(WATER_POINT_TYPES) as WaterPointType[]).map(
+                  (t) => (
+                    <CommandItem
+                      key={t}
+                      value={WATER_POINT_TYPES[t]}
+                      onSelect={() => {
+                        setPendingPlacement({ tool: "water", variant: t });
+                        setTool("water");
+                        setUtilityOpen(false);
                       }}
                     >
-                      {EDITOR_EXTERIOR_KIND_LABELS[k]}
-                    </DropdownMenuItem>
+                      {WATER_POINT_TYPES[t]}
+                    </CommandItem>
                   ),
                 )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </TooltipTrigger>
-          <TooltipContent side="right">Tambah elemen eksterior</TooltipContent>
-        </Tooltip>
-      )}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {pendingPlacement &&
+        pendingPlacement.tool === "electrical" &&
+        pendingPlacement.variant && (
+          <PendingChip
+            label={
+              ELECTRICAL_POINT_TYPES[
+                pendingPlacement.variant as ElectricalPointType
+              ]
+            }
+            onClear={clearPending}
+          />
+        )}
+      {pendingPlacement &&
+        pendingPlacement.tool === "water" &&
+        pendingPlacement.variant && (
+          <PendingChip
+            label={
+              WATER_POINT_TYPES[pendingPlacement.variant as WaterPointType]
+            }
+            onClear={clearPending}
+          />
+        )}
 
-      {capabilities.exterior_elements_v1 && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Pilih template tampak depan"
-                >
-                  <PanelsTopLeft className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="start" className="w-72">
-                {FACADE_COMPOSER_TEMPLATES.map((template) => (
-                  <DropdownMenuItem
-                    key={template.id}
-                    className="flex-col items-start gap-1"
-                    onClick={() => {
-                      const accepted = window.confirm(
-                        `Terapkan ${template.label}? Komposisi template sebelumnya dan material fasad akan diganti. Elemen manual tetap dipertahankan dan perubahan dapat di-Undo.`,
-                      );
-                      if (accepted) {
-                        applyExteriorTemplate(template.id);
-                        track("exterior_template_applied", {
-                          template_id: template.id,
-                          source: "editor_toolbar",
-                        });
-                      }
-                    }}
-                  >
-                    <span className="font-medium">{template.label}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {template.description}
-                    </span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </TooltipTrigger>
-          <TooltipContent side="right">Pilih template tampak depan</TooltipContent>
-        </Tooltip>
-      )}
-
-      <Separator className="my-1 w-6" />
-
-      <ToolButton
-        active={snapEnabled}
-        label={`Snap grid: ${snapEnabled ? "aktif" : "mati"}`}
-        onClick={toggleSnap}
-      >
-        <Magnet
-          className={cn("size-4", snapEnabled && "text-primary-foreground")}
-        />
-      </ToolButton>
-
-      <Separator className="my-1 w-6" />
-
-      <ToolButton
-        active={showDimensions}
-        label={`Dimensi: ${showDimensions ? "aktif" : "mati"}`}
-        onClick={toggleDimensions}
-      >
-        <Ruler
-          className={cn("size-4", showDimensions && "text-primary-foreground")}
-        />
-      </ToolButton>
-
-      <Separator className="my-1 w-6" />
-
-      <ToolButton
-        active={showHiddenExteriorElements}
-        label={`Tampilkan tersembunyi: ${showHiddenExteriorElements ? "aktif" : "mati"}`}
-        onClick={() => setShowHiddenExteriorElements(!showHiddenExteriorElements)}
-      >
-        <Eye
-          className={cn("size-4", showHiddenExteriorElements && "text-primary-foreground")}
-        />
-      </ToolButton>
-
-      {showDimensions && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="text-[11px] font-semibold uppercase"
-              aria-label={`Satuan dimensi: ${dimensionUnit}`}
-            >
-              {dimensionUnit}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="right" align="end">
-            <DropdownMenuRadioGroup
-              value={dimensionUnit}
-              onValueChange={(v) => setDimensionUnit(v as LengthUnit)}
-            >
-              {LENGTH_UNITS.map((u) => (
-                <DropdownMenuRadioItem key={u.id} value={u.id}>
-                  {u.name} ({u.label})
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-    </>
-  );
-
-  // Versi compact: item dropdown "More" + submenu untuk picker yang
-  // memilih beberapa opsi (Radix: DropdownMenu bersarang tak boleh menjadi
-  // item di dalam menu lain — pakai DropdownMenuSub yang benar).
-  const secondaryMore = (
-    <>
-      {capabilities.roof_zones_v1 && (
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <House className="size-4" /> Tambah zona atap
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent className="max-h-72 overflow-y-auto">
-            {(Object.keys(ROOF_ZONE_LABELS) as RoofZone["type"][]).map((t) => (
-              <DropdownMenuItem
-                key={t}
-                onClick={() => {
-                  setTool("roofZone");
-                  setPendingRoofZoneType(t);
-                }}
-              >
-                {ROOF_ZONE_LABELS[t]}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
-      )}
-
-      {capabilities.exterior_elements_v1 && (
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <Fence className="size-4" /> Tambah elemen eksterior
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent className="max-h-72 overflow-y-auto">
-            {(Object.keys(EDITOR_EXTERIOR_KIND_LABELS) as ExteriorElementKind[]).map(
-              (k) => (
-                <DropdownMenuItem
-                  key={k}
-                  onClick={() => {
-                    setTool("exterior");
-                    setPendingExteriorKind(k);
-                  }}
-                >
-                  {EDITOR_EXTERIOR_KIND_LABELS[k]}
-                </DropdownMenuItem>
-              ),
-            )}
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
-      )}
-
-      {capabilities.exterior_elements_v1 && (
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <PanelsTopLeft className="size-4" /> Template tampak depan
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent className="w-64">
-            {FACADE_COMPOSER_TEMPLATES.map((template) => (
-              <DropdownMenuItem
-                key={template.id}
-                className="flex-col items-start gap-1"
-                onClick={() => {
-                  const accepted = window.confirm(
-                    `Terapkan ${template.label}? Komposisi template sebelumnya dan material fasad akan diganti.`,
-                  );
-                  if (accepted) {
-                    applyExteriorTemplate(template.id);
-                    track("exterior_template_applied", {
-                      template_id: template.id,
-                      source: "editor_toolbar_more",
-                    });
-                  }
-                }}
-              >
-                <span className="font-medium">{template.label}</span>
-                <span className="text-xs text-muted-foreground">
-                  {template.description}
-                </span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
-      )}
-
-      {capabilities.exterior_elements_v1 && (
-        <DropdownMenuSeparator />
-      )}
-
-      <DropdownMenuCheckboxItem
-        checked={snapEnabled}
-        onCheckedChange={() => toggleSnap()}
-      >
-        Snap grid {snapEnabled ? "aktif" : "mati"}
-      </DropdownMenuCheckboxItem>
-
-      <DropdownMenuCheckboxItem
-        checked={showDimensions}
-        onCheckedChange={() => toggleDimensions()}
-      >
-        Dimensi {showDimensions ? "aktif" : "mati"}
-      </DropdownMenuCheckboxItem>
-
-      <DropdownMenuCheckboxItem
-        checked={showHiddenExteriorElements}
-        onCheckedChange={() =>
-          setShowHiddenExteriorElements(!showHiddenExteriorElements)
-        }
-      >
-        Tampilkan tersembunyi
-      </DropdownMenuCheckboxItem>
-
-      {capabilities.roof_zones_v1 && (
+      {(capabilities.roof_zones_v1 || capabilities.exterior_elements_v1) && (
         <>
-          <DropdownMenuCheckboxItem
-            checked={showRoofZones}
-            onCheckedChange={() => setShowRoofZones(!showRoofZones)}
-          >
-            Tampilkan area atap
-          </DropdownMenuCheckboxItem>
-          <DropdownMenuCheckboxItem
-            checked={showHiddenRoofZones}
-            onCheckedChange={() => setShowHiddenRoofZones(!showHiddenRoofZones)}
-          >
-            Tampilkan zona atap tersembunyi
-          </DropdownMenuCheckboxItem>
+          <Popover open={exteriorOpen} onOpenChange={setExteriorOpen}>
+            <PopoverTrigger asChild>
+              <ToolButton
+                label="Eksterior"
+                pressed={
+                  activeTool === "exterior" || activeTool === "roofZone"
+                }
+                exclusive
+              >
+                <Fence className="size-4" />
+              </ToolButton>
+            </PopoverTrigger>
+            <PopoverContent side="right" align="start" className="w-72 p-0">
+              <Command>
+                <CommandInput placeholder="Cari elemen, zona atap, atau template…" />
+                <CommandList>
+                  <CommandEmpty>Tidak ada hasil.</CommandEmpty>
+                  {capabilities.roof_zones_v1 && (
+                    <CommandGroup heading="Zona atap">
+                      {(
+                        Object.keys(ROOF_ZONE_LABELS) as RoofZone["type"][]
+                      ).map((t) => (
+                        <CommandItem
+                          key={t}
+                          value={ROOF_ZONE_LABELS[t]}
+                          onSelect={() => {
+                            setPendingPlacement({
+                              tool: "roofZone",
+                              variant: t,
+                            });
+                            setTool("roofZone");
+                            setExteriorOpen(false);
+                          }}
+                        >
+                          {ROOF_ZONE_LABELS[t]}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+                  {capabilities.exterior_elements_v1 &&
+                    EXTERIOR_ELEMENT_GROUPS.map((group) => (
+                      <CommandGroup key={group.heading} heading={group.heading}>
+                        {group.kinds.map((k) => (
+                          <CommandItem
+                            key={k}
+                            value={EXTERIOR_KIND_LABELS[k]}
+                            onSelect={() => {
+                              setPendingPlacement({
+                                tool: "exterior",
+                                variant: k,
+                              });
+                              setTool("exterior");
+                              setExteriorOpen(false);
+                            }}
+                          >
+                            {EXTERIOR_KIND_LABELS[k]}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    ))}
+                  {capabilities.exterior_elements_v1 && (
+                    <CommandGroup heading="Template tampak depan">
+                      {FACADE_COMPOSER_TEMPLATES.map((template) => (
+                        <CommandItem
+                          key={template.id}
+                          value={template.label}
+                          onSelect={() => {
+                            setExteriorOpen(false);
+                            void (async () => {
+                              const accepted = await confirm({
+                                title: `Terapkan ${template.label}?`,
+                                description:
+                                  "Komposisi template sebelumnya dan material fasad akan diganti. Elemen manual tetap dipertahankan dan perubahan dapat di-Undo.",
+                              });
+                              if (accepted) {
+                                applyExteriorTemplate(template.id);
+                                track("exterior_template_applied", {
+                                  template_id: template.id,
+                                  source: "editor_toolbar",
+                                });
+                              }
+                            })();
+                          }}
+                        >
+                          <div className="flex flex-col items-start gap-0.5">
+                            <span className="font-medium">
+                              {template.label}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {template.description}
+                            </span>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          {pendingPlacement &&
+            pendingPlacement.tool === "exterior" &&
+            pendingPlacement.variant && (
+              <PendingChip
+                label={
+                  EXTERIOR_KIND_LABELS[
+                    pendingPlacement.variant as ExteriorElementKind
+                  ]
+                }
+                onClear={clearPending}
+              />
+            )}
+          {pendingPlacement &&
+            pendingPlacement.tool === "roofZone" &&
+            pendingPlacement.variant && (
+              <PendingChip
+                label={
+                  ROOF_ZONE_LABELS[
+                    pendingPlacement.variant as RoofZone["type"]
+                  ]
+                }
+                onClear={clearPending}
+              />
+            )}
         </>
       )}
 
-      {showDimensions && (
-        <>
-          <DropdownMenuSeparator />
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Satuan dimensi</DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuRadioGroup
+      <FloatingBarSeparator />
+      <GroupLabel>Tampilan</GroupLabel>
+
+      <Popover>
+        <PopoverTrigger asChild>
+          <ToolButton label="Tampilan">
+            <Settings2 className="size-4" />
+          </ToolButton>
+        </PopoverTrigger>
+        <PopoverContent side="right" align="start" className="w-64 space-y-0.5">
+          <p className="pb-1 text-xs font-semibold">Tampilan</p>
+          <ToggleLine
+            label="Snap grid"
+            checked={snapEnabled}
+            onChange={() => toggleSnap()}
+          />
+          <ToggleLine
+            label="Dimensi"
+            checked={showDimensions}
+            onChange={() => toggleDimensions()}
+          />
+          {showDimensions && (
+            <div className="flex items-center justify-between gap-3 py-1 pl-1 text-xs">
+              <span className="text-muted-foreground">Satuan</span>
+              <Select
                 value={dimensionUnit}
                 onValueChange={(v) => setDimensionUnit(v as LengthUnit)}
               >
-                {LENGTH_UNITS.map((u) => (
-                  <DropdownMenuRadioItem key={u.id} value={u.id}>
-                    {u.name} ({u.label})
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-        </>
-      )}
+                <SelectTrigger
+                  className="h-7 w-28 text-xs"
+                  aria-label={`Satuan dimensi: ${dimensionUnit}`}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LENGTH_UNITS.map((u) => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.name} ({u.label})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <ToggleLine
+            label="Tampilkan lantai lain"
+            checked={showCrossFloorRooms}
+            onChange={setShowCrossFloorRooms}
+          />
+          <ToggleLine
+            label="Tampilkan tersembunyi"
+            checked={showHiddenExteriorElements}
+            onChange={setShowHiddenExteriorElements}
+          />
+          {capabilities.roof_zones_v1 && (
+            <>
+              <ToggleLine
+                label="Area atap"
+                checked={showRoofZones}
+                onChange={setShowRoofZones}
+              />
+              <ToggleLine
+                label="Zona atap tersembunyi"
+                checked={showHiddenRoofZones}
+                onChange={setShowHiddenRoofZones}
+              />
+            </>
+          )}
+        </PopoverContent>
+      </Popover>
     </>
   );
 
   return (
-    <div
-      ref={toolbarRef}
-      className="flex flex-col items-center gap-1 rounded-xl border bg-card p-1.5 shadow-sm"
-    >
-      {primaryControls}
+    <FloatingBar ref={toolbarRef}>
+      <ToolButton
+        label="Undo"
+        shortcut=" (Ctrl+Z)"
+        onClick={undo}
+        disabled={!canUndo}
+      >
+        <Undo2 className="size-4" />
+      </ToolButton>
+      <ToolButton
+        label="Redo"
+        shortcut=" (Ctrl+Y)"
+        onClick={redo}
+        disabled={!canRedo}
+      >
+        <Redo2 className="size-4" />
+      </ToolButton>
 
-      <Separator className="my-1 w-6" />
-
+      {/*
+       * Budget tinggi rail — HARUS < 672px supaya desktop 720p tak pernah
+       * memicu compact (fallback tinggal untuk tablet/mobile via
+       * useToolbarCompact = lebar sempit ATAU tinggi konten nyata melebihi
+       * viewport):
+       *   11 tombol ikon × 32px (Button size="icon")        = 352px
+       *   2 label grup ("Bangun"/"Tampilan") × ~18px        =  36px
+       *   2 separator (h-px + margin my-0.5) × ~5px         =  10px
+       *   gap-1 (4px) antar 15 child langsung FloatingBar    =  56px
+       *   padding kontainer p-1 (atas + bawah)               =   8px
+       *   -------------------------------------------------------
+       *   total ≈ 462px (chip pending kondisional +1 baris ~20px saat
+       *   aktif memilih varian — tetap ≪ 672px).
+       */}
       {compact ? (
-        <DropdownMenu>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Kontrol lainnya"
-                  data-testid="editor-toolbar-more"
-                >
-                  <MoreVertical className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent side="right">Kontrol lainnya</TooltipContent>
-          </Tooltip>
-          <DropdownMenuContent
-            side="right"
-            align="start"
-            className="max-h-[min(70vh,32rem)] overflow-y-auto"
-          >
-            {secondaryMore}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ToolbarMore data-testid="editor-toolbar-more">
+          {secondaryFragment}
+        </ToolbarMore>
       ) : (
-        secondaryInline
+        secondaryFragment
       )}
-    </div>
+    </FloatingBar>
   );
 }

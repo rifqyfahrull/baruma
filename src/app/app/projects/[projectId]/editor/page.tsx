@@ -5,10 +5,13 @@ import dynamic from "next/dynamic"
 import { useParams } from "next/navigation"
 import {
   Loader2,
+  Maximize,
   Monitor,
   PanelRightOpen,
   Save,
   Sparkles,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -18,6 +21,8 @@ import { useEditorStore } from "@/stores/editor-store"
 import { structuralNotes } from "@/lib/validation"
 import { Button } from "@/components/ui/button"
 import { CompassRose } from "@/components/ui/compass-rose"
+import { FloatingBar } from "@/components/chrome/floating-bar"
+import { ToolButton } from "@/components/chrome/tool-button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/shared/empty-state"
 import {
@@ -112,6 +117,8 @@ function EditorClient({ projectId }: { projectId: string }) {
   const redo = useEditorStore((s) => s.redo)
   const selectObject = useEditorStore((s) => s.selectObject)
   const setTool = useEditorStore((s) => s.setTool)
+  const zoomBy = useEditorStore((s) => s.zoomBy)
+  const resetView = useEditorStore((s) => s.resetView)
   const [sidePanel, setSidePanel] = React.useState<"properti" | "ai">("properti")
   const injectAgentDraft = useProjectAgentUiStore((s) => s.injectDraft)
   const agentOpen = useProjectAgentUiStore((s) => s.open)
@@ -208,6 +215,27 @@ function EditorClient({ projectId }: { projectId: string }) {
           <CompassRose className="size-12" />
         </div>
 
+        {/* Zoom cluster (Fase 3): dipindah dari rail vertikal ke sini agar
+            rail tetap 11 tombol. Diposisikan bottom-CENTER, bukan
+            bottom-right — `FloatingPanel` desktop (`side="right"`) memakai
+            `absolute inset-y-4 right-4 w-80`, yaitu HAMPIR SELURUH tinggi
+            viewport di kolom kanan; bottom-right akan selalu tumpang tindih
+            dengan panel itu (kecuali di-minimize), jadi bottom-center yang
+            aman di semua breakpoint (tak dipakai elemen lain). */}
+        <div className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2">
+          <FloatingBar orientation="horizontal">
+            <ToolButton label="Perkecil" onClick={() => zoomBy(1 / 1.2)}>
+              <ZoomOut className="size-4" />
+            </ToolButton>
+            <ToolButton label="Pas ke layar" onClick={resetView}>
+              <Maximize className="size-4" />
+            </ToolButton>
+            <ToolButton label="Perbesar" onClick={() => zoomBy(1.2)}>
+              <ZoomIn className="size-4" />
+            </ToolButton>
+          </FloatingBar>
+        </div>
+
         {/* Toolbar. Safety-net CSS terhadap tinggi viewport (independen dari
             deteksi compact JS di EditorToolbar): tanpa ini toolbar yang lebih
             panjang dari layar meluber diam-diam ke luar viewport alih-alih
@@ -219,7 +247,9 @@ function EditorClient({ projectId }: { projectId: string }) {
         {/* Floor switcher. Desktop: terpusat. Mobile: dibatasi ke pita di antara
             toolbar kiri & tombol kanan + scroll — cegah tumpang-tindih di layar
             sempit (paritas fix floating bar 3D). */}
-        <div className="absolute left-14 right-14 top-10 z-10 overflow-x-auto lg:left-1/2 lg:right-auto lg:top-3 lg:-translate-x-1/2 lg:overflow-visible">
+        {/* Center di ruang bebas antara rail kiri & panel kanan (w-80) —
+            paritas fix bar 3D; center viewport penuh bisa tabrakan panel. */}
+        <div className="absolute left-14 right-14 top-10 z-10 overflow-x-auto lg:left-16 lg:right-[22rem] lg:top-3 lg:overflow-visible">
           <div className="mx-auto w-max">
             <FloorSwitcher />
           </div>

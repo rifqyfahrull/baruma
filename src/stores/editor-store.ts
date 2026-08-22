@@ -7,7 +7,6 @@ import type {
   ElectricalPoint,
   ElectricalPointType,
   ExteriorElement,
-  ExteriorElementKind,
   ExteriorLamp,
   FacadeElement,
   FacadeElementKind,
@@ -195,8 +194,6 @@ type EditorState = {
   toggleDimensions: () => void;
   setDimensionUnit: (unit: LengthUnit) => void;
 
-  pendingRoomType: RoomType | null;
-  setPendingRoomType: (t: RoomType | null) => void;
   setShowHiddenExteriorElements: (show: boolean) => void;
   setShowRoofZones: (show: boolean) => void;
   setShowHiddenRoofZones: (show: boolean) => void;
@@ -204,14 +201,19 @@ type EditorState = {
   /** Tampilkan komponen cross-floor yang penetrasi lantai (tangga, lift, dll). */
   showCrossFloorRooms: boolean;
   setShowCrossFloorRooms: (show: boolean) => void;
-  pendingElectricalType: ElectricalPointType | null;
-  setPendingElectricalType: (t: ElectricalPointType | null) => void;
-  pendingWaterType: WaterPointType | null;
-  setPendingWaterType: (t: WaterPointType | null) => void;
-  pendingExteriorKind: ExteriorElementKind | null;
-  setPendingExteriorKind: (k: ExteriorElementKind | null) => void;
-  pendingRoofZoneType: RoofZone["type"] | null;
-  setPendingRoofZoneType: (t: RoofZone["type"] | null) => void;
+  /**
+   * Fase 3 (unifikasi UI editor): SATU field menggantikan 5 field
+   * `pending{Room,Electrical,Water,Exterior,RoofZone}Type` terpisah —
+   * palette rail (Ruang/Utilitas/Eksterior) selalu men-set `tool` (jadi
+   * `activeTool`) dan `variant` BERSAMAAN dalam satu pick, jadi satu
+   * field cukup: `variant` hanya relevan selama `tool` cocok dengan
+   * `activeTool` yang sedang aktif. `variant` untyped (string) di level
+   * store — pembaca (plan-canvas, editor-inspector) yang men-cast sesuai
+   * `tool`-nya (RoomType/ElectricalPointType/WaterPointType/
+   * ExteriorElementKind/RoofZone["type"]).
+   */
+  pendingPlacement: { tool: EditorTool; variant?: string } | null;
+  setPendingPlacement: (p: { tool: EditorTool; variant?: string } | null) => void;
   addRoom: (type: RoomType, x: number, y: number) => void;
   /** Tambah ruang PAS mengisi `rect` (mis. celah hasil klik-kanan / Ctrl+klik
    *  "Tambah ruang di sini"). Dimensi di-clamp minRoomSizeFor(type) & batas
@@ -676,11 +678,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     pan: { x: 0, y: 0 },
     snapEnabled: true,
     gridSize: 0.5,
-    pendingRoomType: null,
-    pendingElectricalType: null,
-    pendingWaterType: null,
-    pendingExteriorKind: null,
-    pendingRoofZoneType: null,
+    pendingPlacement: null,
     showDimensions: false,
     dimensionUnit: "mm",
     showHiddenExteriorElements: false,
@@ -716,18 +714,26 @@ export const useEditorStore = create<EditorState>((set, get) => {
         zoom: 1,
         pan: { x: 0, y: 0 },
         activeTool: "select",
-        pendingRoofZoneType: null,
+        pendingPlacement: null,
       });
     },
 
+    // Palette rail (Fase 3) selalu men-set pendingPlacement BERSAMAAN dgn
+    // setTool dalam satu pick (mis. pilih "Kamar Tidur" di palette Ruang →
+    // setPendingPlacement({tool:"room",variant:"kamar_tidur"}) lalu
+    // setTool("room")) — jadi begitu tool berpindah ke tool LAIN, sisa
+    // pendingPlacement lama otomatis tak relevan lagi; dibuang di sini
+    // supaya chip "batal pilihan" tak nyangkut nunjuk kategori yang bukan
+    // tool aktif. Re-entry ke tool yang SAMA (mis. keydown 'v' → "select"
+    // dipanggil berulang) tak membuang variant yang barusan dipilih.
     setTool: (tool) =>
-      set({
+      set((s) => ({
         activeTool: tool,
         selected: null,
         selectedObjectId: null,
-        pendingExteriorKind: null,
-        pendingRoofZoneType: null,
-      }),
+        pendingPlacement:
+          s.pendingPlacement?.tool === tool ? s.pendingPlacement : null,
+      })),
     // select() = plain set DI LUAR commit() — tak menyentuh dirty/editSequence,
     // jadi seleksi tak pernah memicu autosave/konflik revisi (dipin unit test).
     select: (ref) => {
@@ -783,11 +789,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     setShowHiddenRoofZones: (show) => set({ showHiddenRoofZones: show }),
     setShowCrossFloorRooms: (show) => set({ showCrossFloorRooms: show }),
 
-    setPendingRoomType: (t) => set({ pendingRoomType: t }),
-    setPendingElectricalType: (t) => set({ pendingElectricalType: t }),
-    setPendingWaterType: (t) => set({ pendingWaterType: t }),
-    setPendingExteriorKind: (k) => set({ pendingExteriorKind: k }),
-    setPendingRoofZoneType: (t) => set({ pendingRoofZoneType: t }),
+    setPendingPlacement: (p) => set({ pendingPlacement: p }),
 
     addRoom: (type, x, y) => {
       const { selectedFloorId, site, snapEnabled, gridSize } = get();
@@ -806,7 +808,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
         newId = room.id;
         l.rooms.push(room);
       });
-      set({ pendingRoomType: null });
+      set({ pendingPlacement: null });
       if (newId) get().selectObject(newId);
     },
 
@@ -834,7 +836,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
         newId = room.id;
         l.rooms.push(room);
       });
-      set({ pendingRoomType: null });
+      set({ pendingPlacement: null });
       if (newId) get().selectObject(newId);
     },
 
@@ -1320,7 +1322,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
       commit((l) => {
         l.roofZones = [...(l.roofZones ?? []), { ...zone }];
       });
-      set({ pendingRoofZoneType: null });
+      set({ pendingPlacement: null });
       get().selectObject(zone.id);
     },
 

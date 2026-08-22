@@ -4,11 +4,11 @@ const DEMO = "proj-demo-8x8"
 
 /**
  * Klik kanvas utk menempatkan elemen eksterior aktif (tool "exterior" +
- * pendingExteriorKind sudah di-set lewat menu). Rumah demo 8×8 hampir
- * mengisi penuh tapak (denah proc-generated) & toolbar kiri + panel
- * Properti kanan mengambang DI ATAS kanvas (elemen svg sendiri tetap
- * selebar sisa viewport) — titik tunggal tetap (mis. 220,220 dari spec
- * lama) gampang jatuh di atas ruangan atau di bawah toolbar/panel
+ * `pendingPlacement.variant` sudah di-set lewat palette "Eksterior"). Rumah
+ * demo 8×8 hampir mengisi penuh tapak (denah proc-generated) & toolbar kiri
+ * + panel Properti kanan mengambang DI ATAS kanvas (elemen svg sendiri
+ * tetap selebar sisa viewport) — titik tunggal tetap (mis. 220,220 dari
+ * spec lama) gampang jatuh di atas ruangan atau di bawah toolbar/panel
  * tergantung ukuran viewport. Coba beberapa titik di jalur kosong khas
  * (strip di atas footprint bangunan, antara toolbar kiri & panel kanan)
  * sampai elemen baru benar-benar bertambah.
@@ -20,14 +20,41 @@ async function placeExteriorElement(
 ): Promise<void> {
   const locator = page.locator(`[data-testid="exterior-element"][data-kind="${kind}"]`)
   const before = await locator.count()
-  const candidates: Array<[number, number]> = [
-    [500, 90],
-    [650, 90],
-    [420, 90],
-    [500, 130],
-    [650, 130],
-    [780, 90],
+  // Titik kandidat dinamis dari bbox ruangan (paritas exterior-editor.spec.ts):
+  // strip kosong di atas footprint, aman dari panel kanan di viewport 720p.
+  const svgBox = await canvas.boundingBox()
+  if (!svgBox) throw new Error("Canvas svg tidak punya bounding box")
+  const rooms = await page
+    .locator('[data-testid="room-shape"]')
+    .evaluateAll((els) => els.map((e) => e.getBoundingClientRect()))
+  const roomTop = rooms.length ? Math.min(...rooms.map((r) => r.top)) : svgBox.y + 200
+  const roomLeft = rooms.length ? Math.min(...rooms.map((r) => r.left)) : svgBox.x + 200
+  const roomRight = rooms.length ? Math.max(...rooms.map((r) => r.right)) : svgBox.x + 600
+  const maxX = svgBox.x + svgBox.width * 0.62 // aman dari panel kanan
+  const minX = svgBox.x + 70 // kanan dari rail toolbar kiri
+  const minY = svgBox.y + 64 // bawah dari floor bar tengah-atas
+  const maxY = svgBox.y + svgBox.height - 16
+  const midY = rooms.length
+    ? (Math.min(...rooms.map((r) => r.top)) + Math.max(...rooms.map((r) => r.bottom))) / 2
+    : svgBox.y + svgBox.height / 2
+  const roomBottom = rooms.length ? Math.max(...rooms.map((r) => r.bottom)) : svgBox.y + 400
+  const rawCandidates: Array<[number, number]> = [
+    // margin kiri bangunan (vertikal tengah) — bebas overlay
+    [roomLeft - 40, midY],
+    [roomLeft - 75, midY],
+    // strip atas footprint, menjauhi floor bar tengah
+    [roomLeft + 30, roomTop - 24],
+    [roomLeft + 90, roomTop - 24],
+    // strip bawah footprint
+    [roomLeft + 30, roomBottom + 24],
+    [(roomLeft + roomRight) / 2, roomBottom + 24],
   ]
+  const candidates: Array<[number, number]> = rawCandidates
+    .map(([x, y]): [number, number] => [
+      Math.min(Math.max(x, minX), maxX),
+      Math.min(Math.max(y, minY), maxY),
+    ])
+    .map(([x, y]): [number, number] => [x - svgBox.x, y - svgBox.y])
   for (const [x, y] of candidates) {
     await canvas.click({ position: { x, y } })
     await page.waitForTimeout(200)
@@ -36,6 +63,19 @@ async function placeExteriorElement(
   throw new Error(
     `Gagal menempatkan elemen eksterior kind="${kind}" — semua titik kanvas kandidat gagal (cek tata letak toolbar/panel).`,
   )
+}
+
+/**
+ * Fase 3 (unifikasi UI editor): rail 2D HANYA 11 tombol + 2 label grup —
+ * muat di 720p desktop tanpa fallback compact, jadi tak perlu lagi
+ * workaround viewport 1280×1400. Compact tetap bisa terjadi di viewport
+ * SEMPIT; helper ini klik "Kontrol lainnya" HANYA bila memang tampak.
+ */
+async function openToolbarMore(page: Page): Promise<void> {
+  const more = page.getByTestId("editor-toolbar-more")
+  if (await more.isVisible().catch(() => false)) {
+    await more.click()
+  }
 }
 
 /**
@@ -54,13 +94,6 @@ async function placeExteriorElement(
  */
 
 test.describe("Facade shapes & elements — regresi", () => {
-  // Toolbar editor mengukur tinggi asli via ResizeObserver (useToolbarOverflow)
-  // dan menciutkan tombol sekunder (termasuk "Tambah elemen eksterior") ke
-  // menu "Kontrol lainnya" saat viewport pendek. Viewport tinggi di sini
-  // menjaga tombol langsung terlihat — sama seperti idiom spec lain
-  // (exterior-editor.spec.ts) yang mengasumsikan tombol top-level.
-  test.use({ viewport: { width: 1280, height: 1400 } })
-
   test("cerobong muncul & default Lantai dasar ke Rooftop, bukan Tapak", async ({ page }) => {
     await page.goto(`/app/projects/${DEMO}/editor`)
     const canvas = page.locator("svg.touch-none")
@@ -70,8 +103,9 @@ test.describe("Facade shapes & elements — regresi", () => {
     // pindah ke tab Rooftop dulu supaya penempatan langsung terlihat.
     await page.getByRole("button", { name: "Rooftop", exact: true }).click()
 
-    await page.getByRole("button", { name: "Tambah elemen eksterior" }).click()
-    await page.getByRole("menuitem", { name: "Cerobong" }).click()
+    await openToolbarMore(page)
+    await page.getByRole("button", { name: "Eksterior" }).click()
+    await page.getByRole("option", { name: "Cerobong", exact: true }).click()
     await placeExteriorElement(page, canvas, "chimney")
 
     const chimney = page.locator('[data-testid="exterior-element"][data-kind="chimney"]').first()
@@ -91,8 +125,9 @@ test.describe("Facade shapes & elements — regresi", () => {
     const canvas = page.locator("svg.touch-none")
     await expect(canvas).toBeVisible({ timeout: 30_000 })
 
-    await page.getByRole("button", { name: "Tambah elemen eksterior" }).click()
-    await page.getByRole("menuitem", { name: "Kolom aksen" }).click()
+    await openToolbarMore(page)
+    await page.getByRole("button", { name: "Eksterior" }).click()
+    await page.getByRole("option", { name: "Kolom aksen", exact: true }).click()
     await placeExteriorElement(page, canvas, "column")
 
     const column = page.locator('[data-testid="exterior-element"][data-kind="column"]').first()
@@ -145,7 +180,7 @@ test.describe("Facade shapes & elements — regresi", () => {
 
     // "Tipe" adalah combobox PERTAMA di kartu ruang (sebelum "Lantai").
     await roomPanel.getByRole("combobox").first().click()
-    await page.getByRole("option", { name: "Balkon" }).click()
+    await page.getByRole("option", { name: "Balkon", exact: true }).click()
 
     // RailingRoomContextCard (jalur implisit 2D — editor-inspector.tsx)
     // muncul begitu tipe ruang jadi "balkon".

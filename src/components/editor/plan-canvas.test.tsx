@@ -542,7 +542,7 @@ describe("PlanCanvas — exterior elements", () => {
     // stays "exterior" for repeat placement, same as electrical/water), then
     // tries to drag the element they (or an earlier tap) already placed.
     useEditorStore.getState().setTool("exterior");
-    useEditorStore.getState().setPendingExteriorKind("column");
+    useEditorStore.getState().setPendingPlacement({ tool: "exterior", variant: "column" });
     const { container } = render(<PlanCanvas />);
     const svg = container.querySelector("svg")!;
     const box = screen
@@ -649,7 +649,7 @@ describe("PlanCanvas — exterior elements", () => {
       .getState()
       .loadLayout(rooftopLayout(), { widthM: 10, depthM: 10 }, []);
     useEditorStore.getState().setTool("exterior");
-    useEditorStore.getState().setPendingExteriorKind("portal_frame");
+    useEditorStore.getState().setPendingPlacement({ tool: "exterior", variant: "portal_frame" });
     const { container, unmount } = render(<PlanCanvas />);
     const svg = container.querySelector("svg")!;
 
@@ -667,7 +667,7 @@ describe("PlanCanvas — exterior elements", () => {
       .getState()
       .loadLayout(rooftopLayout(), { widthM: 10, depthM: 10 }, []);
     useEditorStore.getState().setTool("exterior");
-    useEditorStore.getState().setPendingExteriorKind("facade_panel");
+    useEditorStore.getState().setPendingPlacement({ tool: "exterior", variant: "facade_panel" });
     const second = render(<PlanCanvas />);
     const secondSvg = second.container.querySelector("svg")!;
 
@@ -686,7 +686,7 @@ describe("PlanCanvas — exterior elements", () => {
       .getState()
       .loadLayout(rooftopLayout(), { widthM: 10, depthM: 10 }, []);
     useEditorStore.getState().setTool("exterior");
-    useEditorStore.getState().setPendingExteriorKind("fence");
+    useEditorStore.getState().setPendingPlacement({ tool: "exterior", variant: "fence" });
     const { container } = render(<PlanCanvas />);
     const svg = container.querySelector("svg")!;
 
@@ -710,7 +710,7 @@ describe("PlanCanvas — exterior elements", () => {
       .getState()
       .loadLayout(rooftopLayout(), { widthM: 10, depthM: 10 }, []);
     useEditorStore.getState().setTool("exterior");
-    useEditorStore.getState().setPendingExteriorKind("pedestrian_gate");
+    useEditorStore.getState().setPendingPlacement({ tool: "exterior", variant: "pedestrian_gate" });
     const { container } = render(<PlanCanvas />);
     const svg = container.querySelector("svg")!;
 
@@ -731,7 +731,7 @@ describe("PlanCanvas — exterior elements", () => {
       .getState()
       .loadLayout(rooftopLayout(), { widthM: 10, depthM: 10 }, []);
     useEditorStore.getState().setTool("exterior");
-    useEditorStore.getState().setPendingExteriorKind("fence");
+    useEditorStore.getState().setPendingPlacement({ tool: "exterior", variant: "fence" });
     const { container } = render(<PlanCanvas />);
     const svg = container.querySelector("svg")!;
 
@@ -760,7 +760,7 @@ describe("PlanCanvas — exterior elements", () => {
       .getState()
       .loadLayout(rooftopLayout(), { widthM: 10, depthM: 10 }, []);
     useEditorStore.getState().setTool("exterior");
-    useEditorStore.getState().setPendingExteriorKind("fence");
+    useEditorStore.getState().setPendingPlacement({ tool: "exterior", variant: "fence" });
     const { container } = render(<PlanCanvas />);
     const svg = container.querySelector("svg")!;
 
@@ -784,13 +784,13 @@ describe("PlanCanvas — exterior elements", () => {
       .getState()
       .loadLayout(rooftopLayout(), { widthM: 10, depthM: 10 }, []);
     useEditorStore.getState().setTool("exterior");
-    useEditorStore.getState().setPendingExteriorKind("sliding_gate");
+    useEditorStore.getState().setPendingPlacement({ tool: "exterior", variant: "sliding_gate" });
     render(<PlanCanvas />);
 
     fireEvent.keyDown(window, { key: "Escape" });
 
     expect(useEditorStore.getState().activeTool).toBe("select");
-    expect(useEditorStore.getState().pendingExteriorKind).toBeNull();
+    expect(useEditorStore.getState().pendingPlacement).toBeNull();
   });
 });
 

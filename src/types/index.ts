@@ -928,24 +928,21 @@ export type DesignVersion = {
 /* Editor operations (PRD §12.2) — undo/redo                          */
 /* ------------------------------------------------------------------ */
 
+// Fase 3 (unifikasi UI editor): trim ke 10 member yang benar-benar hidup —
+// "wall"/"dimension" tak pernah dijadikan activeTool (dimensi = overlay
+// terpisah; dinding dipilih via EntityRef "wall", bukan tool), dan 6 member
+// "exterior_*" adalah sisa desain lama yang tak pernah dipakai (elemen
+// eksterior semua lahir lewat tool "exterior" tunggal + pendingPlacement.variant).
 export type EditorTool =
   | "select"
   | "pan"
   | "room"
-  | "wall"
   | "door"
   | "window"
-  | "dimension"
   | "electrical"
   | "water"
   | "stair"
   | "exterior"
-  | "exterior_segment"
-  | "exterior_surface"
-  | "exterior_stair"
-  | "exterior_box"
-  | "exterior_frame"
-  | "exterior_asset"
   | "roofZone";
 
 export type LayoutOperation = {

@@ -614,10 +614,18 @@ function StructuralSection() {
 function ElectricalSection() {
   const layout = useEditorStore((s) => s.layout)!;
   const setElectrical = useEditorStore((s) => s.setElectrical);
-  const pendingElectricalType = useEditorStore((s) => s.pendingElectricalType);
-  const setPendingElectricalType = useEditorStore(
-    (s) => s.setPendingElectricalType,
-  );
+  // Fase 3: pendingElectricalType/setPendingElectricalType dikonsolidasi ke
+  // pendingPlacement {tool,variant} — lihat editor-store.ts. Panel ini hanya
+  // mengubah `variant`-nya, tool tetap "electrical" agar tetap konsisten dgn
+  // palette Utilitas di rail (yang men-set keduanya sekaligus saat dipilih).
+  const pendingPlacement = useEditorStore((s) => s.pendingPlacement);
+  const setPendingPlacement = useEditorStore((s) => s.setPendingPlacement);
+  const pendingElectricalType =
+    pendingPlacement?.tool === "electrical"
+      ? (pendingPlacement.variant as ElectricalPointType | undefined) ?? null
+      : null;
+  const setPendingElectricalType = (t: ElectricalPointType) =>
+    setPendingPlacement({ tool: "electrical", variant: t });
   const count = layout.electrical?.length ?? 0;
 
   return (
@@ -666,8 +674,15 @@ function WaterSanitationSection() {
   const site = useEditorStore((s) => s.site);
   const setWater = useEditorStore((s) => s.setWater);
   const setSanitation = useEditorStore((s) => s.setSanitation);
-  const pendingWaterType = useEditorStore((s) => s.pendingWaterType);
-  const setPendingWaterType = useEditorStore((s) => s.setPendingWaterType);
+  // Fase 3: konsolidasi pendingWaterType — lihat catatan di ElectricalSection.
+  const pendingPlacementWater = useEditorStore((s) => s.pendingPlacement);
+  const setPendingPlacementWater = useEditorStore((s) => s.setPendingPlacement);
+  const pendingWaterType =
+    pendingPlacementWater?.tool === "water"
+      ? (pendingPlacementWater.variant as WaterPointType | undefined) ?? null
+      : null;
+  const setPendingWaterType = (t: WaterPointType) =>
+    setPendingPlacementWater({ tool: "water", variant: t });
 
   const count = layout.water?.length ?? 0;
   const occupants = occupantsOf(layout);

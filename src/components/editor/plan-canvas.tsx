@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import type {
   ElectricalPoint,
+  ElectricalPointType,
   ExteriorBoxElement,
   ExteriorElement,
   ExteriorElementKind,
@@ -19,6 +20,7 @@ import type {
   Severity,
   ValidationIssue,
   WaterPoint,
+  WaterPointType,
 } from "@/types";
 import { useEditorStore, ROOF_LAYER_ID } from "@/stores/editor-store";
 import {
@@ -1228,22 +1230,42 @@ export function PlanCanvas() {
   const alignmentGuides = useEditorStore((s) => s.alignmentGuides);
 
   const setTool = useEditorStore((s) => s.setTool);
-  const pendingRoomType = useEditorStore((s) => s.pendingRoomType);
+  // Fase 3: 5 field pending* terpisah dikonsolidasi jadi satu
+  // `pendingPlacement {tool, variant}` di store — derive di sini per-tool
+  // supaya seluruh logika penempatan di bawah (byte-identical) tetap baca
+  // variabel lokal bernama sama seperti sebelumnya.
+  const pendingPlacement = useEditorStore((s) => s.pendingPlacement);
+  const pendingRoomType =
+    pendingPlacement?.tool === "room"
+      ? (pendingPlacement.variant as RoomType | undefined) ?? null
+      : null;
   const addRoom = useEditorStore((s) => s.addRoom);
-  const pendingElectricalType = useEditorStore((s) => s.pendingElectricalType);
+  const pendingElectricalType =
+    pendingPlacement?.tool === "electrical"
+      ? (pendingPlacement.variant as ElectricalPointType | undefined) ?? null
+      : null;
   const addElectricalPoint = useEditorStore((s) => s.addElectricalPoint);
   const dragElectricalTo = useEditorStore((s) => s.dragElectricalTo);
-  const pendingWaterType = useEditorStore((s) => s.pendingWaterType);
+  const pendingWaterType =
+    pendingPlacement?.tool === "water"
+      ? (pendingPlacement.variant as WaterPointType | undefined) ?? null
+      : null;
   const addWaterPoint = useEditorStore((s) => s.addWaterPoint);
   const dragWaterTo = useEditorStore((s) => s.dragWaterTo);
   const moveSanitationObject = useEditorStore((s) => s.moveSanitationObject);
   const dragRooftopAreaTo = useEditorStore((s) => s.dragRooftopAreaTo);
   const dragOpeningResize = useEditorStore((s) => s.dragOpeningResize);
-  const pendingExteriorKind = useEditorStore((s) => s.pendingExteriorKind);
+  const pendingExteriorKind =
+    pendingPlacement?.tool === "exterior"
+      ? (pendingPlacement.variant as ExteriorElementKind | undefined) ?? null
+      : null;
   const addExteriorElement = useEditorStore((s) => s.addExteriorElement);
   const dragExteriorTo = useEditorStore((s) => s.dragExteriorTo);
   const dragExteriorResize = useEditorStore((s) => s.dragExteriorResize);
-  const pendingRoofZoneType = useEditorStore((s) => s.pendingRoofZoneType);
+  const pendingRoofZoneType =
+    pendingPlacement?.tool === "roofZone"
+      ? (pendingPlacement.variant as RoofZone["type"] | undefined) ?? null
+      : null;
   const addRoofZone = useEditorStore((s) => s.addRoofZone);
   const dragRoofZoneTo = useEditorStore((s) => s.dragRoofZoneTo);
   const dragRoofZoneResize = useEditorStore((s) => s.dragRoofZoneResize);

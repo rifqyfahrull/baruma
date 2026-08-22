@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { cleanup, render, screen, fireEvent } from "@testing-library/react"
+import { cleanup, render, screen, fireEvent, within } from "@testing-library/react"
 
 import type { FeatureCapabilities } from "@/lib/features"
 
@@ -15,269 +15,390 @@ vi.mock("@/hooks/use-project-capabilities", () => ({
   useProjectCapabilities: () => capabilitiesRef.current,
 }))
 
+// Compact di-mock langsung (bukan lewat ResizeObserver/getBoundingClientRect
+// stub) — Fase 3 memindahkan sinyal compact ke `useToolbarCompact` (primitif
+// Fase 1, sudah ada test sendiri di use-toolbar-compact.test.tsx); di sini
+// cukup pastikan EditorToolbar MEREAKSI sinyal itu dengan benar.
+const compactRef: { current: boolean } = { current: false }
+vi.mock("@/hooks/use-toolbar-compact", () => ({
+  useToolbarCompact: () => compactRef.current,
+}))
+
+const trackSpy = vi.fn()
+vi.mock("@/lib/analytics", () => ({
+  track: (...args: unknown[]) => trackSpy(...args),
+}))
+
 import { EditorToolbar } from "./editor-toolbar"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { ConfirmDialogProvider } from "@/components/ui/confirm-dialog"
 import { useEditorStore } from "@/stores/editor-store"
 import { makeLayout } from "@/test-utils/fixtures"
 
 function renderToolbar() {
   return render(
     <TooltipProvider>
-      <EditorToolbar />
+      <ConfirmDialogProvider>
+        <EditorToolbar />
+      </ConfirmDialogProvider>
     </TooltipProvider>
   )
 }
 
-describe("EditorToolbar capability gating (roadmap §21)", () => {
-  beforeEach(() => {
-    capabilitiesRef.current = {
-      exterior_elements_v1: true,
-      roof_zones_v1: true,
-      presentation_mode_v1: true,
+// jsdom tidak mengimplementasikan ResizeObserver — Radix Popper (dipakai
+// PopoverContent) butuh ini saat popover benar-benar terbuka.
+let originalResizeObserver: typeof ResizeObserver | undefined
+beforeEach(() => {
+  originalResizeObserver = window.ResizeObserver
+  window.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver
+
+  // jsdom tidak mengimplementasikan scrollIntoView — cmdk (di dalam palette
+  // Ruang/Utilitas/Eksterior) memanggilnya saat item aktif berubah.
+  Element.prototype.scrollIntoView = vi.fn()
+
+  capabilitiesRef.current = {
+    exterior_elements_v1: true,
+    roof_zones_v1: true,
+    presentation_mode_v1: true,
     ai_render_v1: true,
-    }
-    useEditorStore.setState({ layout: makeLayout() })
-  })
-  afterEach(() => cleanup())
+  }
+  compactRef.current = false
+  trackSpy.mockClear()
+  useEditorStore.getState().loadLayout(makeLayout(), { widthM: 10, depthM: 10 }, [])
+})
+afterEach(() => {
+  window.ResizeObserver = originalResizeObserver as typeof ResizeObserver
+  cleanup()
+})
 
-  it("shows exterior + roof zone creation tools when flags are enabled", () => {
+describe("EditorToolbar — rail dasar (11 tombol + 2 label grup)", () => {
+  it("renders undo/redo, pilih/geser, dan tiap tombol kategori dgn aria-label sendiri", () => {
     renderToolbar()
-    expect(screen.getByLabelText("Tambah zona atap")).toBeTruthy()
-    expect(screen.getByLabelText("Tambah elemen eksterior")).toBeTruthy()
-    expect(screen.getByLabelText("Pilih template tampak depan")).toBeTruthy()
-  })
-
-  it("hides roof zone creation when roof_zones_v1 is off", () => {
-    capabilitiesRef.current = {
-      ...capabilitiesRef.current,
-      roof_zones_v1: false,
-    }
-    renderToolbar()
-    expect(screen.queryByLabelText("Tambah zona atap")).toBeNull()
-    // Flag lain tidak ikut mati.
-    expect(screen.getByLabelText("Tambah elemen eksterior")).toBeTruthy()
-  })
-
-  it("hides exterior creation and facade templates when exterior_elements_v1 is off", () => {
-    capabilitiesRef.current = {
-      ...capabilitiesRef.current,
-      exterior_elements_v1: false,
-    }
-    renderToolbar()
-    expect(screen.queryByLabelText("Tambah elemen eksterior")).toBeNull()
-    expect(screen.queryByLabelText("Pilih template tampak depan")).toBeNull()
-    expect(screen.getByLabelText("Tambah zona atap")).toBeTruthy()
+    expect(screen.getByLabelText("Undo")).toBeTruthy()
+    expect(screen.getByLabelText("Redo")).toBeTruthy()
+    expect(screen.getByLabelText("Pilih / geser (V)")).toBeTruthy()
+    expect(screen.getByLabelText("Geser kanvas (Space)")).toBeTruthy()
+    expect(screen.getByLabelText("Tambah ruang")).toBeTruthy()
+    expect(screen.getByLabelText("Tambah pintu")).toBeTruthy()
+    expect(screen.getByLabelText("Tambah jendela")).toBeTruthy()
+    expect(screen.getByLabelText("Tambah tangga")).toBeTruthy()
+    expect(screen.getByLabelText("Utilitas (listrik & air)")).toBeTruthy()
+    expect(screen.getByLabelText("Eksterior")).toBeTruthy()
+    expect(screen.getByLabelText("Tampilan")).toBeTruthy()
   })
 
-  it("lists surface elements (driveway/walkway/teras/taman) in 'Tambah elemen eksterior' — Bug 2", async () => {
+  it("tak ada kontrol dgn native title (semua lewat rich Tooltip)", () => {
     renderToolbar()
-    const trigger = screen.getByLabelText("Tambah elemen eksterior")
-    // Radix's DropdownMenuTrigger opens on pointerdown, not plain click —
-    // a bare fireEvent.click() leaves it closed in jsdom.
-    fireEvent.pointerDown(trigger, { pointerId: 1, button: 0 })
-    fireEvent.pointerUp(trigger, { pointerId: 1, button: 0 })
-    fireEvent.click(trigger)
-
-    for (const label of ["Driveway", "Walkway", "Teras", "Taman / planting bed"]) {
-      expect(await screen.findByText(label)).toBeTruthy()
-    }
-  })
-
-  it("relies on the rich Tooltip (not native title) for the atap/eksterior/template group", () => {
-    renderToolbar()
-    // Native `title` gives a slow, OS-controlled hover delay — the whole
-    // point of this fix is that these three buttons use the same
-    // TooltipTrigger/TooltipContent pattern as every other tool button
-    // instead, so none of them should carry a plain `title` attribute.
-    for (const label of [
-      "Tambah zona atap",
-      "Tambah elemen eksterior",
-      "Pilih template tampak depan",
-    ]) {
+    for (const label of ["Tambah ruang", "Eksterior", "Tampilan", "Utilitas (listrik & air)"]) {
       expect(screen.getByLabelText(label).getAttribute("title")).toBeNull()
     }
   })
 
-  it("cross-floor rooms toggle is present and toggles showCrossFloorRooms", () => {
+  it("stair tool button (direct tool, bukan palette) men-set activeTool ke 'stair'", () => {
     renderToolbar()
-    // The Eye toggle carries a state suffix in its aria-label ("...: aktif"),
-    // so match by prefix like the other toolbar toggles.
-    const toggle = screen.getByLabelText(/^Tampilkan lantai lain:/)
-    expect(toggle).toBeTruthy()
+    fireEvent.click(screen.getByLabelText("Tambah tangga"))
+    expect(useEditorStore.getState().activeTool).toBe("stair")
+  })
+
+  it("Pilih/Geser exclusive-active mengikuti activeTool", () => {
+    renderToolbar()
+    const pan = screen.getByLabelText("Geser kanvas (Space)")
+    fireEvent.click(pan)
+    expect(useEditorStore.getState().activeTool).toBe("pan")
+    expect(pan.getAttribute("aria-pressed")).toBe("true")
+  })
+
+  it("Hapus TIDAK ada lagi di rail (via Del/inspector/context-menu sekarang)", () => {
+    renderToolbar()
+    expect(screen.queryByLabelText(/^Hapus/)).toBeNull()
+  })
+
+  it("tombol zoom TIDAK ada lagi di rail (dipindah ke cluster bottom-center di halaman editor)", () => {
+    renderToolbar()
+    expect(screen.queryByLabelText("Perbesar")).toBeNull()
+    expect(screen.queryByLabelText("Perkecil")).toBeNull()
+    expect(screen.queryByLabelText("Pas ke layar")).toBeNull()
+  })
+})
+
+describe("EditorToolbar capability gating (roadmap §21) — palette Eksterior", () => {
+  it("menyembunyikan tombol Eksterior saat kedua flag mati", () => {
+    capabilitiesRef.current = {
+      exterior_elements_v1: false,
+      roof_zones_v1: false,
+      presentation_mode_v1: true,
+    }
+    renderToolbar()
+    expect(screen.queryByLabelText("Eksterior")).toBeNull()
+  })
+
+  it("hanya grup Zona atap yang muncul saat roof_zones_v1 on & exterior_elements_v1 off", () => {
+    capabilitiesRef.current = {
+      exterior_elements_v1: false,
+      roof_zones_v1: true,
+      presentation_mode_v1: true,
+    }
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Eksterior"))
+    expect(screen.getByText("Zona atap")).toBeTruthy()
+    expect(screen.getByText("Dak datar")).toBeTruthy()
+    expect(screen.queryByText("Elemen eksterior")).toBeNull()
+    expect(screen.queryByText("Template tampak depan")).toBeNull()
+  })
+
+  it("hanya grup elemen + template yang muncul saat exterior_elements_v1 on & roof_zones_v1 off", () => {
+    capabilitiesRef.current = {
+      exterior_elements_v1: true,
+      roof_zones_v1: false,
+      presentation_mode_v1: true,
+    }
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Eksterior"))
+    expect(screen.queryByText("Zona atap")).toBeNull()
+    expect(screen.getByText("Dinding & pagar")).toBeTruthy()
+    expect(screen.getByText("Tembok batas")).toBeTruthy()
+    expect(screen.getByText("Template tampak depan")).toBeTruthy()
+  })
+
+  it("Tampilan popover: toggle Area atap/zona tersembunyi hanya muncul saat roof_zones_v1 on", () => {
+    capabilitiesRef.current = {
+      exterior_elements_v1: true,
+      roof_zones_v1: false,
+      presentation_mode_v1: true,
+    }
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Tampilan"))
+    expect(screen.queryByText("Area atap")).toBeNull()
+    expect(screen.queryByText("Zona atap tersembunyi")).toBeNull()
+  })
+})
+
+describe("EditorToolbar responsive compact mode (ToolbarMore)", () => {
+  it("tidak menampilkan tombol More saat compact=false — semua kontrol inline", () => {
+    compactRef.current = false
+    renderToolbar()
+    expect(screen.queryByTestId("editor-toolbar-more")).toBeNull()
+    expect(screen.getByLabelText("Tambah ruang")).toBeTruthy()
+    expect(screen.getByLabelText("Eksterior")).toBeTruthy()
+  })
+
+  it("menciutkan fragmen sekunder ke ToolbarMore saat compact=true, kontrol tetap reachable dgn aria-label sama", () => {
+    compactRef.current = true
+    renderToolbar()
+
+    // Undo/Redo tetap inline (di luar fragmen sekunder — paritas rail 3D).
+    expect(screen.getByLabelText("Undo")).toBeTruthy()
+
+    expect(screen.queryByLabelText("Pilih / geser (V)")).toBeNull()
+    const more = screen.getByTestId("editor-toolbar-more")
+    expect(more).toBeTruthy()
+
+    fireEvent.click(more)
+    expect(screen.getByLabelText("Pilih / geser (V)")).toBeTruthy()
+    expect(screen.getByLabelText("Tambah ruang")).toBeTruthy()
+    expect(screen.getByLabelText("Eksterior")).toBeTruthy()
+    expect(screen.getByLabelText("Tampilan")).toBeTruthy()
+  })
+})
+
+describe("EditorToolbar — palette Ruang (searchable, ui/command)", () => {
+  it("cari + pilih tipe ruang men-set pendingPlacement, activeTool, dan menampilkan chip", () => {
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Tambah ruang"))
+
+    fireEvent.change(screen.getByPlaceholderText("Cari tipe ruang…"), {
+      target: { value: "Dapur" },
+    })
+    fireEvent.click(screen.getByText("Dapur"))
+
+    expect(useEditorStore.getState().activeTool).toBe("room")
+    expect(useEditorStore.getState().pendingPlacement).toEqual({
+      tool: "room",
+      variant: "dapur",
+    })
+    expect(screen.getByText("Dapur")).toBeTruthy() // chip
+
+    // Palette tertutup setelah dipilih.
+    expect(screen.queryByPlaceholderText("Cari tipe ruang…")).toBeNull()
+  })
+
+  it("chip punya tombol X yang membatalkan pendingPlacement", () => {
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Tambah ruang"))
+    fireEvent.click(screen.getByText("Kamar tidur"))
+    expect(useEditorStore.getState().pendingPlacement).not.toBeNull()
+
+    fireEvent.click(screen.getByLabelText("Batalkan pilihan penempatan"))
+    expect(useEditorStore.getState().pendingPlacement).toBeNull()
+  })
+})
+
+describe("EditorToolbar — palette Utilitas (Listrik + Air, dua grup)", () => {
+  it("menampilkan grup Listrik dan Air di dalam SATU palette", () => {
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Utilitas (listrik & air)"))
+    expect(screen.getByText("Listrik")).toBeTruthy()
+    expect(screen.getByText("Air")).toBeTruthy()
+    expect(screen.getByText("Stopkontak")).toBeTruthy()
+    expect(screen.getByText("Kloset")).toBeTruthy()
+  })
+
+  it("pilih tipe listrik men-set pendingPlacement {tool:'electrical'}", () => {
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Utilitas (listrik & air)"))
+    fireEvent.click(screen.getByText("Saklar Ganda"))
+    expect(useEditorStore.getState().activeTool).toBe("electrical")
+    expect(useEditorStore.getState().pendingPlacement).toEqual({
+      tool: "electrical",
+      variant: "saklar_ganda",
+    })
+  })
+
+  it("pilih tipe air men-set pendingPlacement {tool:'water'}", () => {
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Utilitas (listrik & air)"))
+    fireEvent.click(screen.getByText("Shower"))
+    expect(useEditorStore.getState().activeTool).toBe("water")
+    expect(useEditorStore.getState().pendingPlacement).toEqual({
+      tool: "water",
+      variant: "shower",
+    })
+  })
+})
+
+describe("EditorToolbar — palette Eksterior (zona atap + elemen + template)", () => {
+  it("pilih zona atap men-set pendingPlacement {tool:'roofZone'}", () => {
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Eksterior"))
+    fireEvent.click(screen.getByText("Atap pelana"))
+    expect(useEditorStore.getState().activeTool).toBe("roofZone")
+    expect(useEditorStore.getState().pendingPlacement).toEqual({
+      tool: "roofZone",
+      variant: "pelana",
+    })
+  })
+
+  it("pilih elemen eksterior men-set pendingPlacement {tool:'exterior'}", () => {
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Eksterior"))
+    fireEvent.click(screen.getByText("Pagar"))
+    expect(useEditorStore.getState().activeTool).toBe("exterior")
+    expect(useEditorStore.getState().pendingPlacement).toEqual({
+      tool: "exterior",
+      variant: "fence",
+    })
+  })
+
+  it("search menyaring lintas grup (mis. 'Portal' menemukan elemen 'Portal')", () => {
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Eksterior"))
+    fireEvent.change(screen.getByPlaceholderText("Cari elemen, zona atap, atau template…"), {
+      target: { value: "Portal" },
+    })
+    expect(screen.getByText("Portal")).toBeTruthy()
+    expect(screen.queryByText("Dak datar")).toBeNull()
+  })
+})
+
+describe("EditorToolbar — template tampak depan via useConfirm (bukan window.confirm)", () => {
+  it("menerapkan template hanya setelah confirm di-klik — memanggil applyExteriorTemplate + track", async () => {
+    const applySpy = vi.fn()
+    useEditorStore.setState({ applyExteriorTemplate: applySpy })
+    renderToolbar()
+
+    fireEvent.click(screen.getByLabelText("Eksterior"))
+    fireEvent.click(screen.getByText("Modern Concrete Vertical"))
+
+    // Dialog konfirmasi (AlertDialog dari useConfirm) muncul — BUKAN window.confirm.
+    expect(await screen.findByText("Terapkan Modern Concrete Vertical?")).toBeTruthy()
+    expect(applySpy).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByText("Lanjutkan"))
+
+    await vi.waitFor(() => {
+      expect(applySpy).toHaveBeenCalledWith("modern_concrete_vertical")
+    })
+    expect(trackSpy).toHaveBeenCalledWith("exterior_template_applied", {
+      template_id: "modern_concrete_vertical",
+      source: "editor_toolbar",
+    })
+  })
+
+  it("batal (Batal) TIDAK memanggil applyExteriorTemplate", async () => {
+    const applySpy = vi.fn()
+    useEditorStore.setState({ applyExteriorTemplate: applySpy })
+    renderToolbar()
+
+    fireEvent.click(screen.getByLabelText("Eksterior"))
+    fireEvent.click(screen.getByText("Modern Concrete Vertical"))
+    expect(await screen.findByText("Terapkan Modern Concrete Vertical?")).toBeTruthy()
+
+    fireEvent.click(screen.getByText("Batal"))
+    await vi.waitFor(() => {
+      expect(screen.queryByText("Terapkan Modern Concrete Vertical?")).toBeNull()
+    })
+    expect(applySpy).not.toHaveBeenCalled()
+  })
+})
+
+describe("EditorToolbar — popover Tampilan (snap, dimensi+satuan, lantai lain, tersembunyi)", () => {
+  it("Satuan HANYA muncul saat Dimensi aktif", () => {
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Tampilan"))
+    expect(useEditorStore.getState().showDimensions).toBe(false)
+    expect(screen.queryByLabelText(/^Satuan dimensi:/)).toBeNull()
+
+    fireEvent.click(screen.getByText("Dimensi"))
+    expect(useEditorStore.getState().showDimensions).toBe(true)
+    expect(screen.getByLabelText(/^Satuan dimensi:/)).toBeTruthy()
+  })
+
+  it("toggle snap grid memutar snapEnabled di store", () => {
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Tampilan"))
+    const popover = screen.getByText("Snap grid").closest("label")!
+    const toggle = within(popover).getByRole("switch")
+    expect(useEditorStore.getState().snapEnabled).toBe(true)
+    fireEvent.click(toggle)
+    expect(useEditorStore.getState().snapEnabled).toBe(false)
+  })
+
+  it("toggle 'Tampilkan lantai lain' menulis showCrossFloorRooms", () => {
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Tampilan"))
+    const row = screen.getByText("Tampilkan lantai lain").closest("label")!
+    const toggle = within(row).getByRole("switch")
     expect(useEditorStore.getState().showCrossFloorRooms).toBe(true)
     fireEvent.click(toggle)
     expect(useEditorStore.getState().showCrossFloorRooms).toBe(false)
+  })
+
+  it("toggle 'Tampilkan tersembunyi' menulis showHiddenExteriorElements", () => {
+    renderToolbar()
+    fireEvent.click(screen.getByLabelText("Tampilan"))
+    const row = screen.getByText("Tampilkan tersembunyi").closest("label")!
+    const toggle = within(row).getByRole("switch")
+    expect(useEditorStore.getState().showHiddenExteriorElements).toBe(false)
     fireEvent.click(toggle)
-    expect(useEditorStore.getState().showCrossFloorRooms).toBe(true)
+    expect(useEditorStore.getState().showHiddenExteriorElements).toBe(true)
   })
 
-  it("visually separates the atap/eksterior/template group from the basic tools above it", () => {
-    const { container } = renderToolbar()
-    const roofButton = screen.getByLabelText("Tambah zona atap")
-    const separators = container.querySelectorAll('[data-slot="separator"]')
-    expect(separators.length).toBeGreaterThan(0)
-    // At least one separator must precede the roof-zone button in DOM order,
-    // so the group reads as visually distinct from the select/pan/door/window
-    // and titik-listrik/titik-air tools above it.
-    const hasSeparatorBefore = Array.from(separators).some(
-      (sep) =>
-        sep.compareDocumentPosition(roofButton) &
-        Node.DOCUMENT_POSITION_FOLLOWING
-    )
-    expect(hasSeparatorBefore).toBe(true)
-  })
-
-  it("stair tool button sets activeTool to 'stair'", () => {
+  it("toggle 'Area atap' & 'Zona atap tersembunyi' menulis store (roof_zones_v1 on)", () => {
     renderToolbar()
-    const btn = screen.getByLabelText("Tambah tangga")
-    expect(btn).toBeTruthy()
-    fireEvent.click(btn)
-    expect(useEditorStore.getState().activeTool).toBe("stair")
-  })
-})
+    fireEvent.click(screen.getByLabelText("Tampilan"))
 
-describe("EditorToolbar responsive compact mode (More dropdown)", () => {
-  // 1024px = breakpoint lg: desktop lebar (≥ 1024) inline, tablet/sempit (< 1024) compact.
-  const WIDE = 1280
-  const NARROW = 800
-
-  beforeEach(() => {
-    capabilitiesRef.current = {
-      exterior_elements_v1: true,
-      roof_zones_v1: true,
-      presentation_mode_v1: true,
-    ai_render_v1: true,
-    }
-    Object.defineProperty(window, "innerWidth", {
-      value: WIDE,
-      configurable: true,
-      writable: true,
-    })
-    useEditorStore.setState({ layout: makeLayout() })
-  })
-  afterEach(() => {
-    Object.defineProperty(window, "innerWidth", {
-      value: WIDE,
-      configurable: true,
-      writable: true,
-    })
-    cleanup()
-  })
-
-  it("renders secondary tools inline on a wide (desktop) viewport (no More)", () => {
-    Object.defineProperty(window, "innerWidth", { value: WIDE, configurable: true, writable: true })
-    renderToolbar()
-    expect(screen.queryByTestId("editor-toolbar-more")).toBeNull()
-    expect(screen.getByLabelText("Tambah zona atap")).toBeTruthy()
-    expect(screen.getByLabelText("Tambah elemen eksterior")).toBeTruthy()
-  })
-
-  it("toggles the global roof-zone visibility and reveal via toolbar buttons", () => {
-    Object.defineProperty(window, "innerWidth", { value: WIDE, configurable: true, writable: true })
-    renderToolbar()
-
+    const roofRow = screen.getByText("Area atap").closest("label")!
     expect(useEditorStore.getState().showRoofZones).toBe(true)
-    fireEvent.click(screen.getByLabelText("Tampilkan area atap: aktif"))
+    fireEvent.click(within(roofRow).getByRole("switch"))
     expect(useEditorStore.getState().showRoofZones).toBe(false)
 
+    const hiddenRow = screen.getByText("Zona atap tersembunyi").closest("label")!
     expect(useEditorStore.getState().showHiddenRoofZones).toBe(false)
-    fireEvent.click(screen.getByLabelText("Tampilkan zona atap tersembunyi: mati"))
+    fireEvent.click(within(hiddenRow).getByRole("switch"))
     expect(useEditorStore.getState().showHiddenRoofZones).toBe(true)
-  })
-
-  it("reveals hidden exterior elements via the Eye toggle (dead-end escape hatch)", () => {
-    Object.defineProperty(window, "innerWidth", { value: WIDE, configurable: true, writable: true })
-    useEditorStore.getState().setShowHiddenExteriorElements(false)
-    renderToolbar()
-
-    fireEvent.click(screen.getByLabelText("Tampilkan tersembunyi: mati"))
-    expect(useEditorStore.getState().showHiddenExteriorElements).toBe(true)
-
-    fireEvent.click(screen.getByLabelText("Tampilkan tersembunyi: aktif"))
-    expect(useEditorStore.getState().showHiddenExteriorElements).toBe(false)
-  })
-
-  it("collapses secondary tools into the More dropdown on a narrow (tablet) viewport", () => {
-    Object.defineProperty(window, "innerWidth", { value: NARROW, configurable: true, writable: true })
-    renderToolbar()
-
-    // Sekunder tak lagi inline — hanya tombol More yang tampil.
-    const more = screen.getByTestId("editor-toolbar-more")
-    expect(more).toBeTruthy()
-    expect(screen.queryByLabelText("Tambah zona atap")).toBeNull()
-
-    // Buka More (Radix merespons pointerDown) → submenu atap/eksterior muncul.
-    fireEvent.pointerDown(more)
-    expect(screen.getByText("Tambah zona atap")).toBeTruthy()
-    expect(screen.getByText("Tambah elemen eksterior")).toBeTruthy()
-  })
-
-  it("lets a toggle inside the More dropdown update the store", () => {
-    Object.defineProperty(window, "innerWidth", { value: NARROW, configurable: true, writable: true })
-    renderToolbar()
-    fireEvent.pointerDown(screen.getByTestId("editor-toolbar-more"))
-
-    expect(useEditorStore.getState().showDimensions).toBe(false)
-    fireEvent.click(screen.getByText(/^Dimensi mati$/))
-    expect(useEditorStore.getState().showDimensions).toBe(true)
-  })
-})
-
-describe("EditorToolbar responsive compact mode (height overflow)", () => {
-  // Bug: toolbar yang lebih tinggi dari viewport tidak menciut ke More di
-  // desktop LEBAR — compact lama hanya dipicu oleh lebar sempit (<1024px),
-  // bukan oleh tinggi konten yang sebenarnya melebihi window pendek.
-  const WIDE = 1280
-  let originalResizeObserver: typeof ResizeObserver | undefined
-  let originalRectFn: typeof HTMLElement.prototype.getBoundingClientRect
-
-  beforeEach(() => {
-    capabilitiesRef.current = {
-      exterior_elements_v1: true,
-      roof_zones_v1: true,
-      presentation_mode_v1: true,
-    ai_render_v1: true,
-    }
-    Object.defineProperty(window, "innerWidth", { value: WIDE, configurable: true, writable: true })
-    Object.defineProperty(window, "innerHeight", { value: 500, configurable: true, writable: true })
-    useEditorStore.setState({ layout: makeLayout() })
-
-    originalResizeObserver = window.ResizeObserver
-    // jsdom tidak mengimplementasikan ResizeObserver — stub no-op cukup karena
-    // pengukuran awal (di dalam useLayoutEffect, bukan callback observer)
-    // sudah memicu compact lewat scrollHeight/getBoundingClientRect di bawah.
-    window.ResizeObserver = class {
-      observe() {}
-      unobserve() {}
-      disconnect() {}
-    } as unknown as typeof ResizeObserver
-
-    originalRectFn = HTMLElement.prototype.getBoundingClientRect
-    // Toolbar "dirender" pada top=0 dengan tinggi (scrollHeight) yang jauh
-    // melebihi innerHeight=500 → available space << konten sebenarnya.
-    HTMLElement.prototype.getBoundingClientRect = function (this: HTMLElement) {
-      return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0, x: 0, y: 0, toJSON() {} }
-    }
-    Object.defineProperty(HTMLElement.prototype, "scrollHeight", {
-      configurable: true,
-      get() {
-        return 900
-      },
-    })
-  })
-
-  afterEach(() => {
-    Object.defineProperty(window, "innerWidth", { value: WIDE, configurable: true, writable: true })
-    Object.defineProperty(window, "innerHeight", { value: 768, configurable: true, writable: true })
-    window.ResizeObserver = originalResizeObserver as typeof ResizeObserver
-    HTMLElement.prototype.getBoundingClientRect = originalRectFn
-    Reflect.deleteProperty(HTMLElement.prototype, "scrollHeight")
-    cleanup()
-  })
-
-  it("collapses to the More dropdown on a WIDE viewport when toolbar content is taller than the window", () => {
-    renderToolbar()
-    expect(screen.getByTestId("editor-toolbar-more")).toBeTruthy()
-    expect(screen.queryByLabelText("Tambah zona atap")).toBeNull()
   })
 })

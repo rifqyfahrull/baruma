@@ -1792,3 +1792,65 @@ describe("editor-store readOnly (public viewer plumbing)", () => {
     expect(useEditorStore.getState().dirty).toBe(false)
   })
 })
+
+// Fase 3 (unifikasi UI editor): pendingRoomType/pendingElectricalType/
+// pendingWaterType/pendingExteriorKind/pendingRoofZoneType (5 field
+// terpisah) dikonsolidasi jadi SATU `pendingPlacement {tool, variant}` —
+// palette rail (Ruang/Utilitas/Eksterior) men-set keduanya bersamaan.
+describe("editor-store pendingPlacement (konsolidasi 5 field pending*Type)", () => {
+  beforeEach(() => {
+    useEditorStore.getState().loadLayout(makeLayout(), sampleSite, [])
+  })
+
+  it("setPendingPlacement menyimpan tool + variant", () => {
+    useEditorStore.getState().setPendingPlacement({ tool: "room", variant: "dapur" })
+    expect(useEditorStore.getState().pendingPlacement).toEqual({
+      tool: "room",
+      variant: "dapur",
+    })
+  })
+
+  it("setTool ke tool LAIN membuang pendingPlacement lama (kategori tak lagi relevan)", () => {
+    useEditorStore.getState().setPendingPlacement({ tool: "room", variant: "dapur" })
+    useEditorStore.getState().setTool("door")
+    expect(useEditorStore.getState().pendingPlacement).toBeNull()
+  })
+
+  it("setTool ke tool YANG SAMA mempertahankan variant (mis. keydown 'v' berulang saat tool select)", () => {
+    useEditorStore.getState().setPendingPlacement({ tool: "electrical", variant: "saklar_ganda" })
+    useEditorStore.getState().setTool("electrical")
+    expect(useEditorStore.getState().pendingPlacement).toEqual({
+      tool: "electrical",
+      variant: "saklar_ganda",
+    })
+  })
+
+  it("addRoom membuang pendingPlacement setelah ruang ditempatkan (satu pick = satu ruang)", () => {
+    useEditorStore.getState().setPendingPlacement({ tool: "room", variant: "dapur" })
+    useEditorStore.getState().setTool("room")
+    useEditorStore.getState().addRoom("dapur", 6, 6)
+    expect(useEditorStore.getState().pendingPlacement).toBeNull()
+  })
+
+  it("addRoofZone membuang pendingPlacement setelah zona ditempatkan", () => {
+    useEditorStore.getState().setPendingPlacement({ tool: "roofZone", variant: "datar" })
+    useEditorStore.getState().setTool("roofZone")
+    useEditorStore.getState().addRoofZone({
+      id: "rz-1",
+      type: "datar",
+      x: 2,
+      y: 2,
+      widthM: 3,
+      depthM: 3,
+      slopeDeg: 0,
+      overhangM: 0.3,
+    })
+    expect(useEditorStore.getState().pendingPlacement).toBeNull()
+  })
+
+  it("loadLayout mereset pendingPlacement ke null", () => {
+    useEditorStore.getState().setPendingPlacement({ tool: "exterior", variant: "fence" })
+    useEditorStore.getState().loadLayout(makeLayout(), sampleSite, [])
+    expect(useEditorStore.getState().pendingPlacement).toBeNull()
+  })
+})

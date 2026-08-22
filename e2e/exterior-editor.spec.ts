@@ -19,14 +19,43 @@ async function placeExteriorElement(
 ): Promise<void> {
   const locator = page.locator(`[data-testid="exterior-element"][data-kind="${kind}"]`)
   const before = await locator.count()
-  const candidates: Array<[number, number]> = [
-    [500, 90],
-    [650, 90],
-    [420, 90],
-    [500, 130],
-    [650, 130],
-    [780, 90],
+  // Titik kandidat DINAMIS: strip kosong tepat di atas ruangan teratas,
+  // dihitung dari bbox nyata (bukan koordinat tetap yang rapuh terhadap
+  // auto-fit/ukuran viewport). Semua titik dijaga di dalam svg dan di kiri
+  // panel properti (yang menutup ~sepertiga kanan kanvas di 720p).
+  const svgBox = await canvas.boundingBox()
+  if (!svgBox) throw new Error("Canvas svg tidak punya bounding box")
+  const rooms = await page
+    .locator('[data-testid="room-shape"]')
+    .evaluateAll((els) => els.map((e) => e.getBoundingClientRect()))
+  const roomTop = rooms.length ? Math.min(...rooms.map((r) => r.top)) : svgBox.y + 200
+  const roomLeft = rooms.length ? Math.min(...rooms.map((r) => r.left)) : svgBox.x + 200
+  const roomRight = rooms.length ? Math.max(...rooms.map((r) => r.right)) : svgBox.x + 600
+  const maxX = svgBox.x + svgBox.width * 0.62 // aman dari panel kanan
+  const minX = svgBox.x + 70 // kanan dari rail toolbar kiri
+  const minY = svgBox.y + 64 // bawah dari floor bar tengah-atas
+  const maxY = svgBox.y + svgBox.height - 16
+  const midY = rooms.length
+    ? (Math.min(...rooms.map((r) => r.top)) + Math.max(...rooms.map((r) => r.bottom))) / 2
+    : svgBox.y + svgBox.height / 2
+  const roomBottom = rooms.length ? Math.max(...rooms.map((r) => r.bottom)) : svgBox.y + 400
+  const rawCandidates: Array<[number, number]> = [
+    // margin kiri bangunan (vertikal tengah) — bebas overlay
+    [roomLeft - 40, midY],
+    [roomLeft - 75, midY],
+    // strip atas footprint, menjauhi floor bar tengah
+    [roomLeft + 30, roomTop - 24],
+    [roomLeft + 90, roomTop - 24],
+    // strip bawah footprint
+    [roomLeft + 30, roomBottom + 24],
+    [(roomLeft + roomRight) / 2, roomBottom + 24],
   ]
+  const candidates: Array<[number, number]> = rawCandidates
+    .map(([x, y]): [number, number] => [
+      Math.min(Math.max(x, minX), maxX),
+      Math.min(Math.max(y, minY), maxY),
+    ])
+    .map(([x, y]): [number, number] => [x - svgBox.x, y - svgBox.y])
   for (const [x, y] of candidates) {
     await canvas.click({ position: { x, y } })
     await page.waitForTimeout(200)
@@ -37,24 +66,32 @@ async function placeExteriorElement(
   )
 }
 
-test.describe("Exterior editor tools", () => {
-  // Toolbar editor mengukur tinggi asli via ResizeObserver (useToolbarOverflow)
-  // dan menciutkan tombol sekunder (termasuk "Tambah elemen eksterior" &
-  // "Pilih template tampak depan") ke menu "Kontrol lainnya" saat viewport
-  // pendek (default Playwright 1280×720 sudah cukup pendek utk memicunya).
-  // Viewport tinggi di sini menjaga tombol tetap tampil inline — sama
-  // seperti idiom e2e/facade-shapes.spec.ts (spec ini menguji desktop biasa,
-  // bukan perilaku compact — kasus compact dites terpisah di test viewport
-  // mobile di bawah).
-  test.use({ viewport: { width: 1280, height: 1400 } })
+/**
+ * Fase 3 (unifikasi UI editor): rail 2D sekarang HANYA 11 tombol + 2 label
+ * grup — muat di 720p desktop tanpa fallback compact (lihat komentar
+ * budget tinggi di editor-toolbar.tsx), jadi workaround viewport
+ * 1280×1400 (dulu dipakai supaya "Tambah elemen eksterior"/"Pilih
+ * template tampak depan" tetap inline) sudah tidak diperlukan. Compact
+ * (tablet/mobile — viewport SEMPIT, bukan pendek) tetap bisa terjadi;
+ * helper ini klik tombol "Kontrol lainnya" HANYA bila memang tampak,
+ * jadi test yang sama jalan di desktop maupun compact.
+ */
+async function openToolbarMore(page: Page): Promise<void> {
+  const more = page.getByTestId("editor-toolbar-more")
+  if (await more.isVisible().catch(() => false)) {
+    await more.click()
+  }
+}
 
+test.describe("Exterior editor tools", () => {
   test("places an additive portal from the toolbar and supports undo", async ({ page }) => {
     await page.goto(`/app/projects/${DEMO}/editor`)
     const canvas = page.locator("svg.touch-none")
     await expect(canvas).toBeVisible({ timeout: 30_000 })
 
-    await page.getByRole("button", { name: "Tambah elemen eksterior" }).click()
-    await page.getByRole("menuitem", { name: "Portal" }).click()
+    await openToolbarMore(page)
+    await page.getByRole("button", { name: "Eksterior" }).click()
+    await page.getByRole("option", { name: "Portal", exact: true }).click()
     await expect(page.getByText("Portal").first()).toBeVisible()
 
     await placeExteriorElement(page, canvas, "portal_frame")
@@ -71,8 +108,9 @@ test.describe("Exterior editor tools", () => {
     const canvas = page.locator("svg.touch-none")
     await expect(canvas).toBeVisible({ timeout: 30_000 })
 
-    await page.getByRole("button", { name: "Tambah elemen eksterior" }).click()
-    await page.getByRole("menuitem", { name: "Gerbang geser" }).click()
+    await openToolbarMore(page)
+    await page.getByRole("button", { name: "Eksterior" }).click()
+    await page.getByRole("option", { name: "Gerbang geser", exact: true }).click()
     await expect(page.getByText("Gerbang geser").first()).toBeVisible()
 
     await page.keyboard.press("Escape")
@@ -87,8 +125,9 @@ test.describe("Exterior editor tools", () => {
     const canvas = page.locator("svg.touch-none")
     await expect(canvas).toBeVisible({ timeout: 30_000 })
 
-    await page.getByRole("button", { name: "Tambah elemen eksterior" }).click()
-    await page.getByRole("menuitem", { name: "Gerbang geser" }).click()
+    await openToolbarMore(page)
+    await page.getByRole("button", { name: "Eksterior" }).click()
+    await page.getByRole("option", { name: "Gerbang geser", exact: true }).click()
     // Segmen gerbang geser meng-clamp X ke lebar tapak (plan-canvas.tsx),
     // jadi hanya Y yang bisa jatuh di luar batas. plan-canvas.tsx selalu
     // memberi gutter vertikal >= 32px di sekitar tapak saat auto-fit
@@ -105,8 +144,9 @@ test.describe("Exterior editor tools", () => {
     const canvas = page.locator("svg.touch-none")
     await expect(canvas).toBeVisible({ timeout: 30_000 })
 
-    await page.getByRole("button", { name: "Tambah elemen eksterior" }).click()
-    await page.getByRole("menuitem", { name: "Tangga luar" }).click()
+    await openToolbarMore(page)
+    await page.getByRole("button", { name: "Eksterior" }).click()
+    await page.getByRole("option", { name: "Tangga luar", exact: true }).click()
     await placeExteriorElement(page, canvas, "exterior_stair")
     await expect(page.locator('[data-testid="exterior-element"][data-kind="exterior_stair"]').first()).toBeVisible()
   })
@@ -115,9 +155,12 @@ test.describe("Exterior editor tools", () => {
     await page.goto(`/app/projects/${DEMO}/editor`)
     await expect(page.locator("svg.touch-none")).toBeVisible({ timeout: 30_000 })
 
-    page.once("dialog", (dialog) => dialog.accept())
-    await page.getByRole("button", { name: "Pilih template tampak depan" }).click()
-    await page.getByRole("menuitem", { name: /Modern Concrete Vertical/ }).click()
+    // Fase 3: window.confirm() diganti useConfirm() (AlertDialog terkontrol)
+    // — bukan lagi dialog native, jadi tak perlu page.once("dialog", ...).
+    await openToolbarMore(page)
+    await page.getByRole("button", { name: "Eksterior" }).click()
+    await page.getByRole("option", { name: /Modern Concrete Vertical/ }).click()
+    await page.getByRole("button", { name: "Lanjutkan" }).click()
 
     await expect(page.locator('[data-testid="exterior-element"][data-kind="portal_frame"]').first()).toBeVisible()
     await expect(page.locator('[data-testid="exterior-element"][data-kind="facade_panel"]').first()).toBeVisible()
@@ -132,8 +175,9 @@ test.describe("Exterior editor tools", () => {
     const canvas = page.locator("svg.touch-none")
     await expect(canvas).toBeVisible({ timeout: 30_000 })
 
-    await page.getByRole("button", { name: "Tambah elemen eksterior" }).click()
-    await page.getByRole("menuitem", { name: "Driveway" }).click()
+    await openToolbarMore(page)
+    await page.getByRole("button", { name: "Eksterior" }).click()
+    await page.getByRole("option", { name: "Driveway", exact: true }).click()
     await placeExteriorElement(page, canvas, "driveway")
     await expect(page.locator('[data-testid="exterior-element"][data-kind="driveway"]').first()).toBeVisible()
     await expect(page.locator('[data-testid="exterior-handle"]')).toHaveCount(3)
@@ -145,15 +189,13 @@ test.describe("Exterior editor tools", () => {
     const canvas = page.locator("svg.touch-none")
     await expect(canvas).toBeVisible({ timeout: 30_000 })
 
-    // Berbeda dari test desktop di atas: `useNarrowViewport` menciutkan
-    // toolbar berdasar LEBAR (breakpoint lg 1024px), bukan tinggi — di layar
-    // mobile 390px ini SELALU aktif, apa pun tinggi viewport-nya. Jadi
-    // "Tambah elemen eksterior" tak pernah muncul sbg tombol langsung di
-    // mobile; jalur pengguna nyata di sini adalah lewat menu "Kontrol
-    // lainnya" → submenu "Tambah elemen eksterior".
-    await page.getByRole("button", { name: "Kontrol lainnya" }).click()
-    await page.getByRole("menuitem", { name: "Tambah elemen eksterior" }).click()
-    await page.getByRole("menuitem", { name: "Kanopi" }).click()
+    // `useToolbarCompact` menciutkan rail berdasar LEBAR (breakpoint lg
+    // 1024px) di layar mobile 390px ini — SELALU aktif apa pun tinggi
+    // viewport-nya. `openToolbarMore` membuka "Kontrol lainnya" dulu supaya
+    // tombol "Eksterior" (di dalam fragmen sekunder) reachable.
+    await openToolbarMore(page)
+    await page.getByRole("button", { name: "Eksterior" }).click()
+    await page.getByRole("option", { name: "Kanopi", exact: true }).click()
     await expect(page.getByText("Kanopi").first()).toBeVisible()
 
     await canvas.click({ position: { x: 170, y: 120 } })

@@ -16,12 +16,27 @@ async function openEditor(page: Page): Promise<void> {
   await expect(page.locator("svg.touch-none")).toBeVisible({ timeout: 30_000 })
 }
 
-/** Dua dinding BERBEDA (roomId beda) dari daftar hit-target dinding di 2D Editor. */
+/**
+ * Dua dinding BERBEDA (roomId beda) dari daftar hit-target dinding di 2D
+ * Editor. Di viewport 720p panel Properti kanan menutup ~sepertiga kanan
+ * kanvas; klik force tetap kalah hit-test dgn panel, jadi hanya dinding yang
+ * pusatnya di KIRI panel yang dipakai.
+ */
 async function twoDistinctWalls(page: Page): Promise<{ wallA: Locator; wallB: Locator }> {
-  const walls = page.locator('[data-testid^="wall-hit-"]')
-  const count = await walls.count()
-  const testids: string[] = []
-  for (let i = 0; i < count; i++) testids.push((await walls.nth(i).getAttribute("data-testid")) ?? "")
+  // elementFromPoint nyata di pusat tiap dinding: hanya dinding yang benar-
+  // benar menerima klik (tidak tertutup panel/floor bar/cluster zoom/rail)
+  // yang dipakai — tahan terhadap perubahan tata letak overlay.
+  const testids = await page.evaluate(() => {
+    const out: string[] = []
+    document.querySelectorAll('[data-testid^="wall-hit-"]').forEach((el) => {
+      const r = el.getBoundingClientRect()
+      const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)
+      if (hit && (hit === el || el.contains(hit))) {
+        out.push(el.getAttribute("data-testid") ?? "")
+      }
+    })
+    return out
+  })
   const idA = testids[0]
   const roomA = roomIdOfWallHit(idA)
   const idB = testids.find((t) => roomIdOfWallHit(t) !== roomA)
