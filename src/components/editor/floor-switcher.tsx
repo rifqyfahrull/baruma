@@ -1,14 +1,23 @@
 "use client"
 
-import { AlignEndHorizontal, Home, Layers, Plus, Trash2 } from "lucide-react"
+import { AlignEndHorizontal, Home, Layers, MoreHorizontal, Plus, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
 import { useEditorStore, ROOF_LAYER_ID } from "@/stores/editor-store"
 import { isMezzanineFloor, isRegularFloor } from "@/lib/editor/floors"
-import { cn } from "@/lib/utils"
+import { useConfirm } from "@/components/ui/confirm-dialog"
+import { FloatingBar, FloatingBarSeparator } from "@/components/chrome/floating-bar"
+import { Pill } from "@/components/chrome/pill"
+import { ToolButton } from "@/components/chrome/tool-button"
+import { SurfaceSwitcher } from "@/components/chrome/surface-switcher"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
@@ -20,6 +29,7 @@ export function FloorSwitcher() {
   const addMezzanine = useEditorStore((s) => s.addMezzanine)
   const removeFloor = useEditorStore((s) => s.removeFloor)
   const alignFloorToReference = useEditorStore((s) => s.alignFloorToReference)
+  const confirm = useConfirm()
 
   if (floors.length === 0) return null
 
@@ -32,111 +42,118 @@ export function FloorSwitcher() {
     isRegularFloor(activeFloor) &&
     !(floors[activeIdx + 1] && isMezzanineFloor(floors[activeIdx + 1]))
 
+  // Layer denah ATAP — lembar tersendiri (konvensi roof plan arsitek): zona
+  // atap hanya diedit di sini; ruang tampil sebagai ghost. Aksi lantai
+  // (samakan/hapus) tidak relevan di layer ini.
+  const showFloorLevelActions = floors.length > 1 && selectedFloorId !== ROOF_LAYER_ID
+  const showActionsMenu = showFloorLevelActions || canAddMezzanine
+
+  const handleAlign = (target: { id: string; name: string }) => {
+    if (!selectedFloorId) return
+    const summary = alignFloorToReference(selectedFloorId, target.id)
+    if (!summary) {
+      toast.info("Tidak ada perubahan (footprint sudah sejajar atau lantai kosong).")
+    } else {
+      toast.success(
+        `Samakan footprint ke ${target.name}: ${summary.grown.length} dilebarkan, ` +
+          `${summary.shrunk.length} disusutkan, ${summary.removed.length} dihapus.`,
+      )
+    }
+  }
+
+  const handleRemove = async () => {
+    const f = floors.find((x) => x.id === selectedFloorId)
+    if (!f) return
+    const ok = await confirm({
+      title: `Hapus ${f.name}?`,
+      description: "Ruang di dalamnya ikut terhapus.",
+      confirmLabel: "Hapus",
+      destructive: true,
+    })
+    if (ok) removeFloor(f.id)
+  }
+
   return (
-    <div className="flex items-center gap-1 rounded-lg border bg-card/95 p-1 shadow-sm backdrop-blur">
+    <FloatingBar orientation="horizontal" data-testid="floor-switcher">
+      <SurfaceSwitcher />
+      <FloatingBarSeparator />
       <Layers className="ml-1 size-3.5 text-muted-foreground" />
       {floors.map((f) => (
-        <button
+        <Pill
           key={f.id}
-          type="button"
+          pressed={f.id === selectedFloorId}
+          exclusive
+          label={f.name}
           onClick={() => setSelectedFloor(f.id)}
-          className={cn(
-            "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-            f.id === selectedFloorId ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
-          )}
         >
           {f.name}
-        </button>
+        </Pill>
       ))}
-      {/* Layer denah ATAP — lembar tersendiri (konvensi roof plan arsitek):
-          zona atap hanya diedit di sini; ruang tampil sebagai ghost. */}
-      <button
-        type="button"
-        onClick={() => setSelectedFloor(ROOF_LAYER_ID)}
+      <Pill
+        pressed={selectedFloorId === ROOF_LAYER_ID}
+        exclusive
+        icon={<Home className="size-3" />}
+        label="Atap"
         data-testid="floor-tab-atap"
-        className={cn(
-          "flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-          selectedFloorId === ROOF_LAYER_ID
-            ? "bg-primary text-primary-foreground"
-            : "text-muted-foreground hover:bg-muted"
-        )}
+        onClick={() => setSelectedFloor(ROOF_LAYER_ID)}
       >
-        <Home className="size-3" />
         Atap
-      </button>
-      {floors.length > 1 && selectedFloorId !== ROOF_LAYER_ID && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              aria-label="Samakan footprint"
-              title="Samakan footprint dengan lantai lain"
-              className="rounded-md px-1.5 py-1 text-muted-foreground hover:bg-muted"
-            >
-              <AlignEndHorizontal className="size-4" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            {floors
-              .filter((f) => f.id !== selectedFloorId)
-              .map((f) => (
+      </Pill>
+
+      {showActionsMenu && (
+        <>
+          <FloatingBarSeparator />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <ToolButton label="Aksi lantai">
+                <MoreHorizontal />
+              </ToolButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {showFloorLevelActions && (
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <AlignEndHorizontal className="mr-2 size-4" />
+                    Samakan footprint
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    {floors
+                      .filter((f) => f.id !== selectedFloorId)
+                      .map((f) => (
+                        <DropdownMenuItem key={f.id} onClick={() => handleAlign(f)}>
+                          Samakan dengan {f.name}
+                        </DropdownMenuItem>
+                      ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              )}
+              <DropdownMenuItem onClick={() => addFloor()}>
+                <Plus className="mr-2 size-4" />
+                Tambah lantai
+              </DropdownMenuItem>
+              {canAddMezzanine && (
                 <DropdownMenuItem
-                  key={f.id}
+                  data-testid="add-mezzanine"
                   onClick={() => {
-                    if (!selectedFloorId) return
-                    const summary = alignFloorToReference(selectedFloorId, f.id)
-                    if (!summary) {
-                      window.alert("Tidak ada perubahan (footprint sudah sejajar atau lantai kosong).")
-                    } else {
-                      window.alert(
-                        `Samakan footprint ke ${f.name}: ${summary.grown.length} dilebarkan, ` +
-                          `${summary.shrunk.length} disusutkan, ${summary.removed.length} dihapus.`,
-                      )
-                    }
+                    if (selectedFloorId) addMezzanine(selectedFloorId)
                   }}
                 >
-                  Samakan dengan {f.name}
+                  <Plus className="mr-2 size-4" />+ Mezz
                 </DropdownMenuItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+              )}
+              {showFloorLevelActions && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem variant="destructive" onClick={handleRemove}>
+                    <Trash2 className="mr-2 size-4" />
+                    Hapus lantai aktif
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
       )}
-      <button
-        type="button"
-        onClick={() => addFloor()}
-        aria-label="Tambah lantai"
-        title="Tambah lantai"
-        className="rounded-md px-1.5 py-1 text-muted-foreground hover:bg-muted"
-      >
-        <Plus className="size-4" />
-      </button>
-      {canAddMezzanine && (
-        <button
-          type="button"
-          onClick={() => {
-            if (selectedFloorId) addMezzanine(selectedFloorId)
-          }}
-          data-testid="add-mezzanine"
-          title="Tambah mezzanine di lantai aktif"
-          className="rounded-md px-1.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted"
-        >
-          + Mezz
-        </button>
-      )}
-      {floors.length > 1 && selectedFloorId !== ROOF_LAYER_ID && (
-        <button
-          type="button"
-          onClick={() => {
-            const f = floors.find((x) => x.id === selectedFloorId)
-            if (f && window.confirm(`Hapus ${f.name} beserta ruang di dalamnya?`)) removeFloor(f.id)
-          }}
-          aria-label="Hapus lantai aktif"
-          title="Hapus lantai aktif"
-          className="rounded-md px-1.5 py-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-        >
-          <Trash2 className="size-4" />
-        </button>
-      )}
-    </div>
+    </FloatingBar>
   )
 }

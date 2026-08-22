@@ -5,15 +5,18 @@ import { Eye, EyeOff, Maximize, Minimize, UnfoldVertical } from "lucide-react"
 
 import type { Floor } from "@/types"
 import { usePreviewStore } from "@/stores/preview-store"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { cn } from "@/lib/utils"
+import { FloatingBar, FloatingBarSeparator } from "@/components/chrome/floating-bar"
+import { Pill } from "@/components/chrome/pill"
+import { ToolButton } from "@/components/chrome/tool-button"
+import { SurfaceSwitcher } from "@/components/chrome/surface-switcher"
 
 /**
  * Floating floor-visibility switcher over the 3D canvas — styled like the 2D
  * editor's floor tabs, but each pill TOGGLES that floor's visibility (several
- * can be on at once). Next to it: exploded-view toggle (UnfoldVertical — the
- * old Expand icon read as "maximize") and a REAL fullscreen toggle.
+ * can be on at once — soft/multi-select semantics, deliberately different
+ * from the 2D `FloorSwitcher`'s exclusive tabs, distinguished by the eye
+ * affordance). Next to it: exploded-view toggle (UnfoldVertical — the old
+ * Expand icon read as "maximize") and a REAL fullscreen toggle.
  */
 export function FloorToggleBar({ floors }: { floors: Floor[] }) {
   const visibleFloors = usePreviewStore((s) => s.visibleFloors)
@@ -35,68 +38,45 @@ export function FloorToggleBar({ floors }: { floors: Floor[] }) {
   }
 
   return (
-    <div
-      data-testid="floor-toggle-bar"
-      className="flex items-center gap-1 rounded-lg border bg-background/95 p-1 shadow-sm backdrop-blur"
-    >
+    <FloatingBar orientation="horizontal" data-testid="floor-toggle-bar">
+      <SurfaceSwitcher />
+      <FloatingBarSeparator />
       {floors.map((floor) => {
         const visible = visibleFloors[floor.id] ?? true
         return (
-          <button
+          <Pill
             key={floor.id}
-            type="button"
+            pressed={visible}
+            exclusive={false}
+            label={visible ? `Sembunyikan ${floor.name}` : `Tampilkan ${floor.name}`}
+            trailingIcon={visible ? <Eye /> : <EyeOff />}
             onClick={() => toggleFloor(floor.id)}
-            aria-pressed={visible}
-            title={visible ? `Sembunyikan ${floor.name}` : `Tampilkan ${floor.name}`}
-            className={cn(
-              "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
-              visible ? "bg-primary/10 text-foreground" : "text-muted-foreground hover:bg-muted"
-            )}
           >
             {floor.name}
-            {visible ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}
-          </button>
+          </Pill>
         )
       })}
 
-      <div className="mx-0.5 h-5 w-px bg-border" />
+      <FloatingBarSeparator />
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            type="button"
-            size="icon"
-            variant={exploded ? "default" : "ghost"}
-            className="size-7"
-            aria-pressed={exploded}
-            aria-label="Exploded view"
-            onClick={() => setExploded(!exploded)}
-          >
-            <UnfoldVertical />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">Exploded view — pisahkan antar lantai</TooltipContent>
-      </Tooltip>
+      <ToolButton
+        label="Exploded view — pisahkan antar lantai"
+        pressed={exploded}
+        exclusive={false}
+        onClick={() => setExploded(!exploded)}
+      >
+        <UnfoldVertical />
+      </ToolButton>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            className="size-7"
-            aria-pressed={isFullscreen}
-            aria-label={isFullscreen ? "Keluar layar penuh" : "Layar penuh"}
-            data-testid="fullscreen-toggle"
-            onClick={toggleFullscreen}
-          >
-            {isFullscreen ? <Minimize /> : <Maximize />}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">
-          {isFullscreen ? "Keluar layar penuh" : "Layar penuh"}
-        </TooltipContent>
-      </Tooltip>
-    </div>
+      <ToolButton
+        label={isFullscreen ? "Keluar layar penuh" : "Layar penuh"}
+        pressed={isFullscreen}
+        exclusive={false}
+        data-testid="fullscreen-toggle"
+        onClick={toggleFullscreen}
+      >
+        {isFullscreen ? <Minimize /> : <Maximize />}
+      </ToolButton>
+    </FloatingBar>
   )
 }
