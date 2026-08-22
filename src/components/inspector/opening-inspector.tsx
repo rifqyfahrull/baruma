@@ -45,7 +45,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DeleteButton, Field, NumField, Stat } from "./fields";
+import { DeleteButton, Field, InspectorCard, NumField, Stat } from "./fields";
 import type { InspectorSurface } from "./registry";
 
 /**
@@ -195,11 +195,8 @@ export function OpeningInspectorCard({ surface }: { surface: InspectorSurface })
   };
 
   return (
-    <div
-      className={cn(
-        "space-y-3 rounded-lg border bg-background p-3",
-        surface === "3d" && "border-primary/40",
-      )}
+    <InspectorCard
+      className={cn(surface === "3d" && "border-primary/40")}
       data-testid="opening-quick-editor"
     >
       {/* Header: identitas + konteks + tutup */}
@@ -504,6 +501,6 @@ export function OpeningInspectorCard({ surface }: { surface: InspectorSurface })
         entityLabel="bukaan"
         onDelete={() => deleteRef({ kind: "opening", id: opening.id })}
       />
-    </div>
+    </InspectorCard>
   );
 }

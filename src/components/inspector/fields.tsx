@@ -76,12 +76,13 @@ export function Field({
 export function InspectorCard({
   className,
   children,
-}: {
-  className?: string;
-  children: React.ReactNode;
-}) {
+  ...rest
+}: React.ComponentPropsWithoutRef<"div">) {
   return (
-    <div className={cn("space-y-3 rounded-lg border bg-background p-3", className)}>
+    <div
+      {...rest}
+      className={cn("space-y-3 rounded-lg border bg-background p-3", className)}
+    >
       {children}
     </div>
   );

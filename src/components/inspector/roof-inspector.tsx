@@ -61,6 +61,7 @@ import {
   DeleteButton,
   DirectionPicker,
   Field,
+  InspectorCard,
   NumField,
   ToggleRow,
 } from "./fields";
@@ -90,11 +91,8 @@ function RoofGlobalCard({ surface }: { surface: InspectorSurface }) {
   const roof = { ...DEFAULT_ROOF, ...layout.roof };
 
   return (
-    <div
-      className={cn(
-        "space-y-2.5 rounded-lg border bg-background p-3",
-        surface === "3d" && "border-primary/40",
-      )}
+    <InspectorCard
+      className={cn("space-y-2.5", surface === "3d" && "border-primary/40")}
       data-testid="roof-quick-editor"
     >
       <div className="flex items-start justify-between gap-2">
@@ -118,7 +116,7 @@ function RoofGlobalCard({ surface }: { surface: InspectorSurface }) {
         </Button>
       </div>
       <RoofGlobalBody surface={surface} />
-    </div>
+    </InspectorCard>
   );
 }
 
@@ -954,11 +952,8 @@ function RoofZoneBody({
   };
 
   return (
-    <div
-      className={cn(
-        "space-y-4 rounded-lg border bg-background p-3",
-        surface === "3d" && "border-primary/40",
-      )}
+    <InspectorCard
+      className={cn("space-y-4", surface === "3d" && "border-primary/40")}
       data-testid="roof-zone-inspector"
     >
       <div className="flex items-start justify-between gap-3">
@@ -1180,6 +1175,6 @@ function RoofZoneBody({
           onDelete={() => deleteRef({ kind: "roofZone", id: zone.id })}
         />
       </div>
-    </div>
+    </InspectorCard>
   );
 }

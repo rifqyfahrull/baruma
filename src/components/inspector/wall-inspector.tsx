@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Field, NumField, ToggleRow } from "./fields";
+import { Field, InspectorCard, NumField, ToggleRow } from "./fields";
 import { CladdingGrid } from "./cladding-grid";
 import { facadeBandsForWall } from "@/lib/three/facade-bands";
 import { hasWallAccent } from "@/lib/exterior/facade-accents";
@@ -320,11 +320,8 @@ export function WallInspectorCard({ surface }: { surface: InspectorSurface }) {
   };
 
   return (
-    <div
-      className={cn(
-        "space-y-2.5 rounded-lg border bg-background p-3",
-        surface === "3d" && "border-primary/40",
-      )}
+    <InspectorCard
+      className={cn("space-y-2.5", surface === "3d" && "border-primary/40")}
       data-testid="facade-quick-editor"
     >
       <div className="flex items-start justify-between gap-2">
@@ -777,6 +774,6 @@ export function WallInspectorCard({ surface }: { surface: InspectorSurface }) {
           </p>
         </div>
       )}
-    </div>
+    </InspectorCard>
   );
 }

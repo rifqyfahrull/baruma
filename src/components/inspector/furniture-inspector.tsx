@@ -39,6 +39,8 @@ import { formatIDRRange } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { InspectorCard } from "./fields";
 import type { InspectorSurface } from "./registry";
 
 export function FurnitureInspectorCard({ surface }: { surface: InspectorSurface }) {
@@ -71,8 +73,8 @@ export function FurnitureInspectorCard({ surface }: { surface: InspectorSurface 
   const req = item.slotType ? slotRequirementsText(item.slotType) : null;
 
   return (
-    <div
-      className={cnCard(surface)}
+    <InspectorCard
+      className={cn("space-y-1", surface === "3d" && "border-primary/40")}
       data-testid="furniture-quick-editor"
     >
       <div className="flex items-start justify-between gap-2">
@@ -242,15 +244,6 @@ export function FurnitureInspectorCard({ surface }: { surface: InspectorSurface 
           }}
         />
       )}
-    </div>
+    </InspectorCard>
   );
-}
-
-function cnCard(surface: InspectorSurface): string {
-  return [
-    "space-y-1 rounded-lg border bg-background p-3",
-    surface === "3d" ? "border-primary/40" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
 }

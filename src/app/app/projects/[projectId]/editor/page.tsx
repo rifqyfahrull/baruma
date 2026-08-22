@@ -10,6 +10,7 @@ import {
   PanelRightOpen,
   Save,
   Sparkles,
+  TriangleAlert,
   ZoomIn,
   ZoomOut,
 } from "lucide-react"
@@ -18,6 +19,7 @@ import { toast } from "sonner"
 import { useLayout, useProject, useSaveLayout } from "@/lib/api/hooks"
 import { usePageView } from "@/lib/analytics"
 import { useEditorStore } from "@/stores/editor-store"
+import { useEditorPanelUiStore } from "@/stores/editor-panel-ui-store"
 import { structuralNotes } from "@/lib/validation"
 import { Button } from "@/components/ui/button"
 import { CompassRose } from "@/components/ui/compass-rose"
@@ -25,17 +27,11 @@ import { FloatingBar } from "@/components/chrome/floating-bar"
 import { ToolButton } from "@/components/chrome/tool-button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/shared/empty-state"
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer"
 import { PlanCanvas } from "@/components/editor/plan-canvas"
 import { EditorToolbar } from "@/components/editor/editor-toolbar"
 import { FloorSwitcher } from "@/components/editor/floor-switcher"
-import { EditorWarningsPopover } from "@/components/editor/editor-warnings-popover"
-import { FloatingPanel, PanelTab } from "@/components/layout/floating-panel"
+import { useWarningPrefs } from "@/hooks/use-warning-prefs"
+import { FloatingPanel, PanelDrawer, PanelTab } from "@/components/layout/floating-panel"
 import { useLayoutAutosave } from "@/hooks/use-layout-autosave"
 import { useSaveStatusStore } from "@/stores/save-status-store"
 import { useProjectAgentUiStore } from "@/stores/project-agent-ui-store"
@@ -49,9 +45,9 @@ import { cn } from "@/lib/utils"
 // Bundle trim (G2b): none of these three are needed for first paint — the
 // canvas/toolbar/floor-switcher above must render immediately, but the
 // inspector (visible only once a layout is loaded and, on FloatingPanel,
-// often starts minimized), the audit card (behind the "Cek & AI" tab) and the
-// asset picker (a Sheet closed until something requests it) can all load in
-// a trailing chunk instead of the editor route's first-load JS.
+// often starts minimized), the audit card + warnings list (behind the "Cek"
+// tab) and the asset picker (a Sheet closed until something requests it) can
+// all load in a trailing chunk instead of the editor route's first-load JS.
 const EditorInspector = dynamic(
   () => import("@/components/editor/editor-inspector").then((m) => m.EditorInspector),
   { loading: () => <InspectorSkeleton /> }
@@ -66,6 +62,10 @@ const AssetPickerHost = dynamic(
 )
 const DesignAuditCard = dynamic(
   () => import("@/components/assistant/design-audit-card").then((m) => m.DesignAuditCard),
+  { loading: () => <AuditCardSkeleton /> }
+)
+const EditorWarningsList = dynamic(
+  () => import("@/components/editor/editor-warnings-panel").then((m) => m.EditorWarningsList),
   { loading: () => <AuditCardSkeleton /> }
 )
 
@@ -119,17 +119,28 @@ function EditorClient({ projectId }: { projectId: string }) {
   const setTool = useEditorStore((s) => s.setTool)
   const zoomBy = useEditorStore((s) => s.zoomBy)
   const resetView = useEditorStore((s) => s.resetView)
-  const [sidePanel, setSidePanel] = React.useState<"properti" | "ai">("properti")
+  // Fase 6: state tab panel kanan (Properti | Cek) dipindah ke store kecil
+  // (bukan lagi useState lokal) — marker warning di kanvas (pohon komponen
+  // TERPISAH, di dalam <svg> PlanCanvas) perlu memicu "pindah ke tab Cek +
+  // fokus baris ybs" tanpa props-drilling lintas dua sub-tree yang tak
+  // bertetangga. Lihat src/stores/editor-panel-ui-store.ts.
+  const sidePanel = useEditorPanelUiStore((s) => s.sidePanel)
+  const setSidePanel = useEditorPanelUiStore((s) => s.setSidePanel)
   const injectAgentDraft = useProjectAgentUiStore((s) => s.injectDraft)
   const agentOpen = useProjectAgentUiStore((s) => s.open)
   const autosaveStatus = useLayoutAutosave(projectId)
   const reportSaveStatus = useSaveStatusStore((s) => s.report)
+  const warnings = useWarningPrefs(projectId)
 
   // Tablet/mobile (<lg, panel kanan tak ada): tap objek di kanvas AUTO-membuka
   // drawer Properti — dulu seleksi diam-diam terjadi tanpa UI apa pun dan user
   // harus tahu sendiri ada tombol drawer. Nonce naik tiap select() (termasuk
-  // memilih ulang objek yang sama), jadi tap ulang juga membuka kembali.
-  const [inspectorDrawerOpen, setInspectorDrawerOpen] = React.useState(false)
+  // memilih ulang objek yang sama), jadi tap ulang juga membuka kembali. Union
+  // (bukan boolean) karena mobile kini punya DUA drawer (Properti/Cek, Fase 6)
+  // — hanya satu yang boleh terbuka sekaligus.
+  const [inspectorDrawerOpen, setInspectorDrawerOpen] = React.useState<
+    "properti" | "cek" | null
+  >(null)
   const selectionNonce = useEditorStore((s) => s.selectionNonce)
   const hasSelection = useEditorStore((s) => s.selected !== null)
   const firstNonceRef = React.useRef(true)
@@ -140,14 +151,29 @@ function EditorClient({ projectId }: { projectId: string }) {
     }
     if (!hasSelection) return
     if (window.matchMedia("(min-width: 64rem)").matches) return // desktop: panel kanan
-    setInspectorDrawerOpen(true)
+    setInspectorDrawerOpen("properti")
   }, [selectionNonce, hasSelection])
+
+  // Marker warning di kanvas (mobile): klik → focusWarning() menaikkan
+  // focusNonce di store bersama → buka drawer Cek (paritas dgn auto-open
+  // drawer Properti di atas saat objek biasa dipilih).
+  const focusNonce = useEditorPanelUiStore((s) => s.focusNonce)
+  const firstFocusRef = React.useRef(true)
+  React.useEffect(() => {
+    if (firstFocusRef.current) {
+      firstFocusRef.current = false
+      return
+    }
+    if (window.matchMedia("(min-width: 64rem)").matches) return // desktop: panel kanan
+    setInspectorDrawerOpen("cek")
+  }, [focusNonce])
 
   // Status autosave (+dirty) tampil di header workspace, di bawah nama project.
   React.useEffect(() => {
     reportSaveStatus(autosaveStatus, dirty)
   }, [autosaveStatus, dirty, reportSaveStatus])
   React.useEffect(() => () => useSaveStatusStore.getState().reset(), [])
+  React.useEffect(() => () => useEditorPanelUiStore.getState().reset(), [])
 
   // Keyboard shortcuts
   React.useEffect(() => {
@@ -218,9 +244,25 @@ function EditorClient({ projectId }: { projectId: string }) {
     injectAgentDraft(text, "floorplan")
   }, [injectAgentDraft])
 
-  const addWarningToMobileAiContext = React.useCallback((text: string) => {
-    addWarningToAiContext(text)
-  }, [addWarningToAiContext])
+  // Isi tab "Cek": daftar peringatan (porting popover lama, Fase 6) + audit
+  // standar desain — dipakai baik di panel desktop maupun drawer mobile.
+  const cekTabContent = (
+    <div className="flex h-full min-h-0 flex-col">
+      <EditorWarningsList
+        layout={warnings.layout}
+        issues={warnings.issues}
+        prefs={warnings.prefs}
+        updateIssuePrefs={warnings.updateIssuePrefs}
+        onAddToAiContext={addWarningToAiContext}
+      />
+      {project && <DesignAuditCard project={project} onFix={addWarningToAiContext} />}
+      <div className="p-3">
+        <Button className="w-full" onClick={() => injectAgentDraft("", "floorplan")}>
+          <Sparkles /> Buka AI Agent
+        </Button>
+      </div>
+    </div>
+  )
 
   return (
     <div className={cn("relative flex h-full min-h-0 transition-[padding] duration-300", agentOpen && "lg:pr-[28rem]")}>
@@ -284,12 +326,10 @@ function EditorClient({ projectId }: { projectId: string }) {
         <div className="absolute right-3 top-10 z-10 flex items-center gap-2 lg:top-3 lg:hidden">
           <SaveControls
             variant="overlay"
-            projectId={projectId}
             dirty={dirty}
             disabled={!layoutRevision}
             pending={save.isPending}
             onSave={onSave}
-            onAddWarningToAiContext={addWarningToMobileAiContext}
           />
 
           {/* Satu AI Agent global; konteks Denah dipilih eksplisit. */}
@@ -302,23 +342,37 @@ function EditorClient({ projectId }: { projectId: string }) {
             <Sparkles />
           </Button>
 
+          {/* Mobile/tablet: Cek — badge unread sama dgn tab desktop. */}
+          <PanelDrawer
+            title="Cek"
+            triggerLabel={`Peringatan denah (${warnings.unread} belum dibaca dari ${warnings.issues.length})`}
+            triggerIcon={
+              <span className="relative">
+                <TriangleAlert />
+                {warnings.unread > 0 && (
+                  <span className="absolute -right-1.5 -top-1.5 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] leading-4 text-destructive-foreground">
+                    {warnings.unread}
+                  </span>
+                )}
+              </span>
+            }
+            open={inspectorDrawerOpen === "cek"}
+            onOpenChange={(open) => setInspectorDrawerOpen(open ? "cek" : null)}
+          >
+            {cekTabContent}
+          </PanelDrawer>
+
           {/* Mobile/tablet inspector — controlled: auto-open saat objek di-tap
               di kanvas (lihat efek selectionNonce di atas). */}
-          <Drawer open={inspectorDrawerOpen} onOpenChange={setInspectorDrawerOpen}>
-            <DrawerTrigger asChild>
-              <Button size="icon" variant="outline" aria-label="Properti">
-                <PanelRightOpen />
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent className="max-h-[80svh]">
-              <DrawerTitle className="px-4 pt-4 text-sm font-semibold">
-                Properti
-              </DrawerTitle>
-              <div className="min-h-0 overflow-y-auto">
-                <EditorInspector />
-              </div>
-            </DrawerContent>
-          </Drawer>
+          <PanelDrawer
+            title="Properti"
+            triggerLabel="Properti"
+            triggerIcon={<PanelRightOpen />}
+            open={inspectorDrawerOpen === "properti"}
+            onOpenChange={(open) => setInspectorDrawerOpen(open ? "properti" : null)}
+          >
+            <EditorInspector />
+          </PanelDrawer>
         </div>
 
         {/* Desktop right panel: Properti / Asisten Denah — floating overlay.
@@ -337,12 +391,10 @@ function EditorClient({ projectId }: { projectId: string }) {
           actions={
             <SaveControls
               variant="header"
-              projectId={projectId}
               dirty={dirty}
               disabled={!layoutRevision}
               pending={save.isPending}
               onSave={onSave}
-              onAddWarningToAiContext={addWarningToAiContext}
             />
           }
           title={
@@ -350,26 +402,22 @@ function EditorClient({ projectId }: { projectId: string }) {
               <PanelTab active={sidePanel === "properti"} onClick={() => setSidePanel("properti")}>
                 Properti
               </PanelTab>
-              <PanelTab active={sidePanel === "ai"} onClick={() => setSidePanel("ai")} icon={Sparkles}>
-                Cek & AI
+              {/* Fase 6: "Cek & AI" (bell popover terpisah) → SATU model "Cek",
+                  badge unread + aria-label pola lama "Peringatan denah (N
+                  belum dibaca dari M)" — e2e critical-flows menemukan tab
+                  ini lewat pola itu, dulu di tombol lonceng. */}
+              <PanelTab
+                active={sidePanel === "cek"}
+                onClick={() => setSidePanel("cek")}
+                badge={warnings.unread}
+                ariaLabel={`Peringatan denah (${warnings.unread} belum dibaca dari ${warnings.issues.length})`}
+              >
+                Cek
               </PanelTab>
             </div>
           }
         >
-          {sidePanel === "properti" ? (
-            <EditorInspector />
-          ) : (
-            <div className="flex h-full min-h-0 flex-col">
-              {project && (
-                <DesignAuditCard project={project} onFix={addWarningToAiContext} />
-              )}
-              <div className="p-3">
-                <Button className="w-full" onClick={() => injectAgentDraft("", "floorplan")}>
-                  <Sparkles /> Buka AI Agent
-                </Button>
-              </div>
-            </div>
-          )}
+          {sidePanel === "properti" ? <EditorInspector /> : cekTabContent}
         </FloatingPanel>
 
         {/* Picker My Library global — dipakai inspector terpadu (mis. model
@@ -390,28 +438,22 @@ function EditorClient({ projectId }: { projectId: string }) {
  */
 function SaveControls({
   variant,
-  projectId,
   dirty,
   disabled,
   pending,
   onSave,
-  onAddWarningToAiContext,
 }: {
   variant: "header" | "overlay"
-  projectId: string
   dirty: boolean
   disabled?: boolean
   pending: boolean
   onSave: () => void
-  onAddWarningToAiContext: (text: string) => void
 }) {
   return (
     <div className="flex items-center gap-1.5">
-      {/* Status autosave pindah ke header workspace (di bawah nama project). */}
-      <EditorWarningsPopover
-        projectId={projectId}
-        onAddToAiContext={onAddWarningToAiContext}
-      />
+      {/* Status autosave pindah ke header workspace (di bawah nama project).
+          Bell "Peringatan" DIHAPUS (Fase 6) — isinya kini tab "Cek" panel
+          kanan (lihat cekTabContent di EditorClient). */}
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -459,7 +501,7 @@ function InspectorSkeleton() {
   )
 }
 
-/** Loading fallback for the lazy-loaded DesignAuditCard ("Cek & AI" tab). */
+/** Loading fallback for the lazy-loaded DesignAuditCard / EditorWarningsList ("Cek" tab). */
 function AuditCardSkeleton() {
   return (
     <div className="space-y-2 p-3">

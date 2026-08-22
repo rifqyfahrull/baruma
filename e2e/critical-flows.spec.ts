@@ -93,7 +93,7 @@ test.describe("2D editor", () => {
     await expect(page.getByText(/Layout tersimpan/)).toBeVisible()
   })
 
-  test("peringatan pindah ke lonceng: note, detail, dan add to AI context", async ({
+  test("peringatan di tab Cek: note, detail, dan add to AI context", async ({
     page,
   }) => {
     await page.goto(`/app/projects/${DEMO}/editor`)
@@ -101,6 +101,8 @@ test.describe("2D editor", () => {
 
     const panel = page.getByTestId("editor-floating-sidebar")
     await expect(panel).toBeVisible()
+    // Tab "Properti" aktif secara default — daftar peringatan (tab "Cek",
+    // Fase 6: satu model, bell popover terpisah dihapus) belum dirender.
     await expect(panel.getByText("Peringatan")).toHaveCount(0)
 
     await panel.getByRole("button", { name: /Peringatan denah/ }).click()
@@ -118,6 +120,8 @@ test.describe("2D editor", () => {
     await expect(page.getByRole("dialog", { name: "Detail Peringatan" })).toBeVisible()
     await page.getByRole("button", { name: "Close" }).click()
 
+    // Klik tab "Cek" lagi — sudah aktif (idempoten); daftarnya tetap terlihat
+    // tanpa perlu "membuka lagi" (dulu ini re-membuka popover lonceng).
     await panel.getByRole("button", { name: /Peringatan denah/ }).click()
     await expect(page.getByText("Cek bersama engineer.")).toBeVisible()
     await page.getByRole("button", { name: "Aksi peringatan" }).first().click()
@@ -132,7 +136,9 @@ test.describe("2D editor", () => {
     )
   })
 
-  test("ikon warning di kanvas membuka detail saat hover dan click", async ({ page }) => {
+  test("ikon warning di kanvas: hover → tooltip singkat, klik → pilih ruang & buka tab Cek", async ({
+    page,
+  }) => {
     await page.goto(`/app/projects/${DEMO}/editor`)
     await expect(page.locator("svg.touch-none")).toBeVisible()
 
@@ -147,20 +153,19 @@ test.describe("2D editor", () => {
     const marker = page.getByRole("button", { name: "Detail peringatan untuk Carport" })
     await expect(marker).toBeVisible()
 
-    const markerTestId = await marker.getAttribute("data-testid")
-    if (!markerTestId) throw new Error("Warning marker test id missing")
-    const warningId = markerTestId.replace("warning-marker-", "")
-    const detail = page.getByTestId(`warning-detail-${warningId}`)
-
+    // Hover → HANYA tooltip singkat (mega-dialog 300×260 lama sudah dihapus).
     await marker.hover()
-    await expect(detail).toBeVisible()
-    await page.waitForTimeout(500)
-    await expect(detail).toBeVisible()
+    const tooltip = page.locator("[data-slot=tooltip-content]", {
+      hasText: /ventilasi/i,
+    })
+    await expect(tooltip).toBeVisible()
+    await expect(page.getByTestId(/^warning-detail-/)).toHaveCount(0)
 
+    // Klik → pilih ruang (Carport) DAN pindah panel kanan ke tab Cek, dengan
+    // baris peringatan terkait terlihat (di-scroll+highlight).
     await marker.click()
-    await expect(detail).toBeVisible()
-    await page.waitForTimeout(500)
-    await expect(detail).toBeVisible()
+    await expect(page.getByText(/total$/).first()).toBeVisible()
+    await expect(page.getByText(/ventilasi/i).first()).toBeVisible()
   })
 })
 

@@ -20,7 +20,9 @@ test.describe("Interior drag in 3D", () => {
 
     // Panel quick-add katalog sengaja dihapus (0066600, 12 Jul) — furniture
     // baru ditambahkan lewat "Tambah Model 3D Kustom" → My Library. Item baru
-    // auto-terseleksi (addAssetFurniture), siap untuk drag.
+    // auto-terseleksi (addAssetFurniture), siap untuk drag. Fase 6: aksi ini
+    // kini item di menu "+ Tambah".
+    await page.getByTestId("preview-add-menu").click()
     await page.getByTestId("room-custom-model").click()
     await page.getByRole("button", { name: /Tambah dari My Library/ }).click()
     await page.getByText("Sofa Itali 1").first().click()

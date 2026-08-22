@@ -10,8 +10,10 @@ test.describe("Design-audit card (proactive standards in editor)", () => {
 
     await page.goto(`/app/projects/${DEMO}/editor`)
 
-    // Open the standards/AI tab. The chat itself is hosted once at project layout level.
-    await page.getByRole("button", { name: /Cek & AI/ }).click()
+    // Open the "Cek" tab (Fase 6: satu model warning+audit, "Cek & AI" lama
+    // dihapus). Accessible name pola lama "Peringatan denah" dipertahankan
+    // (dulu di tombol lonceng terpisah).
+    await page.getByRole("button", { name: /Peringatan denah/ }).click()
 
     // The proactive "Cek Standar" card renders with a /100 score.
     const card = page.getByText("Cek Standar")

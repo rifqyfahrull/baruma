@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { PanelRightOpen, RotateCcw, Sparkles, TriangleAlert } from "lucide-react"
+import { PanelRightOpen, RotateCcw, TriangleAlert } from "lucide-react"
 
 import type { DesignLayout, Project } from "@/types"
 import type { SavedInterior } from "@/lib/schemas/interior"
@@ -23,15 +23,8 @@ import {
   type CursorMenuState,
 } from "@/components/editor/context-menu/cursor-menu"
 import { useSaveStatusStore } from "@/stores/save-status-store"
-import { useProjectAgentUiStore } from "@/stores/project-agent-ui-store"
 import { Button } from "@/components/ui/button"
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer"
-import { FloatingPanel, PanelTab } from "@/components/layout/floating-panel"
+import { FloatingPanel, PanelDrawer } from "@/components/layout/floating-panel"
 import { CompassRose } from "@/components/ui/compass-rose"
 import { HouseScene } from "./house-scene"
 import { FloorToggleBar } from "./floor-toggle-bar"
@@ -40,7 +33,6 @@ import { initSelectionBridge } from "./selection-bridge"
 import { AssetPickerHost } from "@/components/assets/asset-picker-host"
 import { ComponentStudioHost } from "@/components/studio/component-studio"
 import {
-  PreviewControls,
   PreviewControlsBody,
   PreviewControlsHeaderActions,
 } from "./preview-controls"
@@ -77,7 +69,7 @@ export function Preview3DView({
    * Viewer publik read-only (mis. template gallery): tanpa fetch ber-auth,
    * tanpa autosave, tanpa mutasi. Memaksa `interactionMode` ke "view" (kamera/
    * orbit, ganti lantai, mode tampilan tetap jalan), menyembunyikan panel
-   * Kontrol/Asisten Interior, menu klik-kanan, dan affordance mode Edit.
+   * Properti, menu klik-kanan, dan affordance mode Edit.
    */
   readOnly?: boolean
   /**
@@ -113,10 +105,6 @@ export function Preview3DView({
   // (editor-toolbar.tsx) — sinkron sidebar & reset-on-unmount kini hidup di
   // dalam hook, bukan lagi diduplikasi di sini.
   const { fokusMode } = useFokusMode()
-  // Tab panel kanan: Kontrol | Asisten Interior — paritas dengan 2D editor
-  // (Properti | Asisten Denah).
-  const [sidePanel, setSidePanel] = React.useState<"kontrol" | "ai">("kontrol")
-  const injectAgentDraft = useProjectAgentUiStore((state) => state.injectDraft)
 
   // Status autosave gabungan (interior + layout) di header workspace. readOnly:
   // tidak pernah reportSaveStatus sama sekali (tanpa autosave, tak ada yang
@@ -320,7 +308,7 @@ export function Preview3DView({
             disembunyikan mode bersih agar screenshot tetap polos. */}
         {!fokusMode && <Compass3DOverlay />}
 
-        {/* Panel Kontrol/Asisten Interior + drawer mobile: SELURUHNYA jalur
+        {/* Panel Properti + drawer mobile: SELURUHNYA jalur
             edit (quick-add kolam/tangga, gaya fasad, inspector terpadu,
             asisten AI, dst.) — disembunyikan total saat readOnly, bukan
             di-disable satu-satu. Navigasi kamera/lantai/tampilan (di atas)
@@ -331,65 +319,50 @@ export function Preview3DView({
                 tablet auto-membuka drawer saat entity NON-ruang di-tap di 3D
                 (kartu editornya di dalam drawer ini — dulu tap diam-diam memilih
                 tanpa UI apa pun). Tap ruang dikecualikan: dipakai utk navigasi/
-                fly-to & auto-select saat load — auto-popup justru mengganggu. */}
+                fly-to & auto-select saat load — auto-popup justru mengganggu.
+                PanelDrawer (Fase 6) menggantikan Drawer hand-rolled — satu
+                idiom mobile bersama dgn editor 2D. */}
             {!fokusMode && (
               <div className="absolute right-3 top-3 z-10 lg:hidden">
-                <Drawer open={controlsDrawerOpen} onOpenChange={setControlsDrawerOpen}>
-                  <DrawerTrigger asChild>
-                    <Button size="icon" variant="outline" aria-label="Kontrol 3D">
-                      <PanelRightOpen />
-                    </Button>
-                  </DrawerTrigger>
-                  <DrawerContent className="max-h-[82svh]">
-                    <DrawerTitle className="px-4 pt-4 text-sm font-semibold">
-                      Kontrol Preview 3D
-                    </DrawerTitle>
-                    <div className="min-h-0 overflow-y-auto">
-                      <PreviewControls layout={layout} project={project} />
-                    </div>
-                  </DrawerContent>
-                </Drawer>
+                <PanelDrawer
+                  title="Properti — Preview 3D"
+                  triggerLabel="Properti 3D"
+                  triggerIcon={<PanelRightOpen />}
+                  open={controlsDrawerOpen}
+                  onOpenChange={setControlsDrawerOpen}
+                >
+                  <PreviewControlsBody layout={layout} project={project} />
+                </PanelDrawer>
               </div>
             )}
 
             {/* Mode bersih menyembunyikan isi panel, tapi pill "Preview 3D" tetap
                 tampil — mengkliknya membuka panel sejenak tanpa keluar dari mode
-                bersih (tombol minimize di header panel mengembalikan ke pill). */}
+                bersih (tombol minimize di header panel mengembalikan ke pill).
+                Fase 6: tab "Asisten Interior" DIHAPUS (stub yang cuma
+                mengarahkan ke AI Agent global) — satu section "Properti" saja,
+                jadi title kini judul statis, bukan lagi PanelTab berpasangan. */}
             <FloatingPanel
               side="right"
               testId="preview-floating-sidebar"
               bodyTestId="preview-controls-scroll"
               storageKey="panel:preview3d"
               widthClass="w-[24rem]"
-              bodyClassName={sidePanel === "ai" ? "overflow-y-visible p-0" : "space-y-3"}
+              bodyClassName="space-y-3"
               minimizeLabel="Preview 3D"
               forceMinimized={fokusMode}
               title={
-                <div className="flex min-w-0 flex-1 gap-1">
-                  {/* Nama panel utk pembaca layar & e2e; visual memakai tab. */}
+                <div className="flex min-w-0 flex-1 items-center gap-1">
+                  {/* Nama panel utk pembaca layar & e2e. */}
                   <h2 className="sr-only">Preview 3D</h2>
-                  <PanelTab active={sidePanel === "kontrol"} onClick={() => setSidePanel("kontrol")}>
-                    Kontrol
-                  </PanelTab>
-                  <PanelTab active={sidePanel === "ai"} onClick={() => setSidePanel("ai")} icon={Sparkles}>
-                    Asisten Interior
-                  </PanelTab>
+                  <span className="truncate px-2 py-1.5 text-xs font-medium text-foreground">
+                    Properti
+                  </span>
                 </div>
               }
               actions={<PreviewControlsHeaderActions />}
             >
-              {sidePanel === "kontrol" ? (
-                <PreviewControlsBody layout={layout} project={project} withAssistant={false} />
-              ) : (
-                <div className="space-y-3 p-3">
-                  <p className="text-sm text-muted-foreground">
-                    Percakapan Interior sekarang menyatu dengan Brief dan Denah dalam satu AI Agent.
-                  </p>
-                  <Button className="w-full" onClick={() => injectAgentDraft("", "interior")}>
-                    <Sparkles /> Buka AI Agent
-                  </Button>
-                </div>
-              )}
+              <PreviewControlsBody layout={layout} project={project} />
             </FloatingPanel>
           </>
         )}

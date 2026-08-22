@@ -66,6 +66,8 @@ import { ELECTRICAL_POINT_TYPES, WATER_POINT_TYPES } from "@/lib/constants";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useEditorPanelUiStore } from "@/stores/editor-panel-ui-store";
 import { DimensionLayer } from "./dimension-layer";
 import {
   ExteriorElementShape,
@@ -104,12 +106,6 @@ const warningIcon: Record<Severity, typeof TriangleAlert> = {
   info: Info,
   warning: TriangleAlert,
   danger: ShieldAlert,
-};
-
-const warningTone: Record<Severity, string> = {
-  info: "text-info",
-  warning: "text-warning",
-  danger: "text-destructive",
 };
 
 function roomFill(type: RoomType) {
@@ -371,6 +367,15 @@ const RoomRect = React.memo(function RoomRect({
   );
 });
 
+/**
+ * Marker warning — Fase 6 (satu model "Cek"): hover HANYA menampilkan
+ * Tooltip singkat (bukan mega-dialog 300×260 lama); klik memilih ruang DAN
+ * memicu tab "Cek" di panel kanan lewat `useEditorPanelUiStore().focusWarning`
+ * (baris peringatannya di-scroll+highlight di sana — lihat
+ * `editor-warnings-panel.tsx`). Detail lengkap per-peringatan kini hidup di
+ * satu tempat: daftar tab Cek + Dialog "Detail Peringatan"-nya, bukan
+ * diduplikasi lagi di kanvas.
+ */
 const WarningMarker = React.memo(function WarningMarker({
   room,
   issues,
@@ -384,9 +389,7 @@ const WarningMarker = React.memo(function WarningMarker({
   toY: (m: number) => number;
   onFocusRoom: (roomId: string | null) => void;
 }) {
-  const [open, setOpen] = React.useState(false);
-  const [pinned, setPinned] = React.useState(false);
-  const closeTimer = React.useRef<number | null>(null);
+  const focusWarning = useEditorPanelUiStore((s) => s.focusWarning);
   const maxSeverity: Severity = issues.some((issue) => issue.level === "danger")
     ? "danger"
     : issues.some((issue) => issue.level === "warning")
@@ -395,43 +398,14 @@ const WarningMarker = React.memo(function WarningMarker({
   const Icon = warningIcon[maxSeverity];
   const markerX = toX(room.x + room.width) - 20;
   const markerY = toY(room.y) + 4;
-  const detailX = Math.max(4, markerX - 306);
-  const detailY = markerY + 24;
 
-  const cancelClose = () => {
-    if (closeTimer.current != null) {
-      window.clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-  };
-
-  const openMarker = () => {
-    cancelClose();
-    setOpen(true);
-  };
-
-  const closeMarker = () => {
-    if (pinned) return;
-    cancelClose();
-    closeTimer.current = window.setTimeout(() => {
-      setOpen(false);
-      closeTimer.current = null;
-    }, 180);
-  };
-
-  React.useEffect(() => {
-    return () => cancelClose();
-  }, []);
-
-  const detailRows = [
-    ["Objek", room.name],
-    ["Tipe", room.type],
-    ["Lantai", room.floorId],
-    ["Ukuran", `${room.width} x ${room.depth} m (${room.areaM2} m2)`],
-  ];
+  const tooltipText =
+    issues.length === 1
+      ? issues[0].message
+      : `${issues[0].message} (+${issues.length - 1} peringatan lain)`;
 
   return (
-    <g onPointerEnter={openMarker} onPointerLeave={closeMarker}>
+    <g>
       <foreignObject
         x={markerX}
         y={markerY}
@@ -439,99 +413,39 @@ const WarningMarker = React.memo(function WarningMarker({
         height={20}
         className="overflow-visible"
       >
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
-          data-testid={`warning-marker-${room.id}`}
-          aria-label={`Detail peringatan untuk ${room.name}`}
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          aria-controls={`warning-detail-${room.id}`}
-          className={cn(
-            "size-5 rounded-full border border-warning/50 bg-background/95 text-warning shadow-sm",
-            "hover:bg-warning/10 focus-visible:ring-2 focus-visible:ring-warning/50",
-          )}
-          onFocus={openMarker}
-          onBlur={closeMarker}
-          onClick={(e) => {
-            e.stopPropagation();
-            cancelClose();
-            setOpen((current) => {
-              const nextPinned = !(current && pinned);
-              setPinned(nextPinned);
-              return nextPinned;
-            });
-            onFocusRoom(room.id);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              e.stopPropagation();
-              setPinned(false);
-              setOpen(false);
-            }
-          }}
-        >
-          <Icon className="size-3.5" />
-        </Button>
+        {/* TooltipProvider LOKAL — bukan cuma mengandalkan provider global
+            (dipasang sekali di app/providers/index.tsx): marker ini juga
+            dirender di test unit yang me-mount <PlanCanvas/> berdiri sendiri,
+            jadi harus tetap benar tanpa provider ambien apa pun. Nested
+            provider aman (Radix mendukungnya). */}
+        <TooltipProvider>
+          <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              data-testid={`warning-marker-${room.id}`}
+              aria-label={`Detail peringatan untuk ${room.name}`}
+              className={cn(
+                "size-5 rounded-full border border-warning/50 bg-background/95 text-warning shadow-sm",
+                "hover:bg-warning/10 focus-visible:ring-2 focus-visible:ring-warning/50",
+              )}
+              onClick={(e) => {
+                e.stopPropagation();
+                onFocusRoom(room.id);
+                focusWarning(room.id);
+              }}
+            >
+              <Icon className="size-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-64">
+            {tooltipText}
+          </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </foreignObject>
-
-      {open && (
-        <foreignObject
-          x={detailX}
-          y={detailY}
-          width={300}
-          height={260}
-          className="overflow-visible"
-        >
-          <div
-            id={`warning-detail-${room.id}`}
-            role="dialog"
-            data-testid={`warning-detail-${room.id}`}
-            className="max-h-64 w-[300px] overflow-y-auto rounded-lg border bg-popover p-3 text-popover-foreground shadow-lg"
-          >
-            <div className="mb-2 flex items-center gap-2">
-              <Icon
-                className={cn("size-4 shrink-0", warningTone[maxSeverity])}
-              />
-              <span className="min-w-0 truncate text-sm font-semibold">
-                {room.name}
-              </span>
-            </div>
-
-            <div className="space-y-2">
-              {issues.map((issue) => (
-                <div
-                  key={issue.id}
-                  className="rounded-md border bg-muted/30 p-2.5"
-                >
-                  <div className="flex items-start gap-2">
-                    <span
-                      className={cn(
-                        "mt-0.5 shrink-0 text-xs font-semibold uppercase",
-                        warningTone[issue.level],
-                      )}
-                    >
-                      {issue.level}
-                    </span>
-                    <p className="text-sm leading-relaxed">{issue.message}</p>
-                  </div>
-                  <div className="mt-2 grid grid-cols-[5rem_1fr] gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                    {detailRows.map(([label, value]) => (
-                      <React.Fragment key={`${issue.id}-${label}`}>
-                        <span>{label}</span>
-                        <span className="text-foreground">{value}</span>
-                      </React.Fragment>
-                    ))}
-                    <span>ID</span>
-                    <span className="text-foreground">{issue.id}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </foreignObject>
-      )}
     </g>
   );
 });

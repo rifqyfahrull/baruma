@@ -65,7 +65,6 @@ import {
 import { Field, NumField, Stat } from "@/components/inspector/fields";
 import { EntityInspector, isUnifiedInspectorKind } from "@/components/inspector/registry";
 import { RoofSummarySection } from "@/components/inspector/roof-inspector";
-import { RailingRoomContextCard } from "@/components/inspector/railing-inspector";
 import { entityKey } from "@/types/entity-ref";
 
 export function EditorInspector() {
@@ -96,10 +95,10 @@ export function EditorInspector() {
       // hilangnya sendiri.
       <div key="entity-panel" className="flex h-full flex-col">
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          {/* Jalur implisit railing (balkon / ruang floor-rooftop) kini
+              melebur DI DALAM RoomInspectorCard (Fase 6) — tak lagi dipasang
+              terpisah di sini. */}
           <EntityInspector key={entityKey(selected!)} surface="2d" />
-          {/* Jalur implisit railing (balkon / ruang floor-rooftop) — paritas
-              dgn panel 3D; null utk kind/ tipe lain. */}
-          <RailingRoomContextCard surface="2d" />
         </div>
       </div>
     );

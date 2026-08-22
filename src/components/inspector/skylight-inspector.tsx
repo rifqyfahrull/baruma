@@ -12,7 +12,7 @@ import { Sun, X } from "lucide-react";
 import { useEditorStore } from "@/stores/editor-store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { DeleteButton, NumField, SegmentedControl } from "./fields";
+import { DeleteButton, InspectorCard, NumField, SegmentedControl } from "./fields";
 import type { InspectorSurface } from "./registry";
 
 const KIND_OPTIONS = [
@@ -33,11 +33,8 @@ export function SkylightInspectorCard({ surface }: { surface: InspectorSurface }
   if (!sk) return null;
 
   return (
-    <div
-      className={cn(
-        "space-y-2.5 rounded-lg border bg-background p-3",
-        surface === "3d" && "border-primary/40",
-      )}
+    <InspectorCard
+      className={cn("space-y-2.5", surface === "3d" && "border-primary/40")}
       data-testid="skylight-inspector"
     >
       <div className="flex items-start justify-between gap-2">
@@ -113,6 +110,6 @@ export function SkylightInspectorCard({ surface }: { surface: InspectorSurface }
         entityLabel="skylight"
         onDelete={() => deleteRef({ kind: "skylight", id: sk.id })}
       />
-    </div>
+    </InspectorCard>
   );
 }

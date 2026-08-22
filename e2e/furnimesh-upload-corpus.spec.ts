@@ -53,6 +53,8 @@ test.describe("FurniMesh upload corpus (real converted GLBs)", () => {
 
   /** Open the room-level upload dialog ("Tambah Model 3D Kustom" flow). */
   async function openRoomUpload(page: Page) {
+    // Fase 6: Kolam/Tangga/Model 3D Kustom melebur jadi satu menu "+ Tambah".
+    await page.getByTestId("preview-add-menu").click()
     await page.getByTestId("room-custom-model").click()
     await page.getByTestId("room-upload-model").click()
     await expect(page.getByRole("heading", { name: /Upload Model untuk/ })).toBeVisible()

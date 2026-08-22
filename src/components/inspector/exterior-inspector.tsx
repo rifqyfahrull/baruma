@@ -53,7 +53,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Field, ToggleRow, useSyncedText } from "./fields";
+import { Field, InspectorCard, ToggleRow, useSyncedText } from "./fields";
 import type { InspectorSurface } from "./registry";
 
 /** Round a metre value to 2dp for read-only display. */
@@ -80,10 +80,7 @@ export function ExteriorInspectorCard({ surface }: { surface: InspectorSurface }
   const canSwapModel = surface === "2d" || isEditMode;
 
   return (
-    <div
-      className="space-y-3 rounded-lg border bg-background p-3"
-      data-testid="exterior-quick-editor"
-    >
+    <InspectorCard data-testid="exterior-quick-editor">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs text-muted-foreground">Elemen eksterior terpilih</p>
@@ -143,7 +140,7 @@ export function ExteriorInspectorCard({ surface }: { surface: InspectorSurface }
           berturut-turut). resync-on-render menutup kebutuhan yg sama tanpa
           menghancurkan DOM/fokus. */}
       <ExteriorInspector key={element.id} element={element} />
-    </div>
+    </InspectorCard>
   );
 }
 

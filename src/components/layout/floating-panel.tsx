@@ -50,34 +50,52 @@ type FloatingPanelProps = {
 }
 
 /**
- * Tab kecil untuk header FloatingPanel (mis. "Properti | Asisten Denah" di 2D,
- * "Kontrol | Asisten Interior" di 3D) — dipakai bersama agar kedua halaman
- * konsisten.
+ * Tab kecil untuk header FloatingPanel — mis. "Properti | Cek" di panel kanan
+ * editor 2D (Fase 6: satu model warning, bell popover terpisah dihapus). 3D
+ * (preview-controls) kini cuma satu section "Properti" (tab "Asisten
+ * Interior" dihapus) jadi tak lagi memakai PanelTab berpasangan.
  */
 export function PanelTab({
   active,
   onClick,
   icon: Icon,
+  badge,
+  ariaLabel,
   children,
 }: {
   active: boolean
   onClick: () => void
   icon?: React.ComponentType<{ className?: string }>
+  /** Angka kecil (mis. unread count) — dot merah di pojok kanan-atas tombol. */
+  badge?: number
+  /**
+   * Override nama aksesibel (aria-label) — teks visible (children) tetap
+   * tampil apa adanya. Dipakai tab "Cek" (Fase 6) supaya nama aksesibelnya
+   * tetap "Peringatan denah (N belum dibaca dari M)" seperti lonceng lama
+   * yang digantikannya (e2e pins pola ini).
+   */
+  ariaLabel?: string
   children: React.ReactNode
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-label={ariaLabel}
       className={cn(
         // min-w-0 + truncate: the header shares its width with the Simpan control,
         // so tabs must shrink gracefully instead of overflowing onto it.
-        "flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors",
+        "relative flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors",
         active ? ACTIVE_SOFT_CLASS : "text-muted-foreground hover:bg-muted"
       )}
     >
       {Icon && <Icon className="size-3.5 shrink-0" />}
       <span className="truncate">{children}</span>
+      {!!badge && badge > 0 && (
+        <span className="absolute -right-1 -top-1 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] leading-4 text-destructive-foreground">
+          {badge}
+        </span>
+      )}
     </button>
   )
 }

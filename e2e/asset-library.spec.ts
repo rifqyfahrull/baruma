@@ -27,6 +27,8 @@ test("aset katalog GLOBAL (bank aset) tampil untuk semua user di library & picke
   // Picker "Tambah dari My Library" di preview 3D juga melihatnya — jalur
   // pemakaian nyata: user mana pun memasang aset katalog ke ruangannya.
   await page.goto("/app/projects/proj-demo-8x8/preview-3d")
+  // Fase 6: Kolam/Tangga/Model 3D Kustom melebur jadi satu menu "+ Tambah".
+  await page.getByTestId("preview-add-menu").click()
   await page.getByTestId("room-custom-model").click()
   await page.getByRole("button", { name: /Tambah dari My Library/ }).click()
   await expect(page.getByText("Sofa Itali 1")).toBeVisible({ timeout: 15_000 })

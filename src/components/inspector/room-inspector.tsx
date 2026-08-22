@@ -55,7 +55,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DeleteButton, Field, ToggleRow } from "./fields";
+import { DeleteButton, Field, InspectorCard, ToggleRow } from "./fields";
+import { RailingRoomContextCard } from "./railing-inspector";
 import type { InspectorSurface } from "./registry";
 
 export function RoomInspectorCard({ surface }: { surface: InspectorSurface }) {
@@ -151,11 +152,8 @@ function RoomBody({ room, surface }: { room: Room; surface: InspectorSurface }) 
   };
 
   return (
-    <div
-      className={cn(
-        "space-y-4 rounded-lg border bg-background p-3",
-        surface === "3d" && "border-primary/40",
-      )}
+    <InspectorCard
+      className={cn("space-y-4", surface === "3d" && "border-primary/40")}
       data-testid="room-inspector"
     >
       <div className="flex items-start justify-between gap-2">
@@ -554,13 +552,18 @@ function RoomBody({ room, surface }: { room: Room; surface: InspectorSurface }) 
       {/* Kolam: kustomisasi penuh (migrasi edit-flow PoolQuickEditor 3D). */}
       {room.type === "kolam" && <PoolSection pool={room} />}
 
+      {/* Railing implisit (balkon / ruang di floor-rooftop) — dilebur ke sini
+          (Fase 6) daripada dipasang terpisah di kedua host (2D/3D); void
+          punya blok railingnya sendiri di atas (lihat komentar section). */}
+      <RailingRoomContextCard surface={surface} />
+
       <Separator />
 
       <DeleteButton
         entityLabel="ruang"
         onDelete={() => deleteRef({ kind: "room", id: room.id })}
       />
-    </div>
+    </InspectorCard>
   );
 }
 

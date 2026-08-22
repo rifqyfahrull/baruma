@@ -20,7 +20,9 @@ test.describe("Interior 3D models (GLB hybrid)", () => {
 
     // Panel quick-add katalog sengaja dihapus (0066600, 12 Jul) — GLB item
     // ditambahkan lewat "Tambah Model 3D Kustom" → My Library (aset katalog
-    // global mock, paritas asset-library.spec).
+    // global mock, paritas asset-library.spec). Fase 6: aksi ini kini item
+    // di menu "+ Tambah".
+    await page.getByTestId("preview-add-menu").click()
     await page.getByTestId("room-custom-model").click()
     await page.getByRole("button", { name: /Tambah dari My Library/ }).click()
     await page.getByText("Sofa Itali 1").first().click()

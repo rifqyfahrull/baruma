@@ -141,9 +141,13 @@ describe("RoomInspectorCard — railing void (dedupe dgn RailingRoomContextCard)
     ).toBe("true");
   });
 
-  it("balkon → TIDAK ada blok railing di kartu ruang (ditangani RailingRoomContextCard)", () => {
+  it("balkon → TIDAK ada blok 'Model railing' void, tapi kartu Railing (RailingRoomContextCard) melebur ke dalam kartu ruang", () => {
     withRoom("balkon");
     render(<EntityInspector surface="2d" />);
     expect(screen.queryByText("Model railing")).toBeNull();
+    // Fase 6: RailingRoomContextCard tak lagi dipasang terpisah oleh host —
+    // ia dirender DI DALAM RoomInspectorCard, satu-satunya kemunculan.
+    expect(screen.getAllByTestId("railing-quick-editor")).toHaveLength(1);
+    expect(screen.getByText("Railing — balkon")).toBeTruthy();
   });
 });

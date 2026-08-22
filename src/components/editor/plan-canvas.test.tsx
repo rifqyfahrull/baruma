@@ -19,7 +19,16 @@ import {
   resizeOpeningAlongWall,
 } from "@/components/editor/plan-canvas";
 import { useEditorStore, ROOF_LAYER_ID } from "@/stores/editor-store";
+import { useEditorPanelUiStore } from "@/stores/editor-panel-ui-store";
 import type { DesignLayout } from "@/types";
+
+// Radix Tooltip (marker warning, Fase 6) butuh ResizeObserver saat kontennya
+// benar-benar terbuka — tak ada di jsdom.
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+} as never;
 import {
   makeBoxElement,
   makeRoofZone,
@@ -268,29 +277,32 @@ describe("PlanCanvas — cantilever indicator (CB3)", () => {
   });
 });
 
-describe("PlanCanvas — warning marker detail", () => {
+describe("PlanCanvas — warning marker (Fase 6: hover tooltip, click → tab Cek)", () => {
   beforeEach(() => {
     useEditorStore
       .getState()
       .loadLayout(warningLayout(), { widthM: 10, depthM: 10 }, []);
+    useEditorPanelUiStore.getState().reset();
   });
 
-  it("opens the warning detail dropdown on hover", async () => {
+  it("hover shows only a short tooltip (no mega-dialog)", async () => {
     render(<PlanCanvas />);
 
     const marker = screen.getByRole("button", {
       name: /Detail peringatan untuk Ruang/,
     });
-    fireEvent.pointerEnter(marker);
+    fireEvent.focus(marker);
 
-    const detail = await screen.findByTestId("warning-detail-r1");
-    expect(detail.textContent).toContain(
+    const tooltip = await screen.findByText(
       "Ruang belum punya jendela/pintu untuk ventilasi.",
+      { selector: "[data-slot=tooltip-content]" },
     );
-    expect(within(detail).getByText("warning")).toBeTruthy();
+    expect(tooltip).toBeTruthy();
+    // Mega-dialog lama (foreignObject 300×260) sudah dihapus.
+    expect(screen.queryByTestId("warning-detail-r1")).toBeNull();
   });
 
-  it("opens the warning detail dropdown on click and keeps the issue details visible", async () => {
+  it("click memilih ruang DAN memicu tab Cek (focusWarning) di panel kanan", () => {
     render(<PlanCanvas />);
 
     const marker = screen.getByRole("button", {
@@ -298,11 +310,15 @@ describe("PlanCanvas — warning marker detail", () => {
     });
     fireEvent.click(marker);
 
-    const detail = await screen.findByTestId("warning-detail-r1");
-    expect(detail.textContent).toContain(
-      "Ruang belum punya jendela/pintu untuk ventilasi.",
-    );
-    expect(within(detail).getByText("warning")).toBeTruthy();
+    expect(useEditorStore.getState().selectedObjectId).toBe("r1");
+    const panelUi = useEditorPanelUiStore.getState();
+    expect(panelUi.sidePanel).toBe("cek");
+    expect(panelUi.focusObjectId).toBe("r1");
+    expect(panelUi.focusNonce).toBe(1);
+
+    // Klik marker yang sama lagi tetap menaikkan nonce (re-scroll/highlight).
+    fireEvent.click(marker);
+    expect(useEditorPanelUiStore.getState().focusNonce).toBe(2);
   });
 });
 

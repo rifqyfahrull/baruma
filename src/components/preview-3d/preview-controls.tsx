@@ -6,9 +6,9 @@ import {
   Armchair,
   Box,
   Building2,
-  ChevronDown,
   Grid2x2,
   Move3d,
+  Plus,
   Sparkles,
   Upload,
   Library,
@@ -22,8 +22,6 @@ import type {
 import { useInteriorStore } from "@/stores/interior-store";
 import { useEditorStore } from "@/stores/editor-store";
 import { usePreviewStore } from "@/stores/preview-store";
-import {
-} from "@/lib/constants";
 import { interiorRooms } from "@/lib/interior/plan";
 import { MATERIAL_PRESET_LIST, MATERIAL_PRESETS } from "@/lib/three/materials";
 import { FACADE_PRESETS } from "@/lib/three/facade-presets";
@@ -34,12 +32,17 @@ import {
   RoomMaterialEditor,
 } from "@/components/interior/interior-controls";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useProjectAgentUiStore } from "@/stores/project-agent-ui-store";
 import { ModelUploadDialog } from "@/components/assets/upload/model-upload-dialog";
 import { requestAssetPicker } from "@/components/assets/asset-picker-host";
 import { EntityInspector } from "@/components/inspector/registry";
-import { RailingRoomContextCard } from "@/components/inspector/railing-inspector";
+import { InspectorSection } from "@/components/inspector/section";
 import {
   Dialog,
   DialogContent,
@@ -49,57 +52,11 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
-// ── Accordion section ──
-
-function AccordionSection({
-  icon: Icon,
-  title,
-  badge,
-  defaultOpen = false,
-  children,
-}: {
-  icon: typeof Box;
-  title: string;
-  badge?: string;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div className="rounded-lg border">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between px-3 py-2.5 text-left hover:bg-muted/50"
-      >
-        <span className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase">
-          <Icon className="size-3.5" />
-          {title}
-          {badge && (
-            <Badge variant="secondary" className="ml-1 text-[10px]">
-              {badge}
-            </Badge>
-          )}
-        </span>
-        <ChevronDown
-          className={cn(
-            "size-4 shrink-0 transition-transform",
-            open && "rotate-180",
-          )}
-        />
-      </button>
-      {open && (
-        <div className="space-y-2.5 border-t px-3 pb-3 pt-2.5">{children}</div>
-      )}
-    </div>
-  );
-}
-
 // ── Header actions ──
 // Hosted by <FloatingPanel actions> on desktop dan header drawer mobile (via
-// PreviewControls). Fase 4: Undo/Redo pindah ke rail ViewToolbar (via hook
-// bersama `useUnifiedUndo`, shortcut Ctrl+Z/Ctrl+Shift+Z kini didaftarkan di
-// level halaman — lihat preview-3d-view.tsx) dan toggle Edit/View dihapus
+// PreviewControlsBody host). Fase 4: Undo/Redo pindah ke rail ViewToolbar (via
+// hook bersama `useUnifiedUndo`, shortcut Ctrl+Z/Ctrl+Shift+Z kini didaftarkan
+// di level halaman — lihat preview-3d-view.tsx) dan toggle Edit/View dihapus
 // total (interactionMode kini murni gate readOnly, lihat preview-store.ts) —
 // jadi tak ada lagi yang perlu dirender di sini. Fungsi ini dipertahankan
 // (bukan dihapus) supaya kedua pemanggilnya tak perlu disentuh.
@@ -107,25 +64,30 @@ export function PreviewControlsHeaderActions() {
   return null;
 }
 
-// ── Body (inspector cards + accordion sections) ──
-// Rendered inside the FloatingPanel scroll body on desktop, and inside the mobile
-// drawer's scroll region (via PreviewControls). Does NOT render its own scroll
-// wrapper — the host owns `data-testid="preview-controls-scroll"` (+ overflow-y-auto
-// + space-y-3 + p-3). Returns a fragment so those styles stay on the host element.
-
+// ── Body (+Tambah menu, inspector, section kolaps) ──
+// Rendered inside the FloatingPanel scroll body on desktop, dan inside
+// PanelDrawer body di mobile (lihat preview-3d-view.tsx). Does NOT render its
+// own scroll wrapper — the host owns `data-testid="preview-controls-scroll"`
+// (+ overflow-y-auto + space-y-3 + p-3). Returns a fragment so those styles
+// stay on the host element.
+//
+// Fase 6 (restrukturisasi panel kanan):
+// - Tab stub "Asisten Interior" DIHAPUS — `injectAgentDraft("", "interior")`
+//   kini baris kecil ✦ "Tanya AI soal interior" DI DALAM section Interior
+//   (ProjectBar punya tombol AI global yang menutup kebutuhan chat penuh).
+// - EntityInspector (kartu entitas terpilih) tampil PALING ATAS, diikuti tiga
+//   section kolaps (InspectorSection, dari kit @/components/inspector/section
+//   — bukan lagi `AccordionSection` privat yang dihapus): ▸ Gaya Fasad ▸
+//   Interior ▸ Material.
+// - Tiga kartu tambah (Kolam/Tangga/Model 3D Kustom) melebur jadi SATU
+//   DropdownMenu "+ Tambah" di puncak panel; visibilitas kondisional lama
+//   kini jadi enabled/disabled per item.
 export function PreviewControlsBody({
   layout,
   project,
-  withAssistant = true,
 }: {
   layout: DesignLayout;
   project: Project;
-  /**
-   * Sertakan section Asisten Interior inline. Desktop FloatingPanel memasang
-   * asisten sebagai TAB header (paritas 2D editor) sehingga mematikan ini;
-   * mobile drawer tetap membawa asisten inline.
-   */
-  withAssistant?: boolean;
 }) {
   const presetId = usePreviewStore((s) => s.materialPreset);
   const setMaterialPreset = usePreviewStore((s) => s.setMaterialPreset);
@@ -133,6 +95,7 @@ export function PreviewControlsBody({
   const previewSelectedRoomId = usePreviewStore((s) => s.selectedRoomId);
   const requestFocusRoom = usePreviewStore((s) => s.requestFocusRoom);
   const setFloorVisible = usePreviewStore((s) => s.setFloorVisible);
+  const selectRoom = usePreviewStore((s) => s.selectRoom);
   const plan = useInteriorStore((s) => s.plan);
   const interiorSelectedRoomId = useInteriorStore((s) => s.selectedRoomId);
   const selectInteriorRoom = useInteriorStore((s) => s.selectRoom);
@@ -140,6 +103,22 @@ export function PreviewControlsBody({
   const addAssetFurniture = useInteriorStore((s) => s.addAssetFurniture);
   const resetRoom = useInteriorStore((s) => s.resetRoom);
   const injectAgentDraft = useProjectAgentUiStore((s) => s.injectDraft);
+
+  const addPool = useEditorStore((s) => s.addPool);
+  const addStair = useEditorStore((s) => s.addStair);
+  const applyFacadePreset = useEditorStore((s) => s.applyFacadePreset);
+  const editorReady = useEditorStore(
+    (s) => s.layout?.projectId === layout.projectId,
+  );
+  const hasSelectedPool = useEditorStore(
+    (s) =>
+      s.selected?.kind === "room" &&
+      s.layout?.rooms.find(
+        (r) => r.id === (s.selected?.kind === "room" ? s.selected.id : null),
+      )?.type === "kolam",
+  );
+  const activeFacadeCount = Object.keys(layout.facade ?? {}).length;
+  const multiFloor = layout.floors.length >= 2;
 
   const [showUpload, setShowUpload] = useState(false);
   // Picker My Library kini global (AssetPickerHost, id ditangkap saat request)
@@ -183,73 +162,73 @@ export function PreviewControlsBody({
 
   return (
     <>
-      {/* AI Assistant (interior) — inline hanya di mobile drawer; desktop
-          memakai TAB "Asisten Interior" di header FloatingPanel (paritas 2D). */}
-      {withAssistant && (
-        <AccordionSection icon={Sparkles} title="AI Agent">
-          <p className="mb-3 text-sm text-muted-foreground">
-            Chat Interior menyatu dengan seluruh percakapan proyek.
-          </p>
-          <Button className="w-full" onClick={() => injectAgentDraft("", "interior")}>
-            <Sparkles /> Buka AI Agent
-          </Button>
-        </AccordionSection>
-      )}
-
-      {/* Kartu ruang penuh kini dirender EntityInspector (registry kind
-          "room") di bawah — info card read-only lama dihapus. */}
-      {!room && (
-        <p className="flex items-center gap-2 rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
-          <Move3d className="size-4 shrink-0" />
-          Putar dengan seret, zoom dengan scroll. Pilih ruang untuk edit
-          interior.
-        </p>
-      )}
-
-      {/* ── Gaya Fasad 1-klik — komposisi cladding+kisi seluruh muka ── */}
-      <FacadePresetCard layout={layout} />
-
-      {/* ── Inspector terpadu (registry) — kind yang sudah termigrasi
-          (Opening, dst.) dirender di sini, IDENTIK dgn panel 2D. ── */}
-      <EntityInspector surface="3d" />
-
-      {/* ── Roof editor — muncul saat atap diklik di 3D ── */}
-
-      {/* ── Kolam renang — ADD-flow saja (butuh rumah selalu-render utk
-          penempatan pintar). Edit kolam kini di kartu Ruang terpadu
-          (registry, section pool) — juga dari 2D. ── */}
-      <PoolAddCard layout={layout} />
-
-      {/* ── Tangga — akses antar-lantai (slab atas otomatis berlubang) ── */}
-      <StairQuickAdd layout={layout} />
-
-      {/* ── Railing (jalur implisit): ruang balkon / ruang di floor-rooftop
-          terpilih → kartu railing tampil (mesh railing tipis susah di-tap).
-          Jalur klik-mesh (kind railing) ditangani EntityInspector di atas. ── */}
-      <RailingRoomContextCard surface="3d" />
-
-      {/* Exterior kini ditangani EntityInspector (registry) di atas — kartu
-          terpadu FULL-EDIT menggantikan ExteriorSelectionQuickEditor lama yang
-          read-only. e2e frontage certification tetap penjaganya (testid
-          exterior-quick-editor dipertahankan di kartu terpadu). */}
-
-
-      {/* Furniture Inspector kini kartu registry terpadu
-          (@/components/inspector/furniture-inspector) — dirender via
-          <EntityInspector surface="3d"/> di atas, IDENTIK dgn kind lain.
-          Seleksi furnitur dijembatani interior↔editor di selection-bridge. */}
-
-      {/* ── Model 3D kustom — satu tombol; detailnya di modal ── */}
-      {room && roomPlan && (
-        <Button
-          size="sm"
-          variant="outline"
-          className="w-full"
-          data-testid="room-custom-model"
-          onClick={() => setShowCustomModal(true)}
-        >
-          <Box /> Tambah Model 3D Kustom
-        </Button>
+      {/* ── "+ Tambah" — satu menu menggantikan tiga kartu berdiri sendiri
+          (Kolam/Tangga/Model 3D Kustom). Aturan visibilitas lama kini jadi
+          enabled/disabled per item; menunya sendiri disembunyikan total bila
+          editor belum siap (paritas: ketiga kartu lama semuanya null saat
+          itu). ── */}
+      {editorReady && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full pointer-coarse:h-10"
+              data-testid="preview-add-menu"
+            >
+              <Plus /> Tambah
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-64">
+            <DropdownMenuItem
+              data-testid="pool-add"
+              disabled={hasSelectedPool}
+              onSelect={() => {
+                const id = addPool();
+                if (id) {
+                  selectRoom(id);
+                  toast.success(
+                    "Kolam ditambahkan — atur tipe, kedalaman & finish di kartu Ruang.",
+                  );
+                } else {
+                  toast.error("Tak bisa menambah kolam (data belum siap).");
+                }
+              }}
+            >
+              <Waves /> Kolam renang
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              data-testid="stair-add"
+              disabled={!multiFloor}
+              onSelect={() => {
+                const id = addStair();
+                if (id) {
+                  selectRoom(id);
+                  toast.success(
+                    "Tangga ditambahkan — atur posisi & arah naik di 2D editor.",
+                  );
+                } else {
+                  toast.error("Tambah lantai 2 dulu agar tangga punya tujuan.");
+                }
+              }}
+            >
+              <Move3d /> Tangga
+              {!multiFloor && (
+                <span className="ml-auto text-[10px] text-muted-foreground">
+                  butuh 2 lantai
+                </span>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              data-testid="room-custom-model"
+              disabled={!(room && roomPlan)}
+              onSelect={() => setShowCustomModal(true)}
+            >
+              <Box /> Model 3D kustom
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
 
       {/* Modal pilihan sumber model kustom */}
@@ -267,7 +246,7 @@ export function PreviewControlsBody({
               data-testid="room-upload-model"
               onClick={() => {
                 setShowCustomModal(false);
-                                setShowUpload(true);
+                setShowUpload(true);
               }}
             >
               <Upload /> Upload Model 3D
@@ -285,11 +264,69 @@ export function PreviewControlsBody({
         </DialogContent>
       </Dialog>
 
-      {/* ── Accordion sections ── */}
+      {/* ── Inspector terpadu (registry) — kartu entitas terpilih (kind yang
+          sudah termigrasi: Opening, Ruang, dst.), IDENTIK dgn panel 2D. Kartu
+          ruang kini juga membawa section railing implisit (balkon/rooftop) —
+          dilebur di sana, tak lagi dipasang terpisah di sini. Tanpa seleksi:
+          hint orientasi singkat. ── */}
+      {!room && (
+        <p className="flex items-center gap-2 rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
+          <Move3d className="size-4 shrink-0" />
+          Putar dengan seret, zoom dengan scroll. Pilih ruang untuk edit
+          interior.
+        </p>
+      )}
+      <EntityInspector surface="3d" />
 
-      {/* Interior Editor */}
+      {/* ── Gaya Fasad — kolaps, composisi cladding+kisi seluruh muka 1-klik ── */}
+      <InspectorSection icon={Building2} title="Gaya Fasad">
+        {!editorReady ? (
+          <p className="rounded-md bg-muted/50 p-2 text-xs text-muted-foreground">
+            Memuat data editor…
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-1.5">
+            {FACADE_PRESETS.map((p) => {
+              const swatches = [p.hero, p.accent, p.base].map(
+                (id) => facadeCladdingById(id)?.swatch ?? "#ccc",
+              );
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  title={p.description}
+                  onClick={() => applyFacadePreset(p.id)}
+                  className="rounded-md border px-2 py-2 text-left transition-colors hover:bg-muted"
+                >
+                  <span className="mb-1 flex gap-0.5">
+                    {swatches.map((c, i) => (
+                      <span
+                        key={i}
+                        className="size-3 rounded-sm border"
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </span>
+                  <span className="block text-xs font-medium">{p.label}</span>
+                  <span className="block text-[10px] leading-tight text-muted-foreground">
+                    {p.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {activeFacadeCount > 0 && (
+          <p className="text-[10px] leading-tight text-muted-foreground">
+            {activeFacadeCount} dinding sudah bercladding. Menerapkan gaya akan
+            menimpanya (bisa di-undo).
+          </p>
+        )}
+      </InspectorSection>
+
+      {/* ── Interior — navigator ruang + gaya + reset + ✦ tanya AI ── */}
       {room && roomPlan && plan && (
-        <AccordionSection
+        <InspectorSection
           icon={Armchair}
           title="Interior Editor"
           badge={`${roomPlan.furniture.length}`}
@@ -352,6 +389,19 @@ export function PreviewControlsBody({
             onChange={setStyle}
             compact
           />
+
+          {/* ✦ Asisten AI interior — dulu tab header "Asisten Interior"
+              terpisah (dihapus, Fase 6); ProjectBar punya tombol AI global
+              utk percakapan penuh, baris ini cukup sebagai pintasan cepat. */}
+          <Button
+            size="sm"
+            variant="ghost"
+            className="w-full justify-start gap-2 text-primary hover:text-primary"
+            onClick={() => injectAgentDraft("", "interior")}
+          >
+            <Sparkles className="size-3.5" /> Tanya AI soal interior
+          </Button>
+
           <Button
             size="sm"
             variant={confirmReset ? "destructive" : "secondary"}
@@ -369,15 +419,11 @@ export function PreviewControlsBody({
               ? "Yakin? Klik lagi untuk reset"
               : "Reset interior ruang"}
           </Button>
-        </AccordionSection>
+        </InspectorSection>
       )}
 
-      {/* View */}
-      {/* "Sudut pandang", "Pencahayaan", "Opsi tampilan" pindah ke ViewToolbar
-          (floating kiri di atas canvas). */}
-
-      {/* Material */}
-      <AccordionSection icon={Grid2x2} title="Material">
+      {/* ── Material — preset global + material ruang terpilih ── */}
+      <InspectorSection icon={Grid2x2} title="Material">
         <div className="space-y-1.5">
           <p className="text-[11px] font-medium text-muted-foreground">
             Preset visual global
@@ -418,9 +464,7 @@ export function PreviewControlsBody({
             </Button>
           </div>
         )}
-      </AccordionSection>
-
-      {/* "Lantai" + exploded pindah ke FloorToggleBar (overlay di atas canvas). */}
+      </InspectorSection>
 
       {/* Upload dialog — slot mode (pasang/ganti pada furniture terpilih) atau
           room mode (upload ke My Library lalu tambah sebagai furniture BARU). */}
@@ -456,262 +500,3 @@ export function PreviewControlsBody({
     </>
   );
 }
-
-// ── Full controls (header + body) — used by the mobile drawer ──
-// Desktop uses <FloatingPanel> hosting the header pieces (title + actions) and
-// PreviewControlsBody directly; the mobile drawer keeps the full header+body here.
-
-export function PreviewControls({
-  layout,
-  project,
-}: {
-  layout: DesignLayout;
-  project: Project;
-}) {
-  return (
-    <div className="flex h-full flex-col">
-      {/* ── Header ── */}
-      <div className="flex items-center justify-between border-b px-4 py-3">
-        <h2 className="text-sm font-semibold">Preview 3D</h2>
-        <PreviewControlsHeaderActions />
-      </div>
-
-      {/* ── Body ── */}
-      <div
-        className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3"
-        data-testid="preview-controls-scroll"
-      >
-        <PreviewControlsBody layout={layout} project={project} />
-      </div>
-    </div>
-  );
-}
-
-// ── Opening quick editor (edit pintu/jendela langsung dari 3D) ──
-// Bukaan diklik di canvas → kartu ini muncul. Mutasi lewat editor store
-// (updateOpening) — model 3D re-build live dan autosave layout berjalan di
-// halaman ini juga (lihat Preview3DView). Edit menyeluruh tetap di 2D editor.
-
-// OpeningQuickEditor lama dihapus — digantikan OpeningInspectorCard terpadu
-// (@/components/inspector/opening-inspector) via <EntityInspector surface="3d"/>.
-
-// ── Gaya Fasad 1-klik (komposisi cladding + kisi seluruh muka) ──
-// Awam dapat fasad "advance" seketika; lalu tinggal setel per dinding (klik
-// dinding). Menggantikan komposisi fasad lama (undo-aware).
-
-function FacadePresetCard({ layout }: { layout: DesignLayout }) {
-  const applyFacadePreset = useEditorStore((s) => s.applyFacadePreset);
-  const editorReady = useEditorStore(
-    (s) => s.layout?.projectId === layout.projectId,
-  );
-  const activeFacadeCount = Object.keys(layout.facade ?? {}).length;
-
-  return (
-    <div
-      className="rounded-lg border bg-background p-3"
-      data-testid="facade-preset-card"
-    >
-      <div className="flex items-center gap-2">
-        <Building2 className="size-4 text-primary" />
-        <div>
-          <p className="text-sm font-semibold">Gaya Fasad — 1 klik</p>
-          <p className="text-xs text-muted-foreground">
-            Terapkan komposisi fasad modern ke seluruh muka, lalu setel per
-            dinding.
-          </p>
-        </div>
-      </div>
-      {!editorReady ? (
-        <p className="mt-2 rounded-md bg-muted/50 p-2 text-xs text-muted-foreground">
-          Memuat data editor…
-        </p>
-      ) : (
-        <div className="mt-2.5 grid grid-cols-2 gap-1.5">
-          {FACADE_PRESETS.map((p) => {
-            const swatches = [p.hero, p.accent, p.base].map(
-              (id) => facadeCladdingById(id)?.swatch ?? "#ccc",
-            );
-            return (
-              <button
-                key={p.id}
-                type="button"
-                title={p.description}
-                onClick={() => applyFacadePreset(p.id)}
-                className="rounded-md border px-2 py-2 text-left transition-colors hover:bg-muted"
-              >
-                <span className="mb-1 flex gap-0.5">
-                  {swatches.map((c, i) => (
-                    <span
-                      key={i}
-                      className="size-3 rounded-sm border"
-                      style={{ backgroundColor: c }}
-                    />
-                  ))}
-                </span>
-                <span className="block text-xs font-medium">{p.label}</span>
-                <span className="block text-[10px] leading-tight text-muted-foreground">
-                  {p.description}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-      {activeFacadeCount > 0 && (
-        <p className="mt-2 text-[10px] leading-tight text-muted-foreground">
-          {activeFacadeCount} dinding sudah bercladding. Menerapkan gaya akan
-          menimpanya (bisa di-undo).
-        </p>
-      )}
-    </div>
-  );
-}
-
-// FacadeQuickEditor + FacadeLouverSection lama dihapus — digantikan
-// WallInspectorCard terpadu (@/components/inspector/wall-inspector) via registry.
-
-
-// RailingQuickEditor lama dihapus — digantikan RailingInspectorCard terpadu
-// (@/components/inspector/railing-inspector) via registry + RailingRoomContextCard.
-
-// LampQuickEditor lama dihapus — digantikan LampInspectorCard terpadu
-// (@/components/inspector/lamp-inspector) via <EntityInspector surface="3d"/>.
-
-// ── Roof quick editor (edit atap langsung dari 3D) ──
-// Klik atap di canvas → atur tipe (datar/pelana/limasan/miring), kemiringan,
-// overhang, material, arah turun (skillion), dan lis fascia — via editor-store
-// setRoof (undo-able + autosave).
-
-
-/**
- * Tangga — akses antar-lantai. Tombol tambah cepat dari 3D (konsisten dgn
- * kolam/teras). Ditaruh di pojok lantai dasar; slab lantai di atasnya OTOMATIS
- * berlubang tepat di atas tangga (build-model). Butuh ≥2 lantai (ada tujuan).
- */
-function StairQuickAdd({ layout }: { layout: DesignLayout }) {
-  const addStair = useEditorStore((s) => s.addStair)
-  const selectRoom = usePreviewStore((s) => s.selectRoom)
-  const editorReady = useEditorStore((s) => s.layout?.projectId === layout.projectId)
-  if (!editorReady) return null
-  const multiFloor = layout.floors.length >= 2
-
-  return (
-    <div className="rounded-lg border bg-background p-3" data-testid="stair-quick-add">
-      <div className="flex items-center gap-2">
-        <Move3d className="size-4 text-primary" />
-        <div>
-          <p className="text-sm font-semibold">Tangga</p>
-          <p className="text-xs text-muted-foreground">Akses antar-lantai / ke rooftop</p>
-        </div>
-      </div>
-      <div className="mt-2.5 space-y-1.5">
-        {multiFloor ? (
-          <>
-            <p className="text-[10px] leading-snug text-muted-foreground">
-              Ditaruh di pojok lantai dasar; slab lantai di atasnya otomatis
-              berlubang tepat di atas tangga. Atur posisi & arah naik di <b>2D editor</b>.
-            </p>
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full"
-              data-testid="stair-add"
-              onClick={() => {
-                const id = addStair()
-                if (id) {
-                  selectRoom(id)
-                  toast.success("Tangga ditambahkan — atur posisi & arah naik di 2D editor.")
-                } else {
-                  toast.error("Tambah lantai 2 dulu agar tangga punya tujuan.")
-                }
-              }}
-            >
-              <Move3d /> Tambah tangga
-            </Button>
-          </>
-        ) : (
-          <p className="text-[10px] leading-snug text-muted-foreground">
-            Tambah lantai 2 dulu (panel <b>Atap</b> → Rooftop, atau 2D editor)
-            agar tangga punya tujuan.
-          </p>
-        )}
-      </div>
-    </div>
-  )
-}
-
-/**
- * Denah pipa kolam — skema sirkulasi: skimmer (kuning) & main drain (merah) →
- * ruang pompa/filter (abu) via pipa HISAP (garis putus gelap); pompa → inlet
- * (biru) via pipa BALIK (garis biru). Proporsional ke aspek kolam.
- */
-/**
- * Kolam renang — ADD-flow (kartu selalu tampil; butuh rumah ter-render untuk
- * penempatan pintar halaman → dak rooftop → footprint via store.addPool).
- * EDIT kolam pindah ke kartu Ruang terpadu (registry kind "room", section
- * pool) — identik di 2D dan 3D.
- */
-function PoolAddCard({ layout }: { layout: DesignLayout }) {
-  const selectRoom = usePreviewStore((s) => s.selectRoom);
-  const addPool = useEditorStore((s) => s.addPool);
-  const editorReady = useEditorStore(
-    (s) => s.layout?.projectId === layout.projectId,
-  );
-  const hasSelectedPool = useEditorStore(
-    (s) =>
-      s.selected?.kind === "room" &&
-      s.layout?.rooms.find(
-        (r) => r.id === (s.selected?.kind === "room" ? s.selected.id : null),
-      )?.type === "kolam",
-  );
-  if (!editorReady) return null;
-  // Saat kolam terpilih, kartu Ruang terpadu (di atas) yang tampil — kartu
-  // tambah disembunyikan supaya tak dobel branding "Kolam renang".
-  if (hasSelectedPool) return null;
-
-  return (
-    <div
-      className="rounded-lg border border-sky-500/40 bg-background p-3"
-      data-testid="pool-quick-editor"
-    >
-      <div className="flex items-center gap-2">
-        <Waves className="size-4 text-sky-500" />
-        <div>
-          <p className="text-sm font-semibold">Kolam renang</p>
-          <p className="text-xs text-muted-foreground">Tambah & kustom kolam</p>
-        </div>
-      </div>
-      <div className="mt-2.5 space-y-1.5">
-        <p className="text-[10px] leading-snug text-muted-foreground">
-          Ditaruh otomatis di halaman; bila lahan penuh & ada rooftop → kolam
-          plunge di dak. Klik air kolam di 3D untuk atur/geser.
-        </p>
-        <Button
-          size="sm"
-          variant="outline"
-          className="w-full pointer-coarse:h-10"
-          data-testid="pool-add"
-          onClick={() => {
-            const id = addPool();
-            if (id) {
-              selectRoom(id);
-              toast.success(
-                "Kolam ditambahkan — atur tipe, kedalaman & finish di kartu Ruang.",
-              );
-            } else {
-              toast.error("Tak bisa menambah kolam (data belum siap).");
-            }
-          }}
-        >
-          <Waves /> Tambah kolam renang
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-// RoofQuickEditor lama dihapus — digantikan inspector terpadu
-// (@/components/inspector/roof-inspector) via <EntityInspector surface="3d"/>.
-
-// OpeningNumField lama dihapus — kit NumField (@/components/inspector/fields)
-// kini jadi satu-satunya field angka inspector.
