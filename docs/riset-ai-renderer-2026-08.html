@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Baruma AI Renderer</title>
+<style>
+  :root {
+    --bg: #FAF7F1;
+    --surface: #FFFFFF;
+    --surface-2: #F2EDE3;
+    --ink: #1E2B29;
+    --ink-soft: #52625F;
+    --line: #E3DCCE;
+    --accent: #0E7268;
+    --accent-soft: #DCEEEB;
+    --warn: #A15C0F;
+    --warn-soft: #F6E8D4;
+    --bad: #A33B2E;
+    --bad-soft: #F5E2DE;
+    --good: #1C6E43;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #131A19;
+      --surface: #1B2423;
+      --surface-2: #212C2A;
+      --ink: #E8EBE6;
+      --ink-soft: #9DABA6;
+      --line: #2E3B38;
+      --accent: #4FB3A6;
+      --accent-soft: #1E3532;
+      --warn: #D9A05B;
+      --warn-soft: #3A2E1C;
+      --bad: #D97B6C;
+      --bad-soft: #3B2523;
+      --good: #6FBF8F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #131A19;
+    --surface: #1B2423;
+    --surface-2: #212C2A;
+    --ink: #E8EBE6;
+    --ink-soft: #9DABA6;
+    --line: #2E3B38;
+    --accent: #4FB3A6;
+    --accent-soft: #1E3532;
+    --warn: #D9A05B;
+    --warn-soft: #3A2E1C;
+    --bad: #D97B6C;
+    --bad-soft: #3B2523;
+    --good: #6FBF8F;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 0 20px 96px;
+  }
+  main { max-width: 860px; margin: 0 auto; }
+  header.hero { padding: 64px 0 8px; border-bottom: 2px solid var(--accent); margin-bottom: 40px; }
+  .eyebrow {
+    font: 600 12px/1 ui-monospace, "SF Mono", Menlo, monospace;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-size: clamp(30px, 5vw, 44px); line-height: 1.12; margin: 0 0 14px;
+    letter-spacing: -0.015em; text-wrap: balance; font-weight: 750;
+  }
+  .lede { color: var(--ink-soft); font-size: 18px; max-width: 62ch; margin: 0 0 28px; }
+  h2 {
+    font-size: 24px; margin: 56px 0 6px; letter-spacing: -0.01em; text-wrap: balance;
+    padding-top: 20px; border-top: 1px solid var(--line);
+  }
+  h2 .no {
+    font: 600 13px/1 ui-monospace, Menlo, monospace; color: var(--accent);
+    vertical-align: 6px; margin-right: 10px; letter-spacing: .08em;
+  }
+  h3 { font-size: 17px; margin: 28px 0 6px; }
+  p { margin: 10px 0 16px; max-width: 68ch; }
+  .muted { color: var(--ink-soft); }
+  strong { font-weight: 650; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  code {
+    font: 13.5px ui-monospace, "SF Mono", Menlo, monospace;
+    background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 4px; padding: 1px 5px;
+  }
+
+  .verdict {
+    background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+    border-radius: 8px; padding: 22px 26px; margin: 32px 0;
+  }
+  .verdict h2 { border: 0; margin: 0 0 12px; padding: 0; font-size: 19px; }
+  .verdict ol { margin: 0; padding-left: 22px; }
+  .verdict li { margin: 8px 0; }
+
+  .tablewrap { overflow-x: auto; margin: 18px 0 26px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 640px; }
+  th {
+    text-align: left; font: 600 11.5px/1.4 ui-monospace, Menlo, monospace;
+    letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft);
+    padding: 12px 14px; border-bottom: 2px solid var(--line); background: var(--surface-2);
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+  .pill {
+    display: inline-block; font: 600 11px/1 ui-monospace, Menlo, monospace;
+    letter-spacing: .05em; padding: 4px 9px; border-radius: 999px; white-space: nowrap;
+  }
+  .pill.rec { background: var(--accent-soft); color: var(--accent); }
+  .pill.ok { background: var(--surface-2); color: var(--ink-soft); }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .pill.no { background: var(--bad-soft); color: var(--bad); }
+  .score { font-variant-numeric: tabular-nums; font-family: ui-monospace, Menlo, monospace; font-weight: 700; }
+  .score.hi { color: var(--good); }
+  .score.mid { color: var(--warn); }
+  .score.lo { color: var(--bad); }
+
+  .cardgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin: 20px 0 28px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 20px;
+  }
+  .card h4 { margin: 0 0 8px; font-size: 15px; }
+  .card p { font-size: 14px; color: var(--ink-soft); margin: 0; }
+  .card .tag { font: 600 11px/1 ui-monospace, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 8px; }
+
+  .callout {
+    background: var(--warn-soft); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px 20px; margin: 22px 0; font-size: 14.5px; color: var(--ink);
+  }
+  .callout.risk { background: var(--bad-soft); }
+  .callout b:first-child { display: block; margin-bottom: 4px; }
+
+  .flow {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 20px; margin: 20px 0; overflow-x: auto;
+  }
+  .flow pre { margin: 0; font: 13px/1.7 ui-monospace, "SF Mono", Menlo, monospace; color: var(--ink); }
+
+  footer { margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-soft); }
+  @media (prefers-reduced-motion: no-preference) {
+    .verdict { animation: rise .4s ease-out; }
+    @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+
+</head>
+<body>
+<main>
+<header class="hero">
+  <p class="eyebrow">Riset · Agustus 2026 · Baruma</p>
+  <h1>AI Renderer: dari preview 3D ke foto &amp; video realistik</h1>
+  <p class="lede">Perbandingan biaya, kualitas, dan trade-off penyedia AI pihak ketiga untuk mengubah screenshot low-poly three.js menjadi render fotorealistik yang konsisten dengan geometri — plus rekomendasi arsitektur integrasi untuk monolith Next.js Baruma.</p>
+</header>
+
+<div class="verdict">
+  <h2>Rekomendasi ringkas</h2>
+  <ol>
+    <li><strong>Bangun sendiri di atas fal.ai + Gemini API</strong>, bukan layanan arch-viz turnkey. Hampir semua tool arch-viz (Veras, PromeAI, D5, SketchUp Diffusion) tidak punya API publik yang layak untuk SaaS.</li>
+    <li><strong>Gambar — dua mode:</strong> mode <em>Cepat</em> pakai <strong>Google Nano Banana 2</strong> (≈$0.067/gambar, &lt;5 dtk); mode <em>Presisi/HD</em> pakai <strong>FLUX Depth/Canny via fal.ai</strong> (≈$0.03–0.05) dengan depth &amp; edge map <em>eksak</em> dari canvas three.js — jaminan geometri 1:1 yang tak dimiliki kompetitor.</li>
+    <li><strong>Video — add-on premium:</strong> <strong>Kling 2.5 Turbo / 3.0 via fal.ai</strong> ($0.35–0.90 per klip 5–8 dtk) sebagai standar; <strong>Veo 3.1 Fast</strong> ($0.80–1.20) untuk tier atas. Sambung segmen dengan teknik first/last-frame.</li>
+    <li><strong>HPP ≈ Rp160–800/render</strong> → jual sebagai kredit Rp1.500–3.000 (margin &gt;10×, norma industri). Video Rp8–14rb/klip.</li>
+    <li><strong>Backend tanpa worker baru:</strong> queue sudah ada di sisi provider (queue.fal.run) — cukup row Postgres + webhook + polling + cron rekonsiliasi. Hasil ke storage S3-compatible yang sudah ada (<code>src/lib/server/storage.ts</code>).</li>
+  </ol>
+</div>
+
+<h2><span class="no">01</span>Kenapa Baruma siap untuk fitur ini</h2>
+<p>Analisa kode + konfirmasi dari sesi pengembangan yang sedang berjalan menunjukkan fondasinya sudah ada:</p>
+<div class="cardgrid">
+  <div class="card"><span class="tag">Input pipeline</span><h4>Paket Foto Presentasi</h4><p><code>src/lib/three/photo-package.ts</code> sudah memotret 4 sudut (iso/depan/atas, siang/senja) via Screenshot Bridge — tinggal jadi sumber input AI Renderer.</p></div>
+  <div class="card"><span class="tag">Keunggulan unik</span><h4>Scene 3D asli, bukan foto</h4><p>Depth, normal, edge, dan segmentation map bisa diekspor <em>eksak</em> dari geometri three.js — kompetitor harus menebaknya dari gambar RGB.</p></div>
+  <div class="card"><span class="tag">Monetisasi</span><h4>Sistem kredit sudah jalan</h4><p>Entitlements per plan (<code>creditsPerPeriod</code>) + billing Mayar + admin backoffice — AI render tinggal jadi konsumen kredit baru.</p></div>
+  <div class="card"><span class="tag">Filosofi produk</span><h4>Memang direncanakan</h4><p>Prinsip produk: render 3D internal tetap low-poly grammar-first; realisme datang lewat integrasi AI image/video — fitur ini adalah jalur itu.</p></div>
+</div>
+
+<h2><span class="no">02</span>Provider gambar — perbandingan</h2>
+<p>Kunci teknis: hasil harus <em>konsisten dengan geometri</em>. Ada dua pendekatan — (a) <strong>edit instruksional</strong> (kirim screenshot + perintah "buat fotorealistik, pertahankan geometri") dan (b) <strong>structure conditioning</strong> (depth/canny map memaksa output mengikuti garis geometri secara mekanis).</p>
+<div class="tablewrap"><table>
+  <tr><th>Provider / model</th><th>Harga per gambar</th><th>Kontrol struktur</th><th>Kekuatan</th><th>Kelemahan</th><th>Skor</th></tr>
+  <tr><td><strong>Google Nano Banana Pro</strong><br><span class="muted">gemini-3-pro-image</span></td><td class="num">$0.134 (1K/2K)<br>$0.24 (4K)</td><td>Instruksional, geometry-aware; hingga 14 gambar referensi</td><td>Pemahaman struktur ruang terbaik di kelasnya; viral di komunitas arch-viz (SketchUp→render); editing semantik material/lighting</td><td>Tanpa depth eksplisit — deviasi kecil tetap mungkin; SynthID watermark tak kasat mata</td><td><span class="score hi">9/10</span></td></tr>
+  <tr><td><strong>Nano Banana 2</strong><br><span class="muted">gemini-3.1-flash-image</span></td><td class="num">$0.067 (1K)<br>$0.045 (0.5K)</td><td>Instruksional</td><td>Cepat (2–5 dtk), murah, kualitas tinggi — ideal mode draft/preview</td><td>Sama seperti Pro, minus sebagian akurasi</td><td><span class="score hi">8.5/10</span></td></tr>
+  <tr><td><strong>FLUX.1 Depth/Canny</strong><br><span class="muted">via fal.ai / Replicate</span></td><td class="num">$0.03–0.05</td><td><strong>Eksplisit</strong> — depth/edge map memaksa silhouette persis</td><td>Konsistensi struktur paling deterministik; cocok dengan depth buffer asli three.js</td><td>Butuh preprocessing buffer; generasi FLUX.1 (bukan yang terbaru)</td><td><span class="score hi">8/10</span></td></tr>
+  <tr><td>FLUX.2 pro (edit)</td><td class="num">$0.045</td><td>Instruksional multi-referensi</td><td>Output s.d. 4MP, bagus untuk print</td><td>Uji 2026: gagal jaga viewpoint/layout saat edit-by-prompt — kalah dari Nano Banana</td><td><span class="score mid">5/10</span></td></tr>
+  <tr><td>Seedream 4.5 (ByteDance)</td><td class="num">~$0.03</td><td>Instruksional</td><td>Murah, jaga "structural integrity", s.d. 4K</td><td>Ekosistem docs kurang; kontrol struktur tak eksplisit</td><td><span class="score mid">7/10</span></td></tr>
+  <tr><td>Stability (Structure endpoint)</td><td class="num">$0.05</td><td>Eksplisit (depth/canny/sketch)</td><td>Endpoint khusus structure</td><td>Fotorealisme SD3.5 tertinggal dari FLUX/NB</td><td><span class="score mid">6/10</span></td></tr>
+  <tr><td>OpenAI GPT Image 2</td><td class="num">$0.041 (med)<br>$0.165 (high)</td><td>Instruksional saja</td><td>Fotorealisme oke</td><td>Cenderung "menggambar ulang" scene; paling lambat (30–60 dtk); mahal di tier High</td><td><span class="score lo">5/10</span></td></tr>
+  <tr><td>Self-host (RunPod, FLUX/SDXL+ControlNet)</td><td class="num">$0.001–0.005</td><td>Eksplisit</td><td>Termurah per render, tanpa filter konten</td><td>Ops overhead besar (ComfyUI, scaling, cold start) — tidak layak untuk tim kecil di fase awal</td><td><span class="score mid">7/10*</span></td></tr>
+</table></div>
+<div class="callout risk"><b>Hindari</b> Imagen 4 (dimatikan 17 Agustus 2026), gpt-image-1/1.5 (deprecated, mati Okt–Des 2026), SDXL API murni (kualitas tertinggal).</div>
+
+<h2><span class="no">03</span>Provider video — perbandingan</h2>
+<p>Use case: klip walkthrough/orbit 5–10 detik dari render still. Pola terbaik per 2026: banyak shot pendek yang disambung dengan first/last-frame (frame terakhir klip N = frame pertama klip N+1), bukan satu klip panjang.</p>
+<div class="tablewrap"><table>
+  <tr><th>Provider / model</th><th>Harga per klip 5–8 dtk</th><th>Kontrol</th><th>Catatan arsitektur</th><th>Skor</th></tr>
+  <tr><td><strong>Kling 2.5 Turbo Pro / 3.0</strong><br><span class="muted">via fal.ai</span></td><td class="num">$0.35 (5 dtk)<br>$0.90–1.34 (8 dtk, 3.0)</td><td>First+last frame; multi-shot dengan kamera per shot (3.0); s.d. 15 dtk</td><td>Rasio harga/kualitas terbaik; review real-estate: material konsisten lintas segmen. <strong>Risiko:</strong> mengarang furnitur/pintu pada ruang kosong — input harus fully staged, kamera pelan</td><td><span class="score hi">8.5/10</span></td></tr>
+  <tr><td><strong>Google Veo 3.1</strong><br><span class="muted">Standard / Fast / Lite</span></td><td class="num">$3.20 / $0.80–0.96 / $0.40–0.64 (8 dtk)</td><td>First/last frame ATAU 1–3 reference images; extend s.d. ~148 dtk; audio native</td><td>Kualitas tertinggi + paket kontrol terlengkap untuk konsistensi antar klip; termahal di tier Standard</td><td><span class="score hi">9/10</span></td></tr>
+  <tr><td>Runway Gen-4.5 / Gen-4 Turbo</td><td class="num">$0.60 / $0.25 (5 dtk)</td><td>Keyframes first/last (4.5); maks 10 dtk</td><td>"Geometri paling bersih" di komparasi real-estate 2026; tanpa audio, maks 1080p</td><td><span class="score hi">8/10</span></td></tr>
+  <tr><td>MiniMax Hailuo 2.3 / 03</td><td class="num">$0.19 (6 dtk)</td><td>Perintah kamera gaya Director ([Orbit], [Push in])</td><td>Murah, komposisi stabil saat kamera bergerak; Fast hanya 768p</td><td><span class="score mid">7/10</span></td></tr>
+  <tr><td>Alibaba Wan 2.5/2.6</td><td class="num">$0.25–0.75</td><td>Reference-driven, multi-shot 1080p</td><td>Termurah; open-weight → opsi self-host tanpa biaya per klip; kualitas di bawah Veo/Kling</td><td><span class="score mid">7/10</span></td></tr>
+  <tr><td>Seedance 2.0 (ByteDance)</td><td class="num">$1.50+ (720p)</td><td>Hingga 12 file referensi + FLF</td><td>Menarik untuk konsistensi multi-sudut, tapi mahal di fal</td><td><span class="score mid">7.5/10</span></td></tr>
+  <tr><td>Luma Ray 3.14</td><td class="num">tidak transparan</td><td>Keyframes start/end</td><td>Pricing membingungkan; jarang direkomendasikan untuk arsitektur</td><td><span class="score mid">6/10</span></td></tr>
+  <tr><td>OpenAI Sora 2</td><td class="num">—</td><td>—</td><td><strong>API mati 24 September 2026.</strong> Penerus ("Spud") belum rilis. Jangan dibangun di atasnya</td><td><span class="score lo">2/10</span></td></tr>
+  <tr><td>Pika</td><td class="num">$0.20–0.45</td><td>—</td><td>API publik hanya v2.2 lama; fokus efek kreatif, bukan arsitektur</td><td><span class="score lo">4/10</span></td></tr>
+</table></div>
+
+<h2><span class="no">04</span>Kenapa bukan layanan arch-viz turnkey</h2>
+<p>Layanan khusus arsitektur (Veras, ArchiVinci, PromeAI, SketchUp Diffusion, D5, Lumion) hampir semuanya <strong>aplikasi end-user atau plugin CAD tanpa API publik</strong>. Pengecualian yang punya API: <strong>MyArchitectAI</strong> ($0.03/render, video $0.25 — turnkey termurah tapi vendor kecil, tanpa input depth) dan <strong>Spacely AI</strong> (enterprise API, nego sales — vendor Asia Tenggara, menarik untuk partnership interior). Keduanya hanya menerima RGB, sehingga kalah akurat dibanding jalur "model generik + depth buffer asli dari three.js" yang bisa Baruma bangun sendiri.</p>
+
+<h2><span class="no">05</span>Benchmark kompetitor &amp; harga jual</h2>
+<p>Teknologi standar industri terkonfirmasi publik: <strong>Stable Diffusion/FLUX + ControlNet</strong> (Planner 5D, Collov, RoomGPT). Coohom (AIHom) dan Interior AI eksplisit menerima screenshot 3D sebagai input — memvalidasi use case Baruma.</p>
+<div class="tablewrap"><table>
+  <tr><th>Platform</th><th>Harga end-user per render</th><th>Model monetisasi</th></tr>
+  <tr><td>Homestyler</td><td class="num">≈ $0.50 (10 kredit)</td><td>Kredit + pack $9.99/200; hook $0.99/100</td></tr>
+  <tr><td>Spacely AI</td><td class="num">≈ $0.51 (8 kredit); fast 4 kredit</td><td>Mundur dari unlimited ke kredit (Sep 2025) — pelajaran penting</td></tr>
+  <tr><td>Collov AI</td><td class="num">$0.24–0.33</td><td>Model in-house (SD+GNN)</td></tr>
+  <tr><td>RoomGPT</td><td class="num">$0.145–0.30</td><td>Pay-per-use</td></tr>
+  <tr><td>Coohom</td><td class="num">kredit (Pro $25/bln)</td><td>Kredit gratis dari login harian &amp; share sosial</td></tr>
+  <tr><td>Planner 5D</td><td class="num">termasuk langganan</td><td>$4.99–19.99/bln</td></tr>
+</table></div>
+<p><strong>Norma industri:</strong> harga ritel $0.15–0.50/render dengan HPP $0.01–0.05 → margin 10–30×. AI render tidak pernah unlimited-gratis; tarif dibedakan per operasi (draft murah, HD mahal); biaya ditampilkan sebelum tombol render. Untuk pasar Indonesia: <strong>Rp1.500–3.000 per render</strong> (tetap margin &gt;10×), free trial 3–5 render dengan watermark, kredit bonus via share sosial ala Coohom.</p>
+
+<h2><span class="no">06</span>Arsitektur teknis yang disarankan</h2>
+<h3>Pipeline render</h3>
+<div class="flow"><pre>Canvas R3F (Paket Foto sudah ada)
+  ├─ beauty pass (screenshot RGB)
+  ├─ depth pass    — MeshDepthMaterial override, dilinearisasi &amp; invert (gaya MiDaS)
+  ├─ edge pass     — Sobel atas depth+normal (lebih bersih dari canny utk low-poly)
+  └─ seg pass      — MeshBasicMaterial per kategori, palet ADE20K (opsional, SDXL)
+        │
+        ▼
+POST /api/v1/renders  →  row Postgres status='queued'
+        │                 + prompt compiler: scene graph → daftar material
+        ▼                   per permukaan + preset gaya + seed terkunci
+queue.fal.run (FLUX Depth / Nano Banana)  ← antrian di sisi provider
+        │  webhook (verifikasi signature) + cron rekonsiliasi tiap menit
+        ▼
+unduh hasil → storage S3-compatible (sudah ada) → update row
+        │
+        ▼
+klien polling GET /api/v1/renders/:id tiap 2–3 dtk → galeri hasil</pre></div>
+<h3>Keputusan kunci</h3>
+<div class="cardgrid">
+  <div class="card"><span class="tag">Konsistensi</span><h4>Prompt compiler, bukan prompt user</h4><p>Scene graph dikompilasi deterministik jadi daftar material per permukaan + preset gaya server-side. User memilih preset ("Tropis Sore", "Golden Hour"), tidak menulis prompt.</p></div>
+  <div class="card"><span class="tag">Multi-view</span><h4>Referensi berantai</h4><p>View #1 via FLUX Depth → view berikutnya via Nano Banana Pro (s.d. 14 referensi) dengan hasil view #1 sebagai acuan material. Simpan seed + prompt + URL referensi di row proyek.</p></div>
+  <div class="card"><span class="tag">Tanpa Redis</span><h4>Queue di provider</h4><p>Tidak perlu worker terpisah — sesuai prinsip monolith. Jika kelak butuh antrian lokal (retry, fan-out), pakai pg-boss (di atas Postgres), bukan BullMQ.</p></div>
+  <div class="card"><span class="tag">Bundle</span><h4>Nol dependensi berat baru</h4><p>Pass depth/edge hanya berjalan saat tombol ditekan (bukan per-frame), memakai three.js yang sudah ada — baseline bundle route preview aman.</p></div>
+</div>
+
+<h2><span class="no">07</span>Simulasi biaya bulanan</h2>
+<div class="tablewrap"><table>
+  <tr><th>Skenario</th><th>Volume</th><th>Biaya API</th><th>Storage + infra</th><th>Total ±</th></tr>
+  <tr><td>Uji coba / beta</td><td class="num">300 render draft</td><td class="num">$20</td><td class="num">~$0 (infra sudah ada)</td><td class="num"><strong>$20 ≈ Rp330rb</strong></td></tr>
+  <tr><td>Produksi awal</td><td class="num">1.000 render (70% draft NB2, 30% presisi FLUX)</td><td class="num">$60–90</td><td class="num">$2</td><td class="num"><strong>$62–92 ≈ Rp1–1,5jt</strong></td></tr>
+  <tr><td>Bertumbuh + video</td><td class="num">3.000 render + 100 klip Kling</td><td class="num">$180–270 + $35–90</td><td class="num">$5</td><td class="num"><strong>$220–365 ≈ Rp3,6–6jt</strong></td></tr>
+</table></div>
+<p class="muted">Kurs asumsi Rp16.400/USD. Pada harga jual Rp1.500–3.000/render, 1.000 render = pendapatan Rp1,5–3jt vs HPP API ≈ Rp1–1,5jt di volume rendah — margin membaik tajam seiring volume karena porsi draft murah naik dan batch API Google memberi diskon 50%.</p>
+
+<h2><span class="no">08</span>Risiko &amp; mitigasi</h2>
+<div class="tablewrap"><table>
+  <tr><th>Risiko</th><th>Dampak</th><th>Mitigasi</th></tr>
+  <tr><td>Model AI cepat deprecated (Imagen 4, Sora, gpt-image-1 semua mati 2026)</td><td>Fitur rusak mendadak</td><td>Abstraksi provider di satu modul (<code>src/lib/server/ai-render/</code>); lewat fal.ai satu API key bisa ganti model tanpa ubah arsitektur</td></tr>
+  <tr><td>Nano Banana sesekali menggeser geometri</td><td>User komplain "rumah saya berubah"</td><td>Mode Presisi (FLUX Depth) sebagai fallback; tombol "render ulang lebih akurat"</td></tr>
+  <tr><td>Kling mengarang furnitur pada ruang kosong</td><td>Video menyesatkan klien user</td><td>Wajibkan scene fully staged sebelum video; batasi preset kamera ke gerakan pelan</td></tr>
+  <tr><td>Biaya API membengkak (abuse)</td><td>Margin negatif</td><td>Kredit dipotong di awal job; rate limit per user; cache hasil dengan kunci hash(scene+kamera+preset+seed)</td></tr>
+  <tr><td>Konten SynthID/watermark &amp; lisensi komersial</td><td>Kepatuhan</td><td>Semua kandidat utama (Gemini paid tier, fal, Kling) mengizinkan komersial; SynthID tak kasat mata, tidak mengganggu</td></tr>
+</table></div>
+
+<h2><span class="no">09</span>Roadmap yang disarankan</h2>
+<div class="cardgrid">
+  <div class="card"><span class="tag">Fase 1 · validasi</span><h4>Prototipe murah</h4><p>Uji di Replicate ($0.008/run) + AI Studio free tier: screenshot Paket Foto → Nano Banana 2 &amp; FLUX Depth, bandingkan konsistensi pada 5–10 rumah nyata dari template Baruma.</p></div>
+  <div class="card"><span class="tag">Fase 2 · MVP gambar</span><h4>Mode Cepat + Presisi</h4><p>Endpoint <code>/api/v1/renders</code>, prompt compiler, integrasi kredit/entitlements, galeri hasil di tab preview-3d. Watermark untuk free tier.</p></div>
+  <div class="card"><span class="tag">Fase 3 · multi-view</span><h4>Paket Foto Realistik</h4><p>4 bidikan Paket Foto di-render AI sekaligus dengan referensi berantai — upgrade langsung dari fitur yang sudah dikenal user.</p></div>
+  <div class="card"><span class="tag">Fase 4 · video</span><h4>Orbit sinematik premium</h4><p>Kling via fal.ai dari render still terbaik; klip 5–8 dtk; harga premium Rp8–14rb. Evaluasi Veo 3.1 Fast untuk tier atas.</p></div>
+</div>
+
+<footer>
+  Disusun 15 Agustus 2026 dari tiga jalur riset paralel (provider gambar, provider video, tool arch-viz + pola integrasi) + analisa kode Baruma + konfirmasi sesi pengembangan aktif. Sumber harga: dokumentasi resmi Gemini API, BFL, fal.ai, Replicate, Runway, Stability, serta review arch-viz/real-estate 2026 — tautan lengkap tersedia di log riset.
+</footer>
+</main>
+</body>
+</html>
