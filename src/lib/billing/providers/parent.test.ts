@@ -34,6 +34,7 @@ function baseInput(overrides: Partial<CreateCheckoutInput> = {}): CreateCheckout
     planName: "Pro",
     period: "month",
     redirectUrl: "https://app.test/app/billing",
+    webhookUrl: "https://app.test/api/webhooks/payment",
     ...overrides,
   }
 }
@@ -95,6 +96,7 @@ describe("createCheckout", () => {
       amountIdr: 149000,
       period: "month",
       redirectUrl: "https://app.test/app/billing",
+      webhookUrl: "https://app.test/api/webhooks/payment",
     })
     // Baruma owns the order-id namespace (brm- prefix from the first 8 chars
     // of the user id) so the relay maps back to the pending subscription.

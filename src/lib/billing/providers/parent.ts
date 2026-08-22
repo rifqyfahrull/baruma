@@ -10,8 +10,16 @@
  * - `createCheckout()` POSTs to the parent's child-billing endpoint
  *   (`POST {PARENT_BILLING_URL}/api/billing/child/checkout`), authenticated by
  *   a shared secret header. Baruma sends its own plan price (it is the source
- *   of truth for its admin-editable plans) and a Baruma-generated order id; the
- *   parent creates the Mayar invoice and returns the checkout URL.
+ *   of truth for its admin-editable plans), a Baruma-generated order id, and
+ *   its OWN webhook URL (`webhookUrl`, computed from its own env — same
+ *   pattern as `redirectUrl`); the parent creates the Mayar invoice, stores
+ *   that webhookUrl on its ledger row, and returns the checkout URL. The
+ *   webhookUrl is deliberately per-request, not a static value the parent
+ *   configures for "the baruma app" — that would mean every time Baruma's
+ *   own domain changed, someone would have to remember to update AND
+ *   redeploy the PARENT too (2026-08-22: this bit us once already, as a
+ *   stale env value baked in by a deploy that ran before the secret existed).
+ *   Self-reporting it here means the parent never needs touching.
  * - `parseWebhook()` verifies the parent's relay POST (the parent fans a
  *   normalized event out to `POST /api/webhooks/payment` after Mayar notifies
  *   it) against the same shared secret. The wire body is already normalized by
@@ -126,6 +134,7 @@ async function createCheckout(
         amountIdr: input.amountIdr,
         period: input.period,
         redirectUrl: input.redirectUrl,
+        webhookUrl: input.webhookUrl,
       }),
       signal: AbortSignal.timeout(30_000),
     })

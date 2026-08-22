@@ -177,6 +177,17 @@ describe("POST /api/checkout", () => {
     expect(body.message).toBeTruthy()
   })
 
+  it("returns 503 when NEXT_PUBLIC_APP_URL/APP_URL are unset (needed to build webhookUrl)", async () => {
+    delete process.env.NEXT_PUBLIC_APP_URL
+    vi.mocked(requireUser).mockResolvedValueOnce({
+      userId: "user-checkout-test",
+    })
+    vi.mocked(getPlan).mockResolvedValueOnce(fakePlan())
+    const res = await POST(jsonRequest({ planId: "pro" }))
+    expect(res.status).toBe(503)
+    expect((await res.json()).error).toBe("payment_not_configured")
+  })
+
   it("returns 404 when the profile is not found", async () => {
     vi.mocked(requireUser).mockResolvedValueOnce({
       userId: "user-checkout-test",
@@ -239,6 +250,7 @@ describe("POST /api/checkout", () => {
       planName: "Pro",
       period: "month",
       redirectUrl: "https://app.test/app/billing",
+      webhookUrl: "https://app.test/api/webhooks/payment",
     })
     expect(createPendingSubscription).toHaveBeenCalledWith({
       profileId: "user-checkout-test",

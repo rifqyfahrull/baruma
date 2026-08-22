@@ -51,7 +51,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_plan" }, { status: 400 })
   }
 
-  if (!isParentBillingConfigured()) {
+  // appUrl is required, not just nice-to-have: the parent needs a real
+  // webhookUrl to relay payment results back to (self-reported here rather
+  // than configured on the parent — see parent.ts's header comment), and
+  // there's no safe fallback for that the way there is for redirectUrl. If
+  // it's unset, checkout can never actually complete, so fail the same way
+  // as "not configured" rather than let it 502 later from the parent.
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL ?? undefined
+  if (!isParentBillingConfigured() || !appUrl) {
     return NextResponse.json(
       {
         error: "payment_not_configured",
@@ -69,11 +77,11 @@ export async function POST(req: Request) {
   // Land the user back on the billing page after paying (parent forwards this
   // to Mayar as the invoice redirect). Built with new URL() so a trailing
   // slash on NEXT_PUBLIC_APP_URL/APP_URL can't produce "//app/billing".
-  const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL ?? undefined
-  const redirectUrl = appUrl
-    ? new URL("/app/billing", appUrl).toString()
-    : undefined
+  const redirectUrl = new URL("/app/billing", appUrl).toString()
+  // Where the parent should relay this order's payment result. Self-reported
+  // per-request (not configured on the parent) so Baruma's domain can change
+  // without ever touching the parent's config — see parent.ts.
+  const webhookUrl = new URL("/api/webhooks/payment", appUrl).toString()
 
   const provider = getBillingProvider()
   let result
@@ -88,6 +96,7 @@ export async function POST(req: Request) {
       planName: plan.name,
       period: plan.period,
       redirectUrl,
+      webhookUrl,
     })
   } catch (e) {
     // The provider's error messages never include the shared secret — safe to

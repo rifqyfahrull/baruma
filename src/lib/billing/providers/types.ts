@@ -46,6 +46,12 @@ export interface CreateCheckoutInput {
   /** Where Mayar should return the user after paying. Defaults, on the parent
    *  side, to Baruma's `/app/billing` when omitted. */
   redirectUrl?: string
+  /** Where the parent should relay this order's payment result — Baruma's
+   *  own `/api/webhooks/payment`, computed from its own env, the same way
+   *  `redirectUrl` is. Required: the parent has no fallback for it (unlike
+   *  redirectUrl), by design — see providers/parent.ts's header comment for
+   *  why this is self-reported per-request rather than parent-side config. */
+  webhookUrl: string
 }
 
 export interface CreateCheckoutResult {
