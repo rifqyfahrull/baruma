@@ -1,5 +1,6 @@
 "use client"
 
+import { usePathname } from "next/navigation"
 import { Search } from "lucide-react"
 
 import { useUIStore } from "@/stores/ui-store"
@@ -8,8 +9,22 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ThemeToggle } from "@/components/shared/theme-toggle"
 
+/** Rute proyek punya chrome atas sendiri (`ProjectBar`, Fase 5) yang sudah
+ *  menyertakan `SidebarTrigger` — topbar global di sini akan JADI DOBEL
+ *  chrome di atas chrome bila tetap dirender. Search global pindah ke ⌘K
+ *  dalam dropdown nama project; ThemeToggle pindah jadi item menu di
+ *  dropdown yang sama (lihat komentar di project-bar.tsx).
+ *
+ *  Lookahead negatif `(?!new)` mengecualikan `/app/projects/new` (wizard
+ *  buat project baru) — rute sibling statis TANPA `ProjectBar`, bukan
+ *  `[projectId]` dinamis, jadi topbar global harus tetap tampil di sana. */
+const PROJECT_ROUTE_RE = /^\/app\/projects\/(?!new(?:\/|$))[^/]+(?:\/|$)/
+
 export function AppTopbar() {
+  const pathname = usePathname()
   const setCommandOpen = useUIStore((s) => s.setCommandOpen)
+
+  if (pathname && PROJECT_ROUTE_RE.test(pathname)) return null
 
   return (
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b bg-background/80 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/60">

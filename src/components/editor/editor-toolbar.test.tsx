@@ -1,7 +1,24 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vitest"
 import { cleanup, render, screen, fireEvent, within } from "@testing-library/react"
 
 import type { FeatureCapabilities } from "@/lib/features"
+
+// jsdom tidak mengimplementasikan matchMedia — useFokusMode() (tombol Fokus,
+// slot ke-12 sejak Fase 5) memanggil useSidebar() → useIsMobile() lewat
+// useSyncExternalStore(window.matchMedia(...)).
+beforeAll(() => {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  })
+})
 
 const capabilitiesRef: { current: FeatureCapabilities } = {
   current: {
@@ -32,16 +49,20 @@ vi.mock("@/lib/analytics", () => ({
 import { EditorToolbar } from "./editor-toolbar"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { ConfirmDialogProvider } from "@/components/ui/confirm-dialog"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { useEditorStore } from "@/stores/editor-store"
+import { useUIStore } from "@/stores/ui-store"
 import { makeLayout } from "@/test-utils/fixtures"
 
 function renderToolbar() {
   return render(
-    <TooltipProvider>
-      <ConfirmDialogProvider>
-        <EditorToolbar />
-      </ConfirmDialogProvider>
-    </TooltipProvider>
+    <SidebarProvider>
+      <TooltipProvider>
+        <ConfirmDialogProvider>
+          <EditorToolbar />
+        </ConfirmDialogProvider>
+      </TooltipProvider>
+    </SidebarProvider>
   )
 }
 
@@ -72,10 +93,11 @@ beforeEach(() => {
 })
 afterEach(() => {
   window.ResizeObserver = originalResizeObserver as typeof ResizeObserver
+  useUIStore.getState().setFokusMode(false)
   cleanup()
 })
 
-describe("EditorToolbar — rail dasar (11 tombol + 2 label grup)", () => {
+describe("EditorToolbar — rail dasar (12 tombol + 2 label grup, Fase 5: +Fokus)", () => {
   it("renders undo/redo, pilih/geser, dan tiap tombol kategori dgn aria-label sendiri", () => {
     renderToolbar()
     expect(screen.getByLabelText("Undo")).toBeTruthy()
@@ -89,6 +111,7 @@ describe("EditorToolbar — rail dasar (11 tombol + 2 label grup)", () => {
     expect(screen.getByLabelText("Utilitas (listrik & air)")).toBeTruthy()
     expect(screen.getByLabelText("Eksterior")).toBeTruthy()
     expect(screen.getByLabelText("Tampilan")).toBeTruthy()
+    expect(screen.getByLabelText("Mode fokus")).toBeTruthy()
   })
 
   it("tak ada kontrol dgn native title (semua lewat rich Tooltip)", () => {
@@ -400,5 +423,26 @@ describe("EditorToolbar — popover Tampilan (snap, dimensi+satuan, lantai lain,
     expect(useEditorStore.getState().showHiddenRoofZones).toBe(false)
     fireEvent.click(within(hiddenRow).getByRole("switch"))
     expect(useEditorStore.getState().showHiddenRoofZones).toBe(true)
+  })
+})
+
+describe("EditorToolbar — Fokus (slot ke-12, Fase 5)", () => {
+  afterEach(() => useUIStore.getState().setFokusMode(false))
+
+  it("toggles ui-store.fokusMode via testid clean-mode-toggle (paritas dgn rail 3D)", () => {
+    renderToolbar()
+    const fokus = screen.getByTestId("clean-mode-toggle")
+    expect(fokus.getAttribute("aria-label")).toBe("Mode fokus")
+    expect(fokus.getAttribute("aria-pressed")).toBe("false")
+    fireEvent.click(fokus)
+    expect(useUIStore.getState().fokusMode).toBe(true)
+    expect(fokus.getAttribute("aria-pressed")).toBe("true")
+  })
+
+  it("Fokus tetap reachable via ToolbarMore saat compact", () => {
+    compactRef.current = true
+    renderToolbar()
+    fireEvent.click(screen.getByTestId("editor-toolbar-more"))
+    expect(screen.getByLabelText("Mode fokus")).toBeTruthy()
   })
 })

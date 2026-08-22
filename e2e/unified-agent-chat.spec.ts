@@ -16,7 +16,12 @@ test.describe("Unified project AI Agent", () => {
     await expect(panel.getByText(/thread unified/)).toBeVisible()
 
     await page.getByTestId("project-agent-sheet").getByRole("button", { name: "Close" }).click()
-    await page.getByRole("link", { name: "2D Editor" }).click()
+    // 2D Editor kini sub-halaman Desain (caret), bukan tab langsung — Fase 5.
+    await page
+      .getByRole("navigation", { name: "Tahap project" })
+      .getByTestId("stage-desain-caret")
+      .click()
+    await page.getByRole("menuitem", { name: "2D Editor" }).click()
     await expect(page).toHaveURL(new RegExp(`/app/projects/${DEMO}/editor$`))
     await expect(page.locator("svg.touch-none")).toBeVisible()
     await page.getByRole("button", { name: "AI Agent", exact: true }).first().click()

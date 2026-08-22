@@ -52,10 +52,13 @@ test.describe("Roof zone editor", () => {
 
     // Navigate via SPA so the editor store draft (roofZones) is preserved into
     // Preview 3D; a full page.goto would reload the mock project from fixtures.
+    // 3D Preview kini sub-halaman Desain (caret), bukan tab langsung — Fase 5
+    // (ProjectTabs diganti ProjectBar).
     await page
-      .getByRole("navigation")
-      .getByRole("link", { name: "3D Preview" })
+      .getByRole("navigation", { name: "Tahap project" })
+      .getByTestId("stage-desain-caret")
       .click()
+    await page.getByRole("menuitem", { name: "3D Preview" }).click()
     await page.waitForURL(`**/app/projects/${DEMO}/preview-3d`)
     await expect(page.getByRole("heading", { name: "Preview 3D" })).toBeVisible({
       timeout: 30_000,

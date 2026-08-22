@@ -7,18 +7,24 @@ import { create } from "zustand"
  */
 type UIStore = {
   commandOpen: boolean
-  aiAssistantOpen: boolean
+  /**
+   * Mode fokus (Fase 5 — rename dari `preview-store.cleanMode`, dulu 3D-only
+   * "mode bersih"). Sekarang dipakai BERSAMA oleh 2D & 3D lewat
+   * `useFokusMode()` (src/hooks/use-fokus-mode.ts): mengecilkan `ProjectBar`
+   * jadi pill kecil + menutup sidebar kiri. Dipindah ke sini (dari
+   * preview-store yang khusus 3D) karena satu state kini dipakai kedua
+   * permukaan editor.
+   */
+  fokusMode: boolean
   setCommandOpen: (open: boolean) => void
   toggleCommand: () => void
-  setAiAssistantOpen: (open: boolean) => void
-  toggleAiAssistant: () => void
+  setFokusMode: (v: boolean) => void
 }
 
 export const useUIStore = create<UIStore>((set) => ({
   commandOpen: false,
-  aiAssistantOpen: false,
+  fokusMode: false,
   setCommandOpen: (open) => set({ commandOpen: open }),
   toggleCommand: () => set((s) => ({ commandOpen: !s.commandOpen })),
-  setAiAssistantOpen: (open) => set({ aiAssistantOpen: open }),
-  toggleAiAssistant: () => set((s) => ({ aiAssistantOpen: !s.aiAssistantOpen })),
+  setFokusMode: (v) => set({ fokusMode: v }),
 }))

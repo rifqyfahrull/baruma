@@ -36,7 +36,13 @@ test.describe("Gambar Kerja", () => {
     // nav link so this test also covers nav wiring, not just the route.
     await page.goto(`/app/projects/${DEMO}/editor`)
     await expect(page.locator("svg.touch-none")).toBeVisible()
-    await page.getByRole("link", { name: "Gambar Kerja" }).click()
+    // Gambar Kerja kini sub-halaman Hasil (caret), bukan tab langsung — Fase 5
+    // (ProjectTabs diganti ProjectBar).
+    await page
+      .getByRole("navigation", { name: "Tahap project" })
+      .getByTestId("stage-hasil-caret")
+      .click()
+    await page.getByRole("menuitem", { name: "Gambar Kerja" }).click()
     await page.waitForURL(`**/app/projects/${DEMO}/drawings`)
 
     // Sheet list is dynamic (tampak/potongan + per-floor kusen plans + daftar
@@ -145,7 +151,13 @@ test.describe("Gambar Kerja", () => {
     // first test above.
     await page.goto(`/app/projects/${DEMO}/editor`)
     await expect(page.locator("svg.touch-none")).toBeVisible()
-    await page.getByRole("link", { name: "Gambar Kerja" }).click()
+    // Gambar Kerja kini sub-halaman Hasil (caret), bukan tab langsung — Fase 5
+    // (ProjectTabs diganti ProjectBar).
+    await page
+      .getByRole("navigation", { name: "Tahap project" })
+      .getByTestId("stage-hasil-caret")
+      .click()
+    await page.getByRole("menuitem", { name: "Gambar Kerja" }).click()
     await page.waitForURL(`**/app/projects/${DEMO}/drawings`)
 
     // Sheet list is dynamic: 4 tampak + 2 potongan + 1 Rencana Kusen per

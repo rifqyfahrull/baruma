@@ -46,20 +46,84 @@ export const ADMIN_NAV_ITEM: NavItem = {
   icon: ShieldCheck,
 }
 
-/** Project workspace left sidebar (PRD §9.3). Items beyond brief/alternatives
- *  arrive in later milestones, shown disabled with a "Segera" badge. */
-export function projectNav(projectId: string): NavItem[] {
-  const base = `/app/projects/${projectId}`
-  return [
-    { title: "Brief", href: `${base}/brief`, icon: FileText },
-    { title: "Alternatif", href: `${base}/alternatives`, icon: LayoutGrid },
-    { title: "2D Editor", href: `${base}/editor`, icon: PencilRuler },
-    { title: "3D Preview", href: `${base}/preview-3d`, icon: Box },
-    { title: "Gambar Kerja", href: `${base}/drawings`, icon: Ruler },
-    { title: "Materials", href: `${base}/materials`, icon: Palette },
-    { title: "Furniture", href: `${base}/furniture`, icon: Armchair },
-    { title: "RAB / BOQ", href: `${base}/rab`, icon: Calculator },
-    { title: "Exports", href: `${base}/exports`, icon: Download },
-    { title: "Review", href: `${base}/review`, icon: ClipboardCheck },
-  ]
+/**
+ * Stage nav proyek (Fase 5 — pill bar tengah `ProjectBar`, menggantikan
+ * `ProjectTabs` datar-10-tab). Empat "tahap" alih-alih daftar rute: dua
+ * tahap adalah halaman tunggal (Brief/Alternatif), dua sisanya adalah GRUP
+ * berisi beberapa sub-halaman (Desain, Hasil) — grup punya caret yang
+ * membuka `DropdownMenu` berisi `items`nya. Semua rute lama tetap reachable,
+ * cuma pindah level (langsung → lewat caret).
+ */
+export type StageId = "brief" | "alternatif" | "desain" | "hasil"
+
+export type StageSubItem = {
+  title: string
+  /** Segmen path relatif terhadap `/app/projects/[projectId]` (tanpa slash). */
+  path: string
+  icon: LucideIcon
+  /** Desain: true = "permukaan" (2D/3D, diingat via localStorage sebagai
+   *  target klik pill). false/undefined = sub-halaman sekunder (caret saja). */
+  surface?: boolean
+}
+
+export type StagePage =
+  | { id: StageId; title: string; icon: LucideIcon; path: string; items?: undefined }
+  | { id: StageId; title: string; icon: LucideIcon; path?: undefined; items: StageSubItem[] }
+
+export const PROJECT_STAGES: StagePage[] = [
+  { id: "brief", title: "Brief", icon: FileText, path: "brief" },
+  { id: "alternatif", title: "Alternatif", icon: LayoutGrid, path: "alternatives" },
+  {
+    id: "desain",
+    title: "Desain",
+    icon: PencilRuler,
+    items: [
+      { title: "2D Editor", path: "editor", icon: PencilRuler, surface: true },
+      { title: "3D Preview", path: "preview-3d", icon: Box, surface: true },
+      { title: "Materials", path: "materials", icon: Palette },
+      { title: "Furniture", path: "furniture", icon: Armchair },
+    ],
+  },
+  {
+    id: "hasil",
+    title: "Hasil",
+    icon: ClipboardCheck,
+    items: [
+      { title: "Gambar Kerja", path: "drawings", icon: Ruler },
+      { title: "RAB / BOQ", path: "rab", icon: Calculator },
+      { title: "Exports", path: "exports", icon: Download },
+      { title: "Review", path: "review", icon: ClipboardCheck },
+    ],
+  },
+]
+
+/** `stageHref(projectId, "brief")` → `/app/projects/x/brief`. */
+export function stageHref(projectId: string, path: string): string {
+  return `/app/projects/${projectId}/${path}`
+}
+
+/** localStorage key: permukaan Desain terakhir dibuka (2D/3D) — dipakai
+ *  sebagai target klik pill "Desain" di `ProjectBar` (bukan selalu 2D). */
+const LAST_SURFACE_KEY = "baruma:last-surface"
+type SurfacePath = "editor" | "preview-3d"
+
+export function rememberLastSurface(path: string): void {
+  if (path !== "editor" && path !== "preview-3d") return
+  try {
+    window.localStorage.setItem(LAST_SURFACE_KEY, path)
+  } catch {
+    // localStorage tak tersedia (privat/quota) — abaikan, default tetap jalan.
+  }
+}
+
+/** Default "editor" bila belum pernah membuka salah satu permukaan, atau
+ *  saat dipanggil di server (SSR-safe: window belum ada). */
+export function lastSurfacePath(): SurfacePath {
+  try {
+    const stored = window.localStorage.getItem(LAST_SURFACE_KEY)
+    if (stored === "editor" || stored === "preview-3d") return stored
+  } catch {
+    // ignore
+  }
+  return "editor"
 }

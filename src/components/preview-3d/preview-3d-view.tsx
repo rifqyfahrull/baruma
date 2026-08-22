@@ -15,6 +15,7 @@ import { useInterior } from "@/lib/api/hooks"
 import { useInteriorAutosave } from "@/hooks/use-interior-autosave"
 import { useLayoutAutosave } from "@/hooks/use-layout-autosave"
 import { routeRedo, routeUndo } from "@/hooks/use-unified-undo"
+import { useFokusMode } from "@/hooks/use-fokus-mode"
 import { useEditorStore } from "@/stores/editor-store"
 import { actionsForContext } from "@/components/editor/context-menu/action-registry"
 import {
@@ -23,7 +24,6 @@ import {
 } from "@/components/editor/context-menu/cursor-menu"
 import { useSaveStatusStore } from "@/stores/save-status-store"
 import { useProjectAgentUiStore } from "@/stores/project-agent-ui-store"
-import { useSidebar } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import {
   Drawer,
@@ -109,12 +109,14 @@ export function Preview3DView({
   const layoutSaveStatus = useLayoutAutosave(project.id, { enabled: !readOnly })
   const layoutDirty = useEditorStore((s) => s.dirty)
   const reportSaveStatus = useSaveStatusStore((s) => s.report)
-  const cleanMode = usePreviewStore((s) => s.cleanMode)
+  // Fokus (Fase 5 — dulu cleanMode lokal 3D-only): hook bersama dgn 2D
+  // (editor-toolbar.tsx) — sinkron sidebar & reset-on-unmount kini hidup di
+  // dalam hook, bukan lagi diduplikasi di sini.
+  const { fokusMode } = useFokusMode()
   // Tab panel kanan: Kontrol | Asisten Interior — paritas dengan 2D editor
   // (Properti | Asisten Denah).
   const [sidePanel, setSidePanel] = React.useState<"kontrol" | "ai">("kontrol")
   const injectAgentDraft = useProjectAgentUiStore((state) => state.injectDraft)
-  const { setOpen: setSidebarOpen, isMobile: sidebarIsMobile } = useSidebar()
 
   // Status autosave gabungan (interior + layout) di header workspace. readOnly:
   // tidak pernah reportSaveStatus sama sekali (tanpa autosave, tak ada yang
@@ -142,32 +144,6 @@ export function Preview3DView({
   React.useEffect(() => {
     if (readOnly) usePreviewStore.getState().setInteractionMode("view")
   }, [readOnly])
-
-  // Mode bersih: sinkronkan sidebar kiri (tutup saat masuk, buka saat keluar).
-  // Skip first run agar preferensi sidebar user tidak dipaksa saat mount.
-  const cleanInitRef = React.useRef(false)
-  const setSidebarOpenRef = React.useRef(setSidebarOpen)
-  React.useEffect(() => {
-    setSidebarOpenRef.current = setSidebarOpen
-  }, [setSidebarOpen])
-  React.useEffect(() => {
-    if (!cleanInitRef.current) {
-      cleanInitRef.current = true
-      if (!cleanMode) return
-    }
-    if (!sidebarIsMobile) setSidebarOpenRef.current(!cleanMode)
-  }, [cleanMode, sidebarIsMobile])
-  // Keluar halaman saat mode bersih aktif → pulihkan header/sidebar.
-  React.useEffect(
-    () => () => {
-      const s = usePreviewStore.getState()
-      if (s.cleanMode) {
-        s.setCleanMode(false)
-        setSidebarOpenRef.current(true)
-      }
-    },
-    []
-  )
 
   // Mirror seleksi terpadu editor-store → field legacy preview-store
   // (unifikasi P1) — seleksi yang dibuat di 2D langsung terlihat di sini.
@@ -224,6 +200,13 @@ export function Preview3DView({
   // "E" (toggle Edit/View) DIHAPUS — konsep interactionMode di UI dihapus;
   // user selalu edit-capable, interactionMode kini murni gate readOnly
   // (lihat efek di atas & komentar di preview-store.ts).
+  //
+  // Escape (Fase 5): HANYA clearSelection bila memang ada seleksi aktif, dan
+  // memanggil preventDefault() saat itu terjadi — `useFokusMode()` (dipakai
+  // di ProjectBar/ViewToolbar) punya listener Escape TERPISAH yang keluar
+  // dari mode fokus, tapi menunda pengecekan `defaultPrevented` satu tick
+  // (lihat use-fokus-mode.ts) supaya "Escape membatalkan seleksi" di sini
+  // SELALU menang lebih dulu tanpa perlu koordinasi urutan listener eksplisit.
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null
@@ -236,12 +219,9 @@ export function Preview3DView({
         return
       }
       if (e.metaKey || e.ctrlKey || e.altKey) return
-      if (e.key === "Escape") {
-        if (usePreviewStore.getState().cleanMode) {
-          usePreviewStore.getState().setCleanMode(false)
-        } else {
-          useEditorStore.getState().clearSelection()
-        }
+      if (e.key === "Escape" && useEditorStore.getState().selected !== null) {
+        e.preventDefault()
+        useEditorStore.getState().clearSelection()
       }
     }
     window.addEventListener("keydown", onKey)
@@ -332,13 +312,13 @@ export function Preview3DView({
         {/* Sudut pandang / pencahayaan / opsi tampilan — toolbar kiri.
             Mobile: batasi tinggi kolom + biar scroll internal bila melebihi. */}
         <div className="absolute left-3 top-3 z-10 max-h-[calc(100%-1.5rem)] overflow-y-auto">
-          <ViewToolbar layout={layout} project={project} readOnly={readOnly} />
+          <ViewToolbar layout={layout} project={project} />
         </div>
 
         {/* Arah mata angin — jarum diputar CompassBridge (dalam Canvas)
             mengikuti azimut kamera, langsung via style.transform. Ikut
             disembunyikan mode bersih agar screenshot tetap polos. */}
-        {!cleanMode && <Compass3DOverlay />}
+        {!fokusMode && <Compass3DOverlay />}
 
         {/* Panel Kontrol/Asisten Interior + drawer mobile: SELURUHNYA jalur
             edit (quick-add kolam/tangga, gaya fasad, inspector terpadu,
@@ -352,7 +332,7 @@ export function Preview3DView({
                 (kartu editornya di dalam drawer ini — dulu tap diam-diam memilih
                 tanpa UI apa pun). Tap ruang dikecualikan: dipakai utk navigasi/
                 fly-to & auto-select saat load — auto-popup justru mengganggu. */}
-            {!cleanMode && (
+            {!fokusMode && (
               <div className="absolute right-3 top-3 z-10 lg:hidden">
                 <Drawer open={controlsDrawerOpen} onOpenChange={setControlsDrawerOpen}>
                   <DrawerTrigger asChild>
@@ -383,7 +363,7 @@ export function Preview3DView({
               widthClass="w-[24rem]"
               bodyClassName={sidePanel === "ai" ? "overflow-y-visible p-0" : "space-y-3"}
               minimizeLabel="Preview 3D"
-              forceMinimized={cleanMode}
+              forceMinimized={fokusMode}
               title={
                 <div className="flex min-w-0 flex-1 gap-1">
                   {/* Nama panel utk pembaca layar & e2e; visual memakai tab. */}

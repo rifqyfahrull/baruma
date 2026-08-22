@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
 import {
   Activity,
   Box,
@@ -21,6 +20,7 @@ import { usePreviewStore, type ViewPreset } from "@/stores/preview-store"
 import { useProjectCapabilities } from "@/hooks/use-project-capabilities"
 import { useToolbarCompact } from "@/hooks/use-toolbar-compact"
 import { useUnifiedUndo } from "@/hooks/use-unified-undo"
+import { useFokusMode } from "@/hooks/use-fokus-mode"
 import { isPartialRooftop } from "@/lib/geometry/rooftop"
 import {
   cityLatitude,
@@ -106,15 +106,14 @@ function FlyoutRow({
 export function ViewToolbar({
   layout,
   project,
-  readOnly = false,
 }: {
   layout: DesignLayout
   project: Project
-  /** Viewer publik read-only: sembunyikan pintasan "Buka 2D Editor" (mode
-   *  bersih) — menuju halaman ber-login yang tak relevan untuk pengunjung
-   *  publik. Semua kontrol lain (sudut pandang, pencahayaan, lantai, dst.)
-   *  tetap aktif — tak ada yang di sini memutasi/menyimpan apa pun. */
-  readOnly?: boolean
+  /* `readOnly` DIHAPUS (Fase 5): satu-satunya konsumennya adalah pintasan
+   * "Buka 2D Editor" mode-bersih (`clean-mode-2d-link`), yang sudah dihapus
+   * total — SurfaceSwitcher [2D|3D] di floor-toggle-bar.tsx sudah jadi
+   * navigasi 2D↔3D yang selalu ada, di viewer publik maupun tidak. Rail ini
+   * tidak lagi punya kontrol yang perlu di-gate readOnly. */
 }) {
   const viewPreset = usePreviewStore((s) => s.viewPreset)
   const requestView = usePreviewStore((s) => s.requestView)
@@ -140,8 +139,7 @@ export function ViewToolbar({
   const setGlassRealistic = usePreviewStore((s) => s.setGlassRealistic)
   const renderMode = usePreviewStore((s) => s.renderMode)
   const applyRenderModePreset = usePreviewStore((s) => s.applyRenderModePreset)
-  const cleanMode = usePreviewStore((s) => s.cleanMode)
-  const toggleCleanMode = usePreviewStore((s) => s.toggleCleanMode)
+  const { fokusMode, toggle: toggleFokus } = useFokusMode()
   const nightMode = usePreviewStore((s) => s.nightMode)
   // Gating rollout §21: preset Tampilan Kerja/Presentasi hanya UI — scene tetap render.
   const capabilities = useProjectCapabilities(project.id)
@@ -358,13 +356,15 @@ export function ViewToolbar({
 
       <FloatingBarSeparator />
 
-      {/* Fokus (mode bersih) — perilaku & testid PERSIS sama seperti sebelumnya
-          (rename/pemindahan state ditunda ke Fase 5). */}
+      {/* Fokus (Fase 5 — rename dari "mode bersih"): testid `clean-mode-toggle`
+          DIPERTAHANKAN untuk kontinuitas spec, tapi label/tooltip kini
+          "Fokus"/"Mode fokus". State pindah ke ui-store.fokusMode via
+          useFokusMode() (dipakai bersama rail 2D). */}
       <ToolButton
-        label="Mode bersih"
-        pressed={cleanMode}
+        label="Mode fokus"
+        pressed={fokusMode}
         data-testid="clean-mode-toggle"
-        onClick={toggleCleanMode}
+        onClick={toggleFokus}
       >
         <Focus />
       </ToolButton>
@@ -373,25 +373,6 @@ export function ViewToolbar({
 
   return (
     <FloatingBar ref={railRef} data-testid="view-toolbar">
-      {/* Mode bersih menyembunyikan ProjectTabs (satu-satunya navigasi 2D↔3D)
-          — sediakan jalan pintas ke editor 2D di sini. Inline di atas (bukan
-          di secondaryControls) supaya tak terlipat ke ToolbarMore di rail
-          sempit.
-          TODO(Fase 5): dihapus begitu switcher [2D|3D] pill bar (floor-
-          switcher/floor-toggle-bar) sudah jadi jalan keluar 2D yang selalu
-          ada — sampai saat itu, link ini adalah satu-satunya cara keluar
-          mode bersih ke 2D. */}
-      {cleanMode && !readOnly && (
-        <>
-          <ToolButton asChild label="Buka 2D Editor" data-testid="clean-mode-2d-link">
-            <Link href={`/app/projects/${project.id}/editor`}>
-              <span className="text-xs font-bold">2D</span>
-            </Link>
-          </ToolButton>
-          <FloatingBarSeparator />
-        </>
-      )}
-
       {/* Undo/redo terpadu — selalu inline di puncak rail. */}
       <ToolButton label="Undo" shortcut=" (Ctrl+Z)" onClick={undo} disabled={!canUndo}>
         <Undo2 />

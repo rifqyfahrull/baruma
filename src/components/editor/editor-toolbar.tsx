@@ -12,6 +12,10 @@
  * men-set `pendingPlacement {tool, variant}` di store (menggantikan 5
  * field `pending*Type` terpisah) + tampilkan chip kecil di rail sampai
  * ditempatkan/dibatalkan.
+ *
+ * Fase 5: tombol ke-12 "Fokus" ditambahkan di slot terakhir (hook
+ * `useFokusMode`, sama dgn rail 3D `view-toolbar.tsx`) — total kini 12
+ * tombol + 2 label grup.
  */
 
 import * as React from "react";
@@ -20,6 +24,7 @@ import {
   ArrowDownToDot,
   DoorOpen,
   Fence,
+  Focus,
   Hand,
   MousePointer2,
   Plug,
@@ -41,6 +46,7 @@ import { useEditorStore } from "@/stores/editor-store";
 import { useProjectCapabilities } from "@/hooks/use-project-capabilities";
 import { useToolbarCompact } from "@/hooks/use-toolbar-compact";
 import { useUnifiedUndo } from "@/hooks/use-unified-undo";
+import { useFokusMode } from "@/hooks/use-fokus-mode";
 import {
   ELECTRICAL_POINT_TYPES,
   ROOM_TYPES,
@@ -218,6 +224,7 @@ export function EditorToolbar() {
   const projectId = useEditorStore((s) => s.layout?.projectId);
   const capabilities = useProjectCapabilities(projectId);
   const confirm = useConfirm();
+  const { fokusMode, toggle: toggleFokus } = useFokusMode();
 
   // Undo/redo terpadu — di 2D stack interior nyaris tak relevan (tak ada
   // furniture/light di sini), tapi memakai hook yang sama menjaga paritas
@@ -602,6 +609,18 @@ export function EditorToolbar() {
           )}
         </PopoverContent>
       </Popover>
+
+      {/* Fokus — slot ke-12 (Fase 5), hook & testid sama dgn rail 3D
+          (view-toolbar.tsx) supaya perilaku & spec-nya identik di kedua
+          permukaan; label "Mode fokus" simetris dgn 3D. */}
+      <ToolButton
+        label="Mode fokus"
+        pressed={fokusMode}
+        data-testid="clean-mode-toggle"
+        onClick={toggleFokus}
+      >
+        <Focus className="size-4" />
+      </ToolButton>
     </>
   );
 
@@ -629,13 +648,13 @@ export function EditorToolbar() {
        * memicu compact (fallback tinggal untuk tablet/mobile via
        * useToolbarCompact = lebar sempit ATAU tinggi konten nyata melebihi
        * viewport):
-       *   11 tombol ikon × 32px (Button size="icon")        = 352px
+       *   12 tombol ikon × 32px (Button size="icon", +Fokus Fase 5) = 384px
        *   2 label grup ("Bangun"/"Tampilan") × ~18px        =  36px
        *   2 separator (h-px + margin my-0.5) × ~5px         =  10px
-       *   gap-1 (4px) antar 15 child langsung FloatingBar    =  56px
+       *   gap-1 (4px) antar 16 child langsung FloatingBar    =  60px
        *   padding kontainer p-1 (atas + bawah)               =   8px
        *   -------------------------------------------------------
-       *   total ≈ 462px (chip pending kondisional +1 baris ~20px saat
+       *   total ≈ 498px (chip pending kondisional +1 baris ~20px saat
        *   aktif memilih varian — tetap ≪ 672px).
        */}
       {compact ? (

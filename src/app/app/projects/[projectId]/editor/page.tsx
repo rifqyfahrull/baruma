@@ -167,7 +167,15 @@ function EditorClient({ projectId }: { projectId: string }) {
         e.preventDefault()
         deleteSelected()
       } else if (e.key === "Escape") {
-        selectObject(null)
+        // Fase 5: preventDefault() HANYA saat memang ada seleksi dibatalkan —
+        // `useFokusMode()` (ProjectBar/EditorToolbar) punya listener Escape
+        // terpisah yang keluar dari mode fokus, dan menunda pengecekan
+        // `defaultPrevented` satu tick (lihat use-fokus-mode.ts) supaya
+        // "Escape membatalkan seleksi" di sini selalu menang lebih dulu.
+        if (useEditorStore.getState().selected !== null) {
+          e.preventDefault()
+          selectObject(null)
+        }
       } else if (e.key.toLowerCase() === "v") {
         setTool("select")
       }
@@ -189,6 +197,22 @@ function EditorClient({ projectId }: { projectId: string }) {
       toast.error("Gagal menyimpan layout.")
     }
   }
+
+  // "Simpan sekarang" di popover status-simpan ProjectBar (Fase 5): save di
+  // halaman ini PAGE-LOCAL (menutup atas useEditorStore + mutation React
+  // Query) — bukan aksi global yang bisa dipanggil dari layout. Daftarkan
+  // closure-nya lewat ref supaya ProjectBar bisa memanggilnya tanpa
+  // memindahkan logika simpan itu sendiri ke store (lihat komentar di
+  // save-status-store.ts). ref selalu diperbarui tiap render supaya handler
+  // terdaftar tidak pernah stale walau onSave dibuat ulang tiap render.
+  const onSaveRef = React.useRef(onSave)
+  React.useEffect(() => {
+    onSaveRef.current = onSave
+  })
+  React.useEffect(() => {
+    useSaveStatusStore.getState().registerSaveHandler(() => onSaveRef.current())
+    return () => useSaveStatusStore.getState().registerSaveHandler(null)
+  }, [])
 
   const addWarningToAiContext = React.useCallback((text: string) => {
     injectAgentDraft(text, "floorplan")

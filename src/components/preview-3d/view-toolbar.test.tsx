@@ -1,9 +1,26 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vitest"
 import { cleanup, render, screen, fireEvent } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 import type { FeatureCapabilities } from "@/lib/features"
 import type { Project } from "@/types"
+
+// jsdom tidak mengimplementasikan matchMedia — useFokusMode() (dipakai
+// tombol Fokus rail ini) memanggil useSidebar(), yang memanggil
+// useIsMobile() lewat useSyncExternalStore(window.matchMedia(...)).
+beforeAll(() => {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  })
+})
 
 const capabilitiesRef: { current: FeatureCapabilities } = {
   current: {
@@ -74,8 +91,10 @@ afterEach(() => {
 
 import { ViewToolbar } from "./view-toolbar"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { makeLayout } from "@/test-utils/fixtures"
 import { usePreviewStore } from "@/stores/preview-store"
+import { useUIStore } from "@/stores/ui-store"
 
 const project = {
   id: "p1",
@@ -88,9 +107,11 @@ function renderToolbar() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
     <QueryClientProvider client={qc}>
-      <TooltipProvider>
-        <ViewToolbar layout={makeLayout()} project={project} />
-      </TooltipProvider>
+      <SidebarProvider>
+        <TooltipProvider>
+          <ViewToolbar layout={makeLayout()} project={project} />
+        </TooltipProvider>
+      </SidebarProvider>
     </QueryClientProvider>
   )
 }
@@ -130,30 +151,29 @@ describe("ViewToolbar presentation preset gating (roadmap §21)", () => {
   })
 })
 
-describe("ViewToolbar clean-mode 2D link", () => {
-  beforeEach(() => {
-    usePreviewStore.setState({ cleanMode: false })
-  })
-  afterEach(() => {
-    usePreviewStore.setState({ cleanMode: false })
-    cleanup()
-  })
+describe("ViewToolbar — clean-mode-2d-link REMOVED (Fase 5)", () => {
+  // SurfaceSwitcher [2D|3D] di floor-toggle-bar.tsx (Fase 2) sekarang satu-
+  // satunya jalan navigasi 2D↔3D — link bespoke lama tak lagi ada, dalam
+  // mode fokus ataupun tidak.
+  afterEach(() => cleanup())
 
-  it("hides the 2D link in normal mode (ProjectTabs already provides navigation)", () => {
+  it("never renders clean-mode-2d-link, in or out of fokus mode", () => {
     renderToolbar()
     expect(screen.queryByTestId("clean-mode-2d-link")).toBeNull()
-  })
+    cleanup()
 
-  it("shows a 2D editor link while clean mode hides the project tabs", () => {
-    usePreviewStore.getState().setCleanMode(true)
+    useUIStore.getState().setFokusMode(true)
     renderToolbar()
-    const link = screen.getByTestId("clean-mode-2d-link")
-    expect(link.getAttribute("href")).toBe("/app/projects/p1/editor")
+    expect(screen.queryByTestId("clean-mode-2d-link")).toBeNull()
+    useUIStore.getState().setFokusMode(false)
   })
 })
 
 describe("ViewToolbar rail — undo/redo, view presets, Fokus", () => {
-  afterEach(() => cleanup())
+  afterEach(() => {
+    useUIStore.getState().setFokusMode(false)
+    cleanup()
+  })
 
   it("renders Undo/Redo at the top of the rail, disabled when there is no history", () => {
     renderToolbar()
@@ -170,14 +190,13 @@ describe("ViewToolbar rail — undo/redo, view presets, Fokus", () => {
     expect(screen.getByLabelText("Sudut pandang Rooftop")).toBeTruthy()
   })
 
-  it("keeps the Fokus (clean-mode) toggle behavior — testid clean-mode-toggle", () => {
-    usePreviewStore.setState({ cleanMode: false })
+  it("toggles fokusMode via testid clean-mode-toggle (Fase 5 — state pindah ke ui-store)", () => {
     renderToolbar()
     const fokus = screen.getByTestId("clean-mode-toggle")
+    expect(fokus.getAttribute("aria-label")).toBe("Mode fokus")
     expect(fokus.getAttribute("aria-pressed")).toBe("false")
     fireEvent.click(fokus)
-    expect(usePreviewStore.getState().cleanMode).toBe(true)
-    usePreviewStore.setState({ cleanMode: false })
+    expect(useUIStore.getState().fokusMode).toBe(true)
   })
 })
 

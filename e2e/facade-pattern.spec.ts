@@ -202,19 +202,35 @@ test.describe("Kisi pada dinding tepi lantai atas (w-edge)", () => {
     await page.getByRole("button", { name: /Sudut pandang Atas/ }).click()
     await page.waitForTimeout(800)
 
-    // Minimize panel kontrol supaya tak menutupi kanvas saat klik dinding.
-    const minBtn = page.getByRole("button", { name: /Minimize Preview 3D/ })
-    if (await minBtn.count()) await minBtn.click()
-    await page.waitForTimeout(300)
-
+    // Panel dibiarkan TERBUKA: semua kandidat klik di sisi kiri kanvas
+    // (x <= 0.42 lebar), jauh dari panel kanan — dan kartu inspector harus
+    // ada di DOM supaya loop verifikasi di bawah bisa membaca heading-nya.
     const canvas = page.locator("canvas").first()
     const box = await canvas.boundingBox()
     expect(box).toBeTruthy()
-    await canvas.click({ position: { x: box!.width * 0.38, y: box!.height * 0.55 } })
-    await page.waitForTimeout(300)
-
-    // Buka kembali panel supaya kartu inspector dinding terlihat.
-    await page.getByRole("button", { name: /Buka Preview 3D/ }).click()
+    // Titik relatif tunggal rapuh terhadap proporsi kanvas (chrome atas
+    // berubah tinggi di Fase 5) — coba beberapa kandidat di sisi barat
+    // proyeksi bangunan sampai dinding TEPI sintetis yang terseleksi
+    // (headingnya "Fasad lantai — …", bukan "Dinding … · <ruang>").
+    const relCandidates: Array<[number, number]> = [
+      [0.38, 0.55], [0.36, 0.5], [0.4, 0.5], [0.35, 0.55],
+      [0.33, 0.5], [0.38, 0.45], [0.42, 0.55], [0.34, 0.45],
+    ]
+    let matched = false
+    for (const [rx, ry] of relCandidates) {
+      await canvas.click({ position: { x: box!.width * rx, y: box!.height * ry } })
+      await page.waitForTimeout(300)
+      const text = await facadeQuickEditor(page)
+        .locator("p")
+        .nth(1)
+        .textContent()
+        .catch(() => null)
+      if (text?.startsWith("Fasad lantai — ")) {
+        matched = true
+        break
+      }
+    }
+    expect(matched, "tidak menemukan dinding tepi sintetis dari kandidat klik").toBe(true)
     await page.waitForTimeout(200)
 
     const card = facadeQuickEditor(page)

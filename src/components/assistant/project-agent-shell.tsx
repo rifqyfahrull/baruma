@@ -13,7 +13,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import type { AssistantSurface } from "@/lib/assistant/actions"
-import { usePreviewStore } from "@/stores/preview-store"
+import { useUIStore } from "@/stores/ui-store"
 import { useProjectAgentUiStore } from "@/stores/project-agent-ui-store"
 import { ProjectAgentPanel } from "./project-agent-panel"
 
@@ -34,12 +34,12 @@ export function ProjectAgentShell({ projectId }: { projectId: string }) {
   const open = useProjectAgentUiStore((state) => state.open)
   const setOpen = useProjectAgentUiStore((state) => state.setOpen)
   const reset = useProjectAgentUiStore((state) => state.reset)
-  const cleanMode = usePreviewStore((state) => state.cleanMode)
+  const fokusMode = useUIStore((state) => state.fokusMode)
 
   React.useEffect(() => {
     reset()
   }, [projectId, reset])
-  if (cleanMode) return null
+  if (fokusMode) return null
 
   return (
     <>

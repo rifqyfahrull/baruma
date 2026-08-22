@@ -85,12 +85,6 @@ type PreviewState = {
   focusRoomId: string | null
   focusNonce: number
 
-  /**
-   * Mode bersih (distraction-free): sembunyikan header workspace, tab
-   * project, sidebar kiri, dan floating panel — sisakan canvas + toolbar.
-   */
-  cleanMode: boolean
-
   canvasEl: HTMLCanvasElement | null
   setCanvas: (el: HTMLCanvasElement | null) => void
 
@@ -163,8 +157,6 @@ type PreviewState = {
   requestView: (preset: ViewPreset) => void
   /** Selects the room AND asks the camera to frame it (room-list click). */
   requestFocusRoom: (roomId: string) => void
-  setCleanMode: (v: boolean) => void
-  toggleCleanMode: () => void
 }
 
 export const usePreviewStore = create<PreviewState>((set) => ({
@@ -204,7 +196,6 @@ export const usePreviewStore = create<PreviewState>((set) => ({
   viewNonce: 0,
   focusRoomId: null,
   focusNonce: 0,
-  cleanMode: false,
   canvasEl: null,
   compassEl: null,
   captureFrame: null,
@@ -305,8 +296,6 @@ export const usePreviewStore = create<PreviewState>((set) => ({
       focusNonce: s.focusNonce + 1,
     }))
   },
-  setCleanMode: (v) => set({ cleanMode: v }),
-  toggleCleanMode: () => set((s) => ({ cleanMode: !s.cleanMode })),
 }))
 
 /**

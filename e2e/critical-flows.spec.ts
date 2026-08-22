@@ -40,8 +40,9 @@ test.describe("Create project", () => {
     await page.getByRole("button", { name: "Buat project" }).click()
 
     await page.waitForURL(/\/app\/projects\/proj-.+\/brief/, { timeout: 30_000 })
+    // Fase 5: nama project kini tombol dropdown di ProjectBar, bukan heading.
     await expect(
-      page.getByRole("heading", { name: /Rumah E2E Test/ })
+      page.getByTestId("project-name-menu-trigger").filter({ hasText: "Rumah E2E Test" })
     ).toBeVisible()
   })
 })
@@ -199,11 +200,13 @@ test.describe("Partial rooftop", () => {
     await expect(page.getByTestId("rooftop-deck-overlay")).toBeVisible()
     await expect(page.getByTestId("rooftop-deck-handle")).toHaveCount(4)
 
-    // Pindah ke Preview 3D via tab nav (SPA) supaya draft deck ikut terbawa.
+    // Pindah ke Preview 3D via stage nav Desain (caret → sub-halaman, Fase 5
+    // — ProjectTabs diganti ProjectBar) supaya draft deck ikut terbawa (SPA).
     await page
-      .getByRole("navigation")
-      .getByRole("link", { name: "3D Preview" })
+      .getByRole("navigation", { name: "Tahap project" })
+      .getByTestId("stage-desain-caret")
       .click()
+    await page.getByRole("menuitem", { name: "3D Preview" }).click()
     await page.waitForURL(`**/app/projects/${DEMO}/preview-3d`)
     await expect(page.getByRole("heading", { name: "Preview 3D" })).toBeVisible({
       timeout: 30_000,
@@ -351,7 +354,9 @@ test.describe("Interior in 3D preview", () => {
       ).toBeLessThan(50)
     }
 
-    await page.getByRole("button", { name: /Cari project/ }).click()
+    // Fase 5: tombol "Cari project" (AppTopbar) tak ada di route project —
+    // command palette dibuka via shortcut global.
+    await page.keyboard.press("ControlOrMeta+k")
     const commandDialog = page.getByRole("dialog", { name: "Command palette" })
     await expect(commandDialog).toBeVisible()
     const dialogContent = page.locator('[data-slot="dialog-content"]').last()
@@ -386,7 +391,12 @@ test.describe("Interior in 3D preview", () => {
       ).toBeVisible()
     }
 
-    await page.getByRole("navigation").getByRole("link", { name: "Furniture" }).click()
+    // Furniture kini sub-halaman Desain (caret), bukan tab langsung — Fase 5.
+    await page
+      .getByRole("navigation", { name: "Tahap project" })
+      .getByTestId("stage-desain-caret")
+      .click()
+    await page.getByRole("menuitem", { name: "Furniture" }).click()
     await expect(page.getByRole("heading", { name: "Furniture" })).toBeVisible()
     await expect(page.getByText("Furniture schedule")).toBeVisible()
     await expect.poll(async () =>
