@@ -12,7 +12,20 @@
  * back to `next` on this app (the cookie rides along cross-subdomain).
  *
  * Email/password login is NOT brokered — signInWithPassword needs no redirect,
- * so Baruma runs it natively and the resulting cookie is `.tampil.dev`-scoped.
+ * so Baruma runs it natively and the resulting cookie is `.tampil.dev`-scoped
+ * (or host-scoped, off a *.tampil.dev deployment — see client.ts).
+ *
+ * CROSS-DOMAIN DEPLOYMENTS (this deployment — Baruma hosted on Emergent, NOT
+ * under *.tampil.dev): the `.tampil.dev` cookie tampil.dev sets during the
+ * broker flow can never reach a different real domain — that's a browser
+ * rule, not something any redirect allowlist can change. For this
+ * deployment, oauthLoginUrl() sends the browser back to THIS app's own
+ * /auth/handoff page (src/app/auth/handoff/page.tsx) instead of the final
+ * destination directly; tampil.dev's /auth/callback recognizes the origin
+ * (see docs/superpowers/plans/2026-08-22-cross-domain-sso-handoff.md, main
+ * Baruma repo / tampil.dev repo) and mints a one-time Supabase magic-link
+ * token for /auth/handoff to verify with Baruma's OWN client — producing a
+ * session scoped to Baruma's own origin instead of `.tampil.dev`.
  */
 export function ssoOrigin(): string {
   return process.env.NEXT_PUBLIC_SSO_ORIGIN || "https://tampil.dev"
@@ -25,9 +38,30 @@ export function absoluteUrl(path: string): string {
   return new URL(path, base).toString()
 }
 
+/** True when this deployment's own app URL is a *.tampil.dev subdomain — the
+ *  shared-cookie broker path works directly for those; anything else needs
+ *  the cross-domain handoff (see module doc comment above). This deployment's
+ *  own fallback is its own domain (NOT baruma.tampil.dev) so a misconfigured
+ *  NEXT_PUBLIC_APP_URL fails toward "needs the handoff" for THIS app, not
+ *  toward the other deployment's behavior. */
+function isUnderTampilDev(): boolean {
+  const base = typeof window !== "undefined"
+    ? window.location.origin
+    : process.env.NEXT_PUBLIC_APP_URL || "https://proj-upgrade.emergent.host"
+  try {
+    const host = new URL(base).hostname
+    return host === "tampil.dev" || host.endsWith(".tampil.dev")
+  } catch {
+    return false
+  }
+}
+
 /** Broker URL that starts an OAuth login and returns to `nextPath` on this app. */
 export function oauthLoginUrl(provider: "google" | "github", nextPath: string): string {
-  const next = absoluteUrl(nextPath)
+  const finalUrl = absoluteUrl(nextPath)
+  const next = isUnderTampilDev()
+    ? finalUrl
+    : absoluteUrl(`/auth/handoff?final=${encodeURIComponent(nextPath)}`)
   return `${ssoOrigin()}/sso?action=oauth&provider=${provider}&next=${encodeURIComponent(next)}`
 }
 
