@@ -27,7 +27,7 @@
 import * as React from "react";
 import { Lock, Waves, X } from "lucide-react";
 
-import type { PoolFinish, PoolKind, Room, RoomType } from "@/types";
+import type { PoolFinish, PoolKind, RailingStyle, Room, RoomType } from "@/types";
 import { ROOM_TYPES, ROOF_TYPES } from "@/lib/constants";
 import { useEditorStore } from "@/stores/editor-store";
 import { snapLevelOffset, levelStepWarning } from "@/lib/geometry";
@@ -55,9 +55,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DeleteButton, Field, InspectorCard, ToggleRow } from "./fields";
+import { DeleteButton, Field, InspectorCard, SegmentedControl, ToggleRow } from "./fields";
 import { RailingRoomContextCard } from "./railing-inspector";
 import type { InspectorSurface } from "./registry";
+
+const VOID_RAILING_OPTIONS: ReadonlyArray<{ value: RailingStyle; label: string }> = [
+  { value: "kaca", label: "Kaca" },
+  { value: "besi", label: "Besi" },
+  { value: "tembok", label: "Tembok" },
+  { value: "kayu", label: "Kayu" },
+];
+
+const STAIR_DIRECTION_OPTIONS: ReadonlyArray<{
+  value: "n" | "s" | "w" | "e";
+  label: string;
+}> = [
+  { value: "n", label: "Utara ↑" },
+  { value: "s", label: "Selatan ↓" },
+  { value: "w", label: "Barat ←" },
+  { value: "e", label: "Timur →" },
+];
+
+const POOL_KIND_OPTIONS: ReadonlyArray<{ value: PoolKind; label: string }> = (
+  Object.keys(POOL_KINDS) as PoolKind[]
+).map((k) => ({ value: k, label: POOL_KINDS[k].label }));
 
 export function RoomInspectorCard({ surface }: { surface: InspectorSurface }) {
   const id = useEditorStore((s) =>
@@ -274,6 +295,8 @@ function RoomBody({ room, surface }: { room: Room; surface: InspectorSurface }) 
 
       <Separator />
 
+      {/* Multi-select dinamis (bisa >1 aktif + tombol tambah/lepas) — bukan
+          picker enum SATU-nilai, sengaja TIDAK dimigrasi ke SegmentedControl. */}
       <Field label="Zona open-plan (bisa lebih dari satu)">
         <div className="flex flex-wrap gap-1.5">
           {zones.map((z) => (
@@ -379,40 +402,20 @@ function RoomBody({ room, surface }: { room: Room; surface: InspectorSurface }) 
       {room.type === "void" && (
         <>
           <Field label="Model railing">
-            <div className="grid grid-cols-4 gap-1.5">
-              {(
-                [
-                  ["kaca", "Kaca"],
-                  ["besi", "Besi"],
-                  ["tembok", "Tembok"],
-                  ["kayu", "Kayu"],
-                ] as const
-              ).map(([id, label]) => {
-                const active =
-                  !room.railingModelUrl && (room.railingStyle ?? "besi") === id;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    aria-pressed={active}
-                    // Memilih gaya bawaan sekaligus melepas model GLB kustom.
-                    onClick={() =>
-                      updateRoom(room.id, {
-                        railingStyle: id,
-                        railingModelUrl: null,
-                        railingModelAssetId: null,
-                      })
-                    }
-                    className={cn(
-                      "rounded-md border px-1.5 py-1.5 text-xs font-medium transition-colors hover:bg-muted pointer-coarse:py-2.5",
-                      active && "border-primary bg-primary/10",
-                    )}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
+            <SegmentedControl
+              value={!room.railingModelUrl ? (room.railingStyle ?? "besi") : null}
+              // Memilih gaya bawaan sekaligus melepas model GLB kustom.
+              onChange={(id) =>
+                updateRoom(room.id, {
+                  railingStyle: id,
+                  railingModelUrl: null,
+                  railingModelAssetId: null,
+                })
+              }
+              options={VOID_RAILING_OPTIONS}
+              columns={4}
+              ariaLabel="Model railing"
+            />
           </Field>
           <p className="rounded-md bg-muted/50 p-2 text-xs leading-snug text-muted-foreground">
             Railing terpasang otomatis di sisi ruang ini yang berbagi ZONA
@@ -427,34 +430,13 @@ function RoomBody({ room, surface }: { room: Room; surface: InspectorSurface }) 
       {/* Ruang tangga: arah NAIK anak tangga (dirender solid di preview 3D). */}
       {room.type === "tangga" && (
         <Field label="Arah naik tangga">
-          <div className="grid grid-cols-4 gap-1.5">
-            {(
-              [
-                ["n", "Utara ↑"],
-                ["s", "Selatan ↓"],
-                ["w", "Barat ←"],
-                ["e", "Timur →"],
-              ] as const
-            ).map(([dir, label]) => {
-              const active =
-                (room.stairDirection ?? (room.width >= room.depth ? "e" : "s")) ===
-                dir;
-              return (
-                <button
-                  key={dir}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => updateRoom(room.id, { stairDirection: dir })}
-                  className={cn(
-                    "rounded-md border px-1.5 py-1.5 text-xs font-medium transition-colors hover:bg-muted pointer-coarse:py-2.5",
-                    active && "border-primary bg-primary/10",
-                  )}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
+          <SegmentedControl
+            value={room.stairDirection ?? (room.width >= room.depth ? "e" : "s")}
+            onChange={(dir) => updateRoom(room.id, { stairDirection: dir })}
+            options={STAIR_DIRECTION_OPTIONS}
+            columns={4}
+            ariaLabel="Arah naik tangga"
+          />
         </Field>
       )}
 
@@ -606,27 +588,18 @@ function PoolSection({ pool }: { pool: Room }) {
 
       <div className="space-y-1">
         <p className="text-[11px] font-medium text-muted-foreground">Tipe kolam</p>
-        <div className="grid grid-cols-2 gap-1.5">
-          {(Object.keys(POOL_KINDS) as PoolKind[]).map((k) => (
-            <button
-              key={k}
-              type="button"
-              aria-pressed={kind === k}
-              onClick={() =>
-                updateRoom(pool.id, {
-                  poolKind: k,
-                  poolDepthM: POOL_KINDS[k].defaultDepthM,
-                })
-              }
-              className={cn(
-                "rounded-md border px-2 py-1.5 text-xs font-medium transition-colors hover:bg-muted pointer-coarse:py-2.5",
-                kind === k && "border-sky-500 bg-sky-500/10",
-              )}
-            >
-              {POOL_KINDS[k].label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          value={kind}
+          onChange={(k) =>
+            updateRoom(pool.id, {
+              poolKind: k,
+              poolDepthM: POOL_KINDS[k].defaultDepthM,
+            })
+          }
+          options={POOL_KIND_OPTIONS}
+          columns={2}
+          ariaLabel="Tipe kolam"
+        />
       </div>
 
       <div className="space-y-1">
@@ -709,6 +682,8 @@ function PoolSection({ pool }: { pool: Room }) {
         </div>
       </div>
 
+      {/* Swatch berwarna — bukan idiom label SegmentedControl, sengaja
+          dibiarkan hand-rolled (lih. TODO StyleTilePicker di cladding-grid.tsx). */}
       <div className="space-y-1">
         <p className="text-[11px] font-medium text-muted-foreground">Finish</p>
         <div className="flex flex-wrap items-center gap-1.5">

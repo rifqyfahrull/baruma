@@ -143,12 +143,13 @@ function EditorClient({ projectId }: { projectId: string }) {
   >(null)
   const selectionNonce = useEditorStore((s) => s.selectionNonce)
   const hasSelection = useEditorStore((s) => s.selected !== null)
-  const firstNonceRef = React.useRef(true)
+  // Guard "run pertama" berbasis NILAI nonce, bukan boolean sekali-pakai:
+  // boolean patah di StrictMode (efek mount jalan 2x — invokasi kedua lolos
+  // guard dan membuka drawer tanpa interaksi user).
+  const lastSelectionNonceRef = React.useRef(selectionNonce)
   React.useEffect(() => {
-    if (firstNonceRef.current) {
-      firstNonceRef.current = false
-      return
-    }
+    if (lastSelectionNonceRef.current === selectionNonce) return
+    lastSelectionNonceRef.current = selectionNonce
     if (!hasSelection) return
     if (window.matchMedia("(min-width: 64rem)").matches) return // desktop: panel kanan
     setInspectorDrawerOpen("properti")
@@ -158,12 +159,10 @@ function EditorClient({ projectId }: { projectId: string }) {
   // focusNonce di store bersama → buka drawer Cek (paritas dgn auto-open
   // drawer Properti di atas saat objek biasa dipilih).
   const focusNonce = useEditorPanelUiStore((s) => s.focusNonce)
-  const firstFocusRef = React.useRef(true)
+  const lastFocusNonceRef = React.useRef(focusNonce)
   React.useEffect(() => {
-    if (firstFocusRef.current) {
-      firstFocusRef.current = false
-      return
-    }
+    if (lastFocusNonceRef.current === focusNonce) return
+    lastFocusNonceRef.current = focusNonce
     if (window.matchMedia("(min-width: 64rem)").matches) return // desktop: panel kanan
     setInspectorDrawerOpen("cek")
   }, [focusNonce])

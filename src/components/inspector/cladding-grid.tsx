@@ -4,6 +4,10 @@
  * Grid swatch cladding katalog — dipakai kartu Wall (fasad dinding) DAN kartu
  * Exterior (material panel/kolom/kanopi). Markup persis pindahan dari
  * wall-inspector (kontrak e2e preview-3d-optim: swatch = button[title]).
+ *
+ * TODO: StyleTilePicker (UNIFIKASI §3.5) — swatch bertekstur/berwarna ini
+ * sengaja TIDAK dimigrasi ke SegmentedControl (Fase 7): idiomnya beda (grid
+ * ubin visual, bukan label teks) dan butuh picker khusus sendiri.
  */
 
 import { FACADE_CLADDINGS } from "@/lib/three/facade-claddings";

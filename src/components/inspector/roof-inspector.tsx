@@ -63,17 +63,33 @@ import {
   Field,
   InspectorCard,
   NumField,
+  SegmentedControl,
   ToggleRow,
 } from "./fields";
 import type { InspectorSurface } from "./registry";
 
-/** Pilihan warna lis fascia (band tepi atap/dak). */
+/** Pilihan warna lis fascia (band tepi atap/dak). Swatch berwarna — bukan
+ * idiom label SegmentedControl, sengaja dibiarkan hand-rolled (lih. TODO
+ * StyleTilePicker di cladding-grid.tsx). */
 const FASCIA_COLORS: Array<{ color: string; label: string }> = [
   { color: "#3c4245", label: "Abu gelap" },
   { color: "#1d2022", label: "Hitam" },
   { color: "#e8e6e0", label: "Putih" },
   { color: "#8a6242", label: "Kayu" },
 ];
+
+const GABLE_END_OPTIONS: ReadonlyArray<{
+  value: "none" | "wall" | "glass";
+  label: string;
+}> = [
+  { value: "none", label: "Tanpa" },
+  { value: "wall", label: "Dinding" },
+  { value: "glass", label: "Kaca" },
+];
+
+const ROOF_TYPE_OPTIONS: ReadonlyArray<{ value: RoofType; label: string }> = (
+  Object.keys(ROOF_TYPES) as RoofType[]
+).map((t) => ({ value: t, label: ROOF_TYPES[t] }));
 
 export function RoofInspectorCard({ surface }: { surface: InspectorSurface }) {
   const kind = useEditorStore((s) => s.selected?.kind ?? null);
@@ -162,27 +178,16 @@ function GableEndControls({
           <span className="w-16 text-xs text-muted-foreground">
             Ujung {GABLE_END_LABEL[side]}
           </span>
-          <div className="flex flex-1 gap-1" role="group" aria-label={`Sopi-sopi ${GABLE_END_LABEL[side]}`}>
-            {([
-              [undefined, "Tanpa"],
-              ["wall", "Dinding"],
-              ["glass", "Kaca"],
-            ] as const).map(([val, label]) => (
-              <button
-                key={label}
-                type="button"
-                aria-pressed={(ends?.[side] ?? undefined) === val}
-                onClick={() => onChange({ ...ends, [side]: val })}
-                className={cn(
-                  "flex-1 rounded-md border px-1.5 py-1 text-xs transition-colors pointer-coarse:py-2",
-                  (ends?.[side] ?? undefined) === val
-                    ? "border-primary bg-primary/10 font-medium"
-                    : "bg-background hover:bg-muted",
-                )}
-              >
-                {label}
-              </button>
-            ))}
+          <div className="flex-1">
+            <SegmentedControl
+              value={ends?.[side] ?? "none"}
+              onChange={(val) =>
+                onChange({ ...ends, [side]: val === "none" ? undefined : val })
+              }
+              options={GABLE_END_OPTIONS}
+              columns={3}
+              ariaLabel={`Sopi-sopi ${GABLE_END_LABEL[side]}`}
+            />
           </div>
         </div>
       ))}
@@ -233,22 +238,13 @@ function RoofGlobalBody({ surface }: { surface: InspectorSurface }) {
     <div className="space-y-2.5">
       <div className="space-y-1">
         <p className="text-[11px] font-medium text-muted-foreground">Tipe atap</p>
-        <div className="grid grid-cols-2 gap-1.5" role="group" aria-label="Tipe atap">
-          {(Object.keys(ROOF_TYPES) as RoofType[]).map((t) => (
-            <button
-              key={t}
-              type="button"
-              aria-pressed={roof.type === t}
-              onClick={() => setRoof({ type: t })}
-              className={cn(
-                "rounded-md border px-2 py-1.5 text-xs font-medium transition-colors hover:bg-muted pointer-coarse:py-2.5",
-                roof.type === t && "border-primary bg-primary/10",
-              )}
-            >
-              {ROOF_TYPES[t]}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          value={roof.type}
+          onChange={(t) => setRoof({ type: t })}
+          options={ROOF_TYPE_OPTIONS}
+          columns={2}
+          ariaLabel="Tipe atap"
+        />
       </div>
 
       {roof.type !== "datar" && (

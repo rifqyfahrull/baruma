@@ -142,12 +142,12 @@ export function Preview3DView({
   const [controlsDrawerOpen, setControlsDrawerOpen] = React.useState(false)
   const selectionNonce = useEditorStore((s) => s.selectionNonce)
   const selectedKind = useEditorStore((s) => s.selected?.kind ?? null)
-  const firstNonceRef = React.useRef(true)
+  // Guard berbasis NILAI nonce (bukan boolean sekali-pakai — patah di
+  // StrictMode karena efek mount jalan 2x; paritas fix di editor/page.tsx).
+  const lastNonceRef = React.useRef(selectionNonce)
   React.useEffect(() => {
-    if (firstNonceRef.current) {
-      firstNonceRef.current = false
-      return
-    }
+    if (lastNonceRef.current === selectionNonce) return
+    lastNonceRef.current = selectionNonce
     if (!selectedKind || selectedKind === "room") return
     if (window.matchMedia("(min-width: 64rem)").matches) return // desktop: panel kanan
     setControlsDrawerOpen(true)

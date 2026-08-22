@@ -1,5 +1,39 @@
 # Unifikasi UI Editor 2D/3D — Audit & Blueprint
 
+> **Update 2026-08-22 — Fase 1–7 DIEKSEKUSI** di branch `feat/editor-ui-cleanup`
+> (rencana kerja: `dynamic-enchanting-alpaca.md`). Blueprint di bawah adalah audit
+> ASLI (masih berguna sebagai rujukan `file:baris` historis); status "DRAFT/belum
+> dieksekusi" di blockquote berikutnya sudah usang. Ringkasan yang sudah shipped:
+> - **Primitif chrome terpadu** (`src/components/chrome/floating-bar.tsx`:
+>   `FloatingBar`/`ToolButton`/`Pill`/`ToolbarMore`) — satu spec kontainer floating,
+>   satu strategi overflow, dua idiom state aktif (exclusive/soft), menggantikan 4
+>   kontainer hand-rolled + 3 idiom aktif berbeda.
+> - **Rail 2D & 3D direstrukturisasi** (`editor-toolbar.tsx`, `view-toolbar.tsx`) ke
+>   grup berlabel + palette searchable — bukan lagi kolom ikon tanpa label yang
+>   meluber di 720p.
+> - **`ProjectBar`** (`src/components/project/project-bar.tsx`, h-12) menggantikan
+>   `ProjectWorkspaceHeader` + `ProjectTabs` (chrome atas 162px → 48px) + stage nav
+>   berkelompok.
+> - **Mode Fokus** (`ui-store.fokusMode` + `useFokusMode`) menggantikan
+>   `preview-store.cleanMode`, dipicu dari kedua rail + Esc.
+> - **Satu model peringatan** — tab "Cek" (badge count) menggantikan 3 permukaan
+>   warning (bell popover, DesignAuditCard terpisah, mega-dialog hover in-canvas).
+> - **Adopsi `SegmentedControl`** (Fase 7) di `room-inspector.tsx` (railing model
+>   void, arah naik tangga, tipe kolam), `roof-inspector.tsx` (sopi-sopi, tipe atap),
+>   `light-inspector.tsx` (temperatur warna) — lihat amandemen §3.5 di bawah.
+> - **Dead code dihapus** (Fase 7): `ui/toggle-group.tsx`, `ui/toggle.tsx`,
+>   `ui/resizable.tsx`, `interior/interior-workspace.tsx` (+ `interior-room-scene.tsx`
+>   yang jadi yatim setelahnya) — nol pemakai, terverifikasi via grep sebelum hapus.
+> - **Nol `window.confirm`/`window.alert`** tersisa di `src/components` /
+>   `src/app` (diganti `useConfirm()`/toast sejak Fase 2–3).
+>
+> **Keputusan yang diamandemen dari draft asli**: `SegmentedControl` (di
+> `inspector/fields.tsx`) TIDAK dibangun di atas shadcn `toggle-group` seperti
+> diusulkan §3.5 — ia grid `<button aria-pressed>` native. `toggle-group`/`toggle`
+> dihapus (0 pemakai) alih-alih dibungkus. `StyleTilePicker` (swatch berwarna/
+> bertekstur — cladding, finish kolam, warna fascia) masih **belum dibangun**;
+> ditandai `// TODO: StyleTilePicker (UNIFIKASI §3.5)` di `cladding-grid.tsx`.
+
 > **Status: DRAFT untuk review tim — belum dieksekusi.** Dokumen ini adalah hasil
 > audit menyeluruh (Agustus 2026) atas semua permukaan editing di Baruma, plus
 > blueprint arsitektur target dan roadmap migrasi 4 fase. Setiap klaim membawa
@@ -222,8 +256,10 @@ Paket baru `src/components/inspector/`:
 
 `Field`, `NumField` (kontrak commit tunggal: blur+Enter; varian slider = update live
 lokal + **satu** entri undo saat release — menyelesaikan divergensi slider-vs-teks
-di Atap), `ToggleRow`, `SegmentedControl` (bungkus shadcn `toggle-group`,
-menggantikan 9 grid tulis-tangan), **`DirectionPicker`** (SATU widget n/s/w/e utk
+di Atap), `ToggleRow`, `SegmentedControl` (**amandemen 2026-08-22**: grid
+`<button aria-pressed>` native — BUKAN bungkus shadcn `toggle-group` seperti
+diusulkan semula; `toggle-group`/`toggle` dihapus Fase 7 karena 0 pemakai alih-alih
+dibungkus — menggantikan grid tulis-tangan), **`DirectionPicker`** (SATU widget n/s/w/e utk
 tangga+atap+eksterior), `StyleTilePicker` (railing/cladding/tipe atap),
 `Stat`, `InspectorSection` (angkat `AccordionSection` yang selama ini tidak
 di-export dari preview-controls:115), `DeleteButton`

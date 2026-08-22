@@ -14,7 +14,7 @@ import { Lightbulb, X } from "lucide-react";
 import type { LightingFixture } from "@/types";
 import { useEditorStore } from "@/stores/editor-store";
 import { useInteriorStore } from "@/stores/interior-store";
-import { LIGHT_COLORS, LIGHT_LABELS } from "@/lib/interior/lighting";
+import { LIGHT_LABELS } from "@/lib/interior/lighting";
 import { LAMP_LOAD_VA } from "@/lib/electrical/electrical";
 import { formatIDRRange } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -27,10 +27,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DeleteButton, Field, InspectorCard } from "./fields";
+import { DeleteButton, Field, InspectorCard, SegmentedControl } from "./fields";
 import type { InspectorSurface } from "./registry";
 
 const TEMP_LABEL = { warm: "Hangat", neutral: "Netral", cool: "Sejuk" } as const;
+
+// Dot warna (LIGHT_COLORS) di tiap opsi sengaja tidak ikut dimigrasi —
+// SegmentedControl idiom label teks murni (lih. cladding-grid.tsx TODO).
+const TEMP_OPTIONS: ReadonlyArray<{
+  value: keyof typeof TEMP_LABEL;
+  label: string;
+}> = (Object.keys(TEMP_LABEL) as Array<keyof typeof TEMP_LABEL>).map((temp) => ({
+  value: temp,
+  label: TEMP_LABEL[temp],
+}));
 
 export function LightInspectorCard({ surface }: { surface: InspectorSurface }) {
   const ref = useEditorStore((s) =>
@@ -93,28 +103,13 @@ export function LightInspectorCard({ surface }: { surface: InspectorSurface }) {
 
       <div className="space-y-1">
         <p className="text-[11px] font-medium text-muted-foreground">Temperatur warna</p>
-        <div className="flex gap-1.5" role="group" aria-label="Temperatur warna">
-          {(["warm", "neutral", "cool"] as const).map((temp) => (
-            <button
-              key={temp}
-              type="button"
-              aria-pressed={light.colorTemperature === temp}
-              onClick={() => updateLight(ref.roomId, light.id, { colorTemperature: temp })}
-              className={cn(
-                "flex flex-1 items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs transition-colors pointer-coarse:py-2.5",
-                light.colorTemperature === temp
-                  ? "border-primary bg-primary/10 font-medium"
-                  : "bg-background hover:bg-muted",
-              )}
-            >
-              <span
-                className="size-3 rounded-full border border-foreground/20"
-                style={{ background: LIGHT_COLORS[temp] }}
-              />
-              {TEMP_LABEL[temp]}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          value={light.colorTemperature}
+          onChange={(temp) => updateLight(ref.roomId, light.id, { colorTemperature: temp })}
+          options={TEMP_OPTIONS}
+          columns={3}
+          ariaLabel="Temperatur warna"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-2">

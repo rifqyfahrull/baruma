@@ -33,7 +33,8 @@ export const ACTIVE_SOFT_CLASS = "bg-primary/10 text-foreground";
 export const TOUCH_ICON_CLASS = "pointer-coarse:size-10";
 
 /** Target sentuh minimum di layar pointer-coarse (tablet) — pill/pill-like. */
-export const TOUCH_PILL_CLASS = "pointer-coarse:py-2.5";
+export const TOUCH_PILL_CLASS =
+  "pointer-coarse:min-h-10 pointer-coarse:min-w-10 pointer-coarse:py-2.5 pointer-coarse:justify-center";
 
 export type FloatingBarOrientation = "vertical" | "horizontal";
 
