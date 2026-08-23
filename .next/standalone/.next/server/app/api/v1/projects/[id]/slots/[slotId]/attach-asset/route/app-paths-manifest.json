@@ -1,3 +1,0 @@
-{
-  "/api/v1/projects/[id]/slots/[slotId]/attach-asset/route": "app/api/v1/projects/[id]/slots/[slotId]/attach-asset/route.js"
-}

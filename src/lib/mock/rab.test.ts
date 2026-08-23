@@ -450,87 +450,59 @@ describe("generateRAB", () => {
     //   sizeBeam(4.0): h=roundUp50(333.3)=350, b=roundUp50(175)=200 mm.
     //   totalBeamLen = ny×W + nx×D = 3×8 + 3×6 = 42 m; sloofLen = 42 m.
 
-    it("Pondasi telapak terurai: beton 3.2 m³ + pembesian 202.6 kg (takeoff) + bekisting 10.8 m²", () => {
+    it("Pondasi telapak: 9 × side² × 0.25 = 9 × 1.44 × 0.25 = 3.24 → 3.2 m³ @ 3.5jt", () => {
       const rab = generateRAB(sampleProject, sampleBrief, struktur8x6Layout())
-      const beton = rab.items.find((i) => i.item === "Pondasi telapak — beton")
-      expect(beton).toBeDefined()
-      expect(beton!.category).toBe("struktur")
-      expect(beton!.unit).toBe("m³")
-      expect(beton!.volume).toBe(3.2)
-      expect(beton!.totalIDR).toBe(4_000_000) // 3.2 × 1,250,000
-      expect(beton!.notes).toContain("9 telapak")
-      expect(beton!.notes).toContain("1.2×1.2")
-
-      const besi = rab.items.find((i) => i.item === "Pondasi telapak — pembesian")
-      expect(besi!.unit).toBe("kg")
-      expect(besi!.volume).toBe(202.6) // jaring D13-150 dua arah × 9 telapak
-      expect(besi!.totalIDR).toBe(3_748_000) // 202.6 × 18,500
-      expect(besi!.notes).toContain("D13")
-
-      const form = rab.items.find((i) => i.item === "Pondasi telapak — bekisting")
-      expect(form!.unit).toBe("m²")
-      expect(form!.volume).toBe(10.8) // 4 × 1.2 × 0.25 × 9
-      expect(form!.totalIDR).toBe(1_998_000) // 10.8 × 185,000
+      const item = rab.items.find((i) => i.item === "Pondasi telapak")
+      expect(item).toBeDefined()
+      expect(item!.category).toBe("struktur")
+      expect(item!.unit).toBe("m³")
+      expect(item!.volume).toBe(3.2)
+      expect(item!.unitPriceIDR).toBe(3_500_000)
+      expect(item!.totalIDR).toBe(11_200_000) // 3.2 × 3,500,000
+      expect(item!.confidence).toBe("medium")
+      // footprint shared with the grid: 9 columns → 9 telapak in the note.
+      expect(item!.notes).toContain("9 telapak")
+      expect(item!.notes).toContain("1.2×1.2")
     })
 
-    it("Kolom terurai: beton 2.2 m³ + pembesian 426.2 kg (takeoff dari Pu) + bekisting 43.2 m²", () => {
+    it("Kolom beton: 9 × (0.2)² × 3.0 × 2 = 9 × 0.24 = 2.16 → 2.2 m³ @ 4.5jt", () => {
       const rab = generateRAB(sampleProject, sampleBrief, struktur8x6Layout())
-      const beton = rab.items.find((i) => i.item === "Kolom — beton")
-      expect(beton!.volume).toBe(2.2)
-      expect(beton!.totalIDR).toBe(2_750_000)
-      expect(beton!.notes).toContain("9 kolom")
-      expect(beton!.notes).toContain("200×200 mm")
-
-      const besi = rab.items.find((i) => i.item === "Kolom — pembesian")
-      expect(besi!.unit).toBe("kg")
-      expect(besi!.volume).toBe(426.2) // As longitudinal dari Pu → nD16 + sengkang
-      expect(besi!.totalIDR).toBe(7_885_000)
-      expect(besi!.notes).toContain("D16")
-      expect(besi!.notes).toContain("Pu")
-
-      const form = rab.items.find((i) => i.item === "Kolom — bekisting")
-      expect(form!.volume).toBe(43.2) // 4 × 0.2 × 3.0 × 9 × 2 lantai
-      expect(form!.totalIDR).toBe(7_992_000)
+      const item = rab.items.find((i) => i.item === "Kolom beton")
+      expect(item).toBeDefined()
+      expect(item!.unit).toBe("m³")
+      expect(item!.volume).toBe(2.2)
+      expect(item!.unitPriceIDR).toBe(4_500_000)
+      expect(item!.totalIDR).toBe(9_900_000) // 2.2 × 4,500,000
+      expect(item!.notes).toContain("9 kolom")
+      expect(item!.notes).toContain("200×200 mm")
     })
 
-    it("Balok & sloof terurai: beton 4.2 m³ + pembesian 687.9 kg (takeoff dari Mu) + bekisting 60.9 m²", () => {
+    it("Balok & sloof: (0.2×0.35×42) + (0.15×0.2×42) = 2.94 + 1.26 = 4.2 m³ @ 4.5jt", () => {
       const rab = generateRAB(sampleProject, sampleBrief, struktur8x6Layout())
-      const beton = rab.items.find((i) => i.item === "Balok & sloof — beton")
-      expect(beton!.volume).toBe(4.2)
-      expect(beton!.totalIDR).toBe(5_250_000)
-      expect(beton!.notes).toContain("200×350 mm")
-
-      const besi = rab.items.find((i) => i.item === "Balok & sloof — pembesian")
-      expect(besi!.volume).toBe(687.9) // As lentur dari Mu → nD16 bawah+atas + sloof
-      expect(besi!.totalIDR).toBe(12_726_000)
-      expect(besi!.notes).toContain("Mu")
-
-      const form = rab.items.find((i) => i.item === "Balok & sloof — bekisting")
-      expect(form!.volume).toBe(60.9) // (0.9 × 42) + (0.55 × 42)
-      expect(form!.totalIDR).toBe(11_267_000) // 60.9 × 185,000, round1k
+      const item = rab.items.find((i) => i.item === "Balok & sloof")
+      expect(item).toBeDefined()
+      expect(item!.unit).toBe("m³")
+      expect(item!.volume).toBe(4.2)
+      expect(item!.unitPriceIDR).toBe(4_500_000)
+      expect(item!.totalIDR).toBe(18_900_000) // 4.2 × 4,500,000
+      expect(item!.notes).toContain("200×350 mm")
     })
 
-    it("Plat lantai terurai: beton 5.8 m³ + pembesian 394.9 kg (takeoff) + bekisting 48 m²", () => {
+    it("Plat lantai: builtArea 48 × 0.12 = 5.76 → 5.8 m³ @ 3.8jt", () => {
       const rab = generateRAB(sampleProject, sampleBrief, struktur8x6Layout())
-      const beton = rab.items.find((i) => i.item === "Plat lantai — beton")
-      expect(beton!.volume).toBe(5.8) // 48 × 0.12
-      expect(beton!.totalIDR).toBe(7_250_000)
-
-      const besi = rab.items.find((i) => i.item === "Plat lantai — pembesian")
-      expect(besi!.volume).toBe(394.9) // jaring D10-150 dua arah × 48 m²
-      expect(besi!.totalIDR).toBe(7_306_000)
-      expect(besi!.notes).toContain("D10")
-
-      const form = rab.items.find((i) => i.item === "Plat lantai — bekisting")
-      expect(form!.volume).toBe(48) // built area
-      expect(form!.totalIDR).toBe(8_880_000)
+      const item = rab.items.find((i) => i.item === "Plat lantai")
+      expect(item).toBeDefined()
+      expect(item!.unit).toBe("m³")
+      expect(item!.volume).toBe(5.8)
+      expect(item!.unitPriceIDR).toBe(3_800_000)
+      expect(item!.totalIDR).toBe(22_040_000) // 5.8 × 3,800,000
     })
 
-    it("footprint shared: grid column count = telapak count in the Pondasi beton line", () => {
+    it("footprint shared: grid column count = telapak count in the Pondasi line", () => {
       const layout = struktur8x6Layout()
       expect(deriveColumnGrid(layout).columns.length).toBe(9)
       const rab = generateRAB(sampleProject, sampleBrief, layout)
-      const item = rab.items.find((i) => i.item === "Pondasi telapak — beton")
+      const item = rab.items.find((i) => i.item === "Pondasi telapak")
       expect(item!.notes).toContain("9 telapak")
     })
 
@@ -1021,5 +993,52 @@ describe("RAB spa — jet/heater/chlorinator (KL-7)", () => {
         x: 1, y: 1, width: 2, depth: 2, areaM2: 4, poolKind: "spa" }] }
     const rab2 = generateRAB(sampleProject, sampleBrief, plain)
     expect(rab2.items.some((i) => i.item.includes("Jet/blower"))).toBe(false)
+  })
+})
+
+describe("builtArea kejujuran — kecualikan ruang luar (WS-D §4a)", () => {
+  // Taman ditaruh DI DALAM bbox r1+r2 (x 0.5–7, y 0.5–3.5) supaya
+  // buildingFootprintArea (atap/struktur, bbox SEMUA ruang termasuk luar —
+  // lihat buildingFootprint di structural/grid.ts, tak disentuh perbaikan
+  // ini) tidak ikut berubah; hanya builtArea (isOutdoorRoom-filtered, dasar
+  // slab/lantai/plafon/cat/finishing) yang diuji di sini.
+  function layoutWithGarden(): DesignLayout {
+    const base = makeLayout()
+    return {
+      ...base,
+      rooms: [
+        ...base.rooms,
+        { id: "taman-1", floorId: "floor-1", name: "Taman", type: "taman", x: 1, y: 1, width: 1, depth: 1, areaM2: 1 },
+      ],
+    }
+  }
+
+  it("rab.areaM2 = luas ruang tertutup saja (r1 9 + r2 9 = 18), taman 1 m² dikecualikan", () => {
+    const rab = generateRAB(sampleProject, sampleBrief, layoutWithGarden())
+    expect(rab.areaM2).toBe(18)
+  })
+
+  it("SEBELUM ada ruang luar, angka tetap seperti semula (18) — perbaikan ini non-invasif untuk layout tanpa taman/kolam/carport/balkon/rooftop_lounge/void", () => {
+    const rab = generateRAB(sampleProject, sampleBrief, makeLayout())
+    expect(rab.areaM2).toBe(18)
+  })
+
+  it("Plat lantai (slab) ikut mengecualikan taman: 18 × 0.12 = 2.16 → round1 2.2 m³", () => {
+    const rab = generateRAB(sampleProject, sampleBrief, layoutWithGarden())
+    const slab = rab.items.find((i) => i.item === "Plat lantai")
+    expect(slab).toBeDefined()
+    expect(slab!.volume).toBe(2.2)
+  })
+
+  it("footprint atap TIDAK berubah oleh taman di dalam bbox rumah (magnitude: hanya builtArea yang bergeser, bukan geometri atap/struktur)", () => {
+    const withGarden = generateRAB(sampleProject, sampleBrief, layoutWithGarden())
+    const without = generateRAB(sampleProject, sampleBrief, makeLayout())
+    const roofOf = (rab: typeof withGarden) => rab.items.find((i) => i.item.startsWith("Atap "))
+    expect(roofOf(withGarden)!.volume).toBe(roofOf(without)!.volume)
+  })
+
+  it("summary.midIDR tetap reconcile dengan taman di layout", () => {
+    const rab = generateRAB(sampleProject, sampleBrief, layoutWithGarden())
+    expect(rab.summary.midIDR).toBe(rab.items.reduce((s, i) => s + i.totalIDR, 0))
   })
 })

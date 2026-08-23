@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest"
 
-import { rabToAoa, rabToPrintHtml, rabToXlsxBlob } from "./export-rab"
+import { rabToAoa, rabToAssumptionsAoa, rabToPrintHtml, rabToXlsxBlob } from "./export-rab"
 import type { RAB, Project } from "@/types"
 
 const rab = {
@@ -47,6 +47,21 @@ describe("rabToPrintHtml", () => {
   })
 })
 
+describe("rabToAssumptionsAoa", () => {
+  it("lists every assumption, numbered, plus a generated date and the estimate's confidence", () => {
+    const aoa = rabToAssumptionsAoa(rab)
+    expect(aoa.some((r) => r[0] === "Keyakinan estimasi" && r[1] === "Sedang")).toBe(true)
+    expect(aoa.some((r) => r[0] === "Tanggal dibuat")).toBe(true)
+    expect(aoa.some((r) => r[0] === 1 && r[1] === "Harga regional 2026.")).toBe(true)
+  })
+
+  it("falls back to an explicit 'no assumptions' row instead of an empty sheet", () => {
+    const noAssumptions = { ...rab, assumptions: [] } as unknown as RAB
+    const aoa = rabToAssumptionsAoa(noAssumptions)
+    expect(aoa.some((r) => r[1] === "Tidak ada catatan asumsi khusus.")).toBe(true)
+  })
+})
+
 describe("rabToXlsxBlob", () => {
   it("returns a non-empty Blob with the xlsx MIME type", async () => {
     const blob = await rabToXlsxBlob(rab, project)
@@ -60,5 +75,15 @@ describe("rabToXlsxBlob", () => {
   it("works without a project argument", async () => {
     const blob = await rabToXlsxBlob(rab)
     expect(blob.size).toBeGreaterThan(0)
+  })
+
+  it("includes both an 'RAB' and an 'Asumsi' worksheet, the latter carrying rab.assumptions", async () => {
+    const XLSX = await import("xlsx")
+    const blob = await rabToXlsxBlob(rab, project)
+    const wb = XLSX.read(new Uint8Array(await blob.arrayBuffer()), { type: "array" })
+    expect(wb.SheetNames).toEqual(["RAB", "Asumsi"])
+
+    const rows: unknown[][] = XLSX.utils.sheet_to_json(wb.Sheets["Asumsi"], { header: 1 })
+    expect(rows.some((r) => r.includes("Harga regional 2026."))).toBe(true)
   })
 })

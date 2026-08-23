@@ -1,39 +1,39 @@
 /**
- * Direct OpenAI-compatible LLM facade (branch `emergent`) — replaces the
- * Agent Lab HTTP client. Baruma now owns model/provider selection (see
- * ./openai-client.ts's OPENAI_* env vars) and every system prompt; nothing
- * is resolved remotely anymore.
+ * Compatibility facade for Baruma's LLM call sites.
  *
- * Two model "profiles", selectable per call:
- *  - PROSE_SLUG: narrative prose (brief/knowledge advisory, alternatives
- *    enrichment, `askAssistant`'s Q&A) — higher temperature, and can point
- *    at a stronger/reasoning-capable model via OPENAI_MODEL_PROSE.
- *  - ACTIONS_SLUG (chatJSON's default): structured JSON action generation
- *    (floorplan/interior edits) — low temperature; a "thinking" model's
- *    hidden reasoning tokens only compete with the JSON output budget here
- *    without helping a task that's really "follow the rules, emit valid
- *    actions".
+ * All inference is executed by the central Agent Lab service. Baruma owns only
+ * task prompts and pure tool dispatch; provider, endpoint, model, temperature,
+ * max tokens, thinking mode, and provider API key are exclusively resolved
+ * from Agent Lab per-slug: `baruma-assistant` for prose (chatText), or
+ * `baruma-floorplan-actions` for structured actions (chatJSON).
  *
- * Every helper returns null on service/upstream/parse failure so the
- * existing deterministic product fallbacks remain intact.
+ * Agent Lab issues one API key PER AGENT (not one product-wide key), so each
+ * slug needs its own env var — see `agent-lab.ts`'s `SLUG_KEY_ENV` map
+ * (`AGENT_LAB_KEY_FLOORPLAN_ACTIONS` for this slug; `AGENT_LAB_KEY` remains
+ * the prose agent's key and the fallback for any slug without a dedicated
+ * entry).
+ *
+ * Every helper returns null on service/upstream/parse failure so the existing
+ * deterministic product fallbacks remain intact. There is deliberately no
+ * direct-provider or environment-key fallback in this module.
  */
-import { completeChat, llmProviderEnabled, type OpenAIChatMessage } from "./openai-client"
-import { repairAndExtractJson } from "./json-repair"
+import {
+  agentLabEnabled,
+  completeAgentLab,
+} from "./agent-lab"
 
-/** Exported so callers whose payload is narrative prose (not floorplan/
- *  interior action JSON) can opt `chatJSON` back into this profile via
- *  `{ slug: PROSE_SLUG }` instead of silently inheriting ACTIONS_SLUG. */
+/** Prose Q&A (brief/knowledge advisory) — thinking ENABLED in Agent Lab for
+ *  reasoning-quality answers. Exported so callers whose payload is narrative
+ *  prose (not floorplan/interior action JSON) can opt `chatJSON` back into
+ *  this slug via `{ slug: PROSE_SLUG }` instead of silently inheriting
+ *  `ACTIONS_SLUG`. */
 export const PROSE_SLUG = "baruma-assistant"
+/** Structured JSON action generation (floorplan/interior edits) — thinking
+ *  DISABLED in Agent Lab; the hidden reasoning tokens a "thinking" model
+ *  spends only compete with the JSON output budget and add latency, without
+ *  helping a task that's really "follow the rules and emit valid actions". */
 const ACTIONS_SLUG = "baruma-floorplan-actions"
 const SYSTEM_USER_ID = "baruma-server"
-const DEFAULT_MODEL = "gpt-4o-mini"
-
-function modelForSlug(slug: string): string {
-  if (slug === PROSE_SLUG) {
-    return process.env.OPENAI_MODEL_PROSE || process.env.OPENAI_MODEL || DEFAULT_MODEL
-  }
-  return process.env.OPENAI_MODEL || DEFAULT_MODEL
-}
 
 export interface ChatMsg {
   role: "system" | "user" | "assistant"
@@ -41,7 +41,7 @@ export interface ChatMsg {
 }
 
 export function llmEnabled(): boolean {
-  return llmProviderEnabled()
+  return agentLabEnabled()
 }
 
 /**
@@ -85,17 +85,16 @@ export function sanitizeJsonString(str: string): string {
   return res
 }
 
+import { repairAndExtractJson } from "./json-repair"
+
 export async function chatJSON<T = unknown>(
   messages: ChatMsg[],
   opts: { slug?: string } = {},
 ): Promise<T | null> {
-  const slug = opts.slug ?? ACTIONS_SLUG
-  const result = await completeChat({
-    messages: messages as OpenAIChatMessage[],
-    model: modelForSlug(slug),
+  const result = await completeAgentLab(opts.slug ?? ACTIONS_SLUG, {
+    userId: SYSTEM_USER_ID,
+    messages,
     responseFormat: "json",
-    temperature: slug === PROSE_SLUG ? 0.7 : 0.2,
-    user: SYSTEM_USER_ID,
   })
   if (!result?.content?.trim()) return null
   let raw = result.content.trim()
@@ -111,7 +110,7 @@ export async function chatJSON<T = unknown>(
   try {
     return JSON.parse(raw) as T
   } catch (e) {
-    console.error("[llm] JSON completion parse error:", e instanceof Error ? e.message : String(e), "Raw:", raw)
+    console.error("[agent-lab] JSON completion parse error:", e instanceof Error ? e.message : String(e), "Raw:", raw)
     const repaired = repairAndExtractJson(raw)
     if (repaired) return repaired as T
     if (result.content.trim()) {
@@ -124,145 +123,10 @@ export async function chatJSON<T = unknown>(
 export async function chatText(
   messages: ChatMsg[],
 ): Promise<string | null> {
-  const result = await completeChat({
-    messages: messages as OpenAIChatMessage[],
-    model: modelForSlug(PROSE_SLUG),
+  const result = await completeAgentLab(PROSE_SLUG, {
+    userId: SYSTEM_USER_ID,
+    messages,
     responseFormat: "text",
-    temperature: 0.7,
-    user: SYSTEM_USER_ID,
   })
   return result?.content?.trim() || null
-}
-
-/** Context blocks (title + grounding content) fed to `askAssistant` — brief
- *  summary, chat history, computed standards audit, curated design
- *  knowledge, real asset suggestions, existing-layout note. Pure data, no
- *  formatting decisions, so brief-assistant-context.ts stays testable
- *  without an LLM. */
-export interface AssistantContextBlock {
-  title: string
-  content: string
-}
-
-const MAX_BLOCKS = 8
-const MAX_TOTAL_CHARS = 24000
-
-/** Defensive trim so an oversized context never blows the model's input
- *  budget: cap block count, then cap cumulative title+content chars
- *  (dropping whole trailing blocks). */
-function trimBlocks(blocks: AssistantContextBlock[]): AssistantContextBlock[] {
-  const capped = blocks.slice(0, MAX_BLOCKS)
-  const out: AssistantContextBlock[] = []
-  let total = 0
-  for (const b of capped) {
-    const size = b.title.length + b.content.length
-    if (total + size > MAX_TOTAL_CHARS) break
-    out.push(b)
-    total += size
-  }
-  return out
-}
-
-export function stripThinkingTags(text: string): string {
-  if (!text) return ""
-  return text
-    .replace(/<think>[\s\S]*?<\/think>/gi, "")
-    .replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, "")
-    .trim()
-}
-
-/** A model occasionally answers with a raw JSON object instead of prose
- *  (usually when the prompt itself contains JSON-shaped context) — render
- *  it as readable markdown instead of dumping `{...}` at the user. */
-export function formatJsonToMarkdown(obj: Record<string, unknown>): string {
-  const primaryVal = obj.response ?? obj.reply ?? obj.answer ?? obj.text ?? obj.message
-  if (typeof primaryVal === "string" && primaryVal.trim()) {
-    return primaryVal.trim()
-  }
-
-  const parts: string[] = []
-
-  for (const [key, val] of Object.entries(obj)) {
-    if (val === undefined || val === null) continue
-
-    const formattedTitle = key
-      .replace(/_/g, " ")
-      .replace(/([a-z])([A-Z])/g, "$1 $2")
-      .replace(/\b\w/g, (c) => c.toUpperCase())
-
-    if (typeof val === "string") {
-      parts.push(`**${formattedTitle}**:\n${val}`)
-    } else if (Array.isArray(val)) {
-      const listItems = val
-        .map((item) => typeof item === "string" ? `- ${item}` : `- ${JSON.stringify(item)}`)
-        .join("\n")
-      parts.push(`**${formattedTitle}**:\n${listItems}`)
-    } else if (typeof val === "object") {
-      parts.push(`**${formattedTitle}**:\n${JSON.stringify(val, null, 2)}`)
-    } else {
-      parts.push(`**${formattedTitle}**: ${String(val)}`)
-    }
-  }
-
-  return parts.length > 0 ? parts.join("\n\n") : JSON.stringify(obj, null, 2)
-}
-
-const ASSISTANT_SYSTEM_PROMPT = [
-  "Kamu adalah asisten AI Baruma, aplikasi desain rumah untuk pengguna",
-  "menengah non-arsitek. Jawab pertanyaan seputar brief desain (gaya, lahan,",
-  "program ruang, prioritas, risiko/standar bangunan) secara ringkas, praktis,",
-  "dan dalam Bahasa Indonesia.",
-  "",
-  "Dasarkan jawabanmu pada blok konteks yang diberikan (ringkasan brief,",
-  "riwayat obrolan, catatan standar/audit, saran aset, catatan denah) — jangan",
-  "mengarang angka (KDB/KLB, luas, biaya) di luar yang diberikan.",
-  "Jika pengguna meminta tindakan mengubah denah/interior, jawab hanya dengan",
-  "saran naratif; jangan mengeluarkan JSON tindakan (jalur lain yang menangani",
-  "itu).",
-].join("\n")
-
-/**
- * Single-shot Q&A: system prompt + context blocks + the user's question.
- * Replaces `askAgentLab` — the "mode: answer/clarify/refuse" routing Agent
- * Lab used to do server-side is gone; the model answers directly and the
- * only remaining post-processing is unwrapping an accidental raw-JSON reply
- * into markdown (see `formatJsonToMarkdown`).
- */
-export async function askAssistant(args: {
-  userId: string
-  text: string
-  contextBlocks?: AssistantContextBlock[]
-}): Promise<string | null> {
-  const blocks = trimBlocks(args.contextBlocks ?? [])
-  const contextText = blocks.map((b) => `### ${b.title}\n${b.content}`).join("\n\n")
-
-  const messages: ChatMsg[] = [
-    { role: "system", content: ASSISTANT_SYSTEM_PROMPT },
-    ...(contextText ? [{ role: "system" as const, content: contextText }] : []),
-    { role: "user", content: args.text },
-  ]
-
-  const result = await completeChat({
-    messages: messages as OpenAIChatMessage[],
-    model: modelForSlug(PROSE_SLUG),
-    responseFormat: "text",
-    temperature: 0.7,
-    user: args.userId,
-  })
-  if (!result?.content?.trim()) return null
-
-  let answerText = stripThinkingTags(result.content.trim())
-  if (answerText.startsWith("{") && answerText.endsWith("}")) {
-    try {
-      const parsed = JSON.parse(answerText)
-      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-        if (!parsed.needs_clarify && !parsed.options && !parsed.actions) {
-          answerText = formatJsonToMarkdown(parsed as Record<string, unknown>)
-        }
-      }
-    } catch {
-      /* fallback to raw text */
-    }
-  }
-  return answerText.trim() || null
 }

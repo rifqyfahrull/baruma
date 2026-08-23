@@ -135,17 +135,6 @@ const EXTERIOR_ELEMENT_GROUPS: {
   },
 ];
 
-/** Label grup kecil (10px, uppercase) di dalam rail vertikal — lokal di
- *  toolbar ini (bukan di `floating-bar.tsx`) supaya tidak bentrok dgn agen
- *  paralel Fase 4 yang juga mungkin menambahkannya untuk rail 3D. */
-function GroupLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="px-1.5 pt-1 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-      {children}
-    </div>
-  );
-}
-
 /** Baris toggle di dalam popover — idiom yang sama dengan `view-toolbar.tsx`
  *  (dibaca sebagai referensi, tidak diimpor — tetap dua permukaan berdiri
  *  sendiri sampai unifikasi rail 3D di Fase 4). */
@@ -168,7 +157,7 @@ function ToggleLine({
 
 /** Chip kecil di bawah tombol kategori aktif, menampilkan label varian
  *  `pendingPlacement` yang sedang menunggu ditempatkan di kanvas —
- *  menggantikan caption teks mengambang lama. */
+ *  dibuat ramping (w-9) agar lebar rail tetap konsisten dan rapi. */
 function PendingChip({
   label,
   onClear,
@@ -177,13 +166,13 @@ function PendingChip({
   onClear: () => void;
 }) {
   return (
-    <div className="flex w-full items-center justify-between gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] leading-tight text-foreground">
+    <div className="flex w-9 items-center justify-between gap-0.5 rounded bg-primary/15 px-1 py-0.5 text-[9px] font-medium leading-none text-primary">
       <span className="truncate">{label}</span>
       <button
         type="button"
         aria-label="Batalkan pilihan penempatan"
         onClick={onClear}
-        className="shrink-0 rounded-sm text-muted-foreground hover:text-foreground"
+        className="shrink-0 rounded text-muted-foreground hover:text-foreground"
       >
         <X className="size-2.5" />
       </button>
@@ -253,7 +242,7 @@ export function EditorToolbar() {
         exclusive
         onClick={() => setTool("select")}
       >
-        <MousePointer2 className="size-4" />
+        <MousePointer2 />
       </ToolButton>
       <ToolButton
         label="Geser kanvas (Space)"
@@ -261,10 +250,10 @@ export function EditorToolbar() {
         exclusive
         onClick={() => setTool("pan")}
       >
-        <Hand className="size-4" />
+        <Hand />
       </ToolButton>
 
-      <GroupLabel>Bangun</GroupLabel>
+      <FloatingBarSeparator />
 
       <Popover open={roomOpen} onOpenChange={setRoomOpen}>
         <PopoverTrigger asChild>
@@ -273,7 +262,7 @@ export function EditorToolbar() {
             pressed={activeTool === "room"}
             exclusive
           >
-            <SquarePlus className="size-4" />
+            <SquarePlus />
           </ToolButton>
         </PopoverTrigger>
         <PopoverContent side="right" align="start" className="w-64 p-0">
@@ -315,7 +304,7 @@ export function EditorToolbar() {
         exclusive
         onClick={() => setTool("door")}
       >
-        <DoorOpen className="size-4" />
+        <DoorOpen />
       </ToolButton>
       <ToolButton
         label="Tambah jendela"
@@ -323,7 +312,7 @@ export function EditorToolbar() {
         exclusive
         onClick={() => setTool("window")}
       >
-        <AppWindow className="size-4" />
+        <AppWindow />
       </ToolButton>
       <ToolButton
         label="Tambah tangga"
@@ -331,7 +320,7 @@ export function EditorToolbar() {
         exclusive
         onClick={() => setTool("stair")}
       >
-        <ArrowDownToDot className="size-4" />
+        <ArrowDownToDot />
       </ToolButton>
 
       <Popover open={utilityOpen} onOpenChange={setUtilityOpen}>
@@ -341,7 +330,7 @@ export function EditorToolbar() {
             pressed={activeTool === "electrical" || activeTool === "water"}
             exclusive
           >
-            <Plug className="size-4" />
+            <Plug />
           </ToolButton>
         </PopoverTrigger>
         <PopoverContent side="right" align="start" className="w-64 p-0">
@@ -421,7 +410,7 @@ export function EditorToolbar() {
                 }
                 exclusive
               >
-                <Fence className="size-4" />
+                <Fence />
               </ToolButton>
             </PopoverTrigger>
             <PopoverContent side="right" align="start" className="w-72 p-0">
@@ -540,12 +529,11 @@ export function EditorToolbar() {
       )}
 
       <FloatingBarSeparator />
-      <GroupLabel>Tampilan</GroupLabel>
 
       <Popover>
         <PopoverTrigger asChild>
           <ToolButton label="Tampilan">
-            <Settings2 className="size-4" />
+            <Settings2 />
           </ToolButton>
         </PopoverTrigger>
         <PopoverContent side="right" align="start" className="w-64 space-y-0.5">
@@ -619,7 +607,7 @@ export function EditorToolbar() {
         data-testid="clean-mode-toggle"
         onClick={toggleFokus}
       >
-        <Focus className="size-4" />
+        <Focus />
       </ToolButton>
     </>
   );
@@ -632,7 +620,7 @@ export function EditorToolbar() {
         onClick={undo}
         disabled={!canUndo}
       >
-        <Undo2 className="size-4" />
+        <Undo2 />
       </ToolButton>
       <ToolButton
         label="Redo"
@@ -640,7 +628,7 @@ export function EditorToolbar() {
         onClick={redo}
         disabled={!canRedo}
       >
-        <Redo2 className="size-4" />
+        <Redo2 />
       </ToolButton>
 
       {/*

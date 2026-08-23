@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import * as Sentry from "@sentry/nextjs"
 import { Home, RotateCcw, TriangleAlert } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -15,6 +16,8 @@ export default function GlobalError({
 }) {
   React.useEffect(() => {
     console.error(error)
+    // No-op sepenuhnya tanpa NEXT_PUBLIC_SENTRY_DSN (lihat instrumentation-client.ts).
+    Sentry.captureException(error)
   }, [error])
 
   return (

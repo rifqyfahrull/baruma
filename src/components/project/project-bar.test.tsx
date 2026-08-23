@@ -43,9 +43,15 @@ vi.mock("next-themes", () => ({
 
 const projectMock = { value: vi.fn() }
 const renameMock = { value: vi.fn() }
+const shareLinkMock = { value: vi.fn() }
+const createShareLinkMock = { value: vi.fn() }
+const revokeShareLinkMock = { value: vi.fn() }
 vi.mock("@/lib/api/hooks", () => ({
   useProject: (...args: unknown[]) => projectMock.value(...args),
   useRenameProject: (...args: unknown[]) => renameMock.value(...args),
+  useShareLink: (...args: unknown[]) => shareLinkMock.value(...args),
+  useCreateShareLink: (...args: unknown[]) => createShareLinkMock.value(...args),
+  useRevokeShareLink: (...args: unknown[]) => revokeShareLinkMock.value(...args),
 }))
 
 const trackMock = { value: vi.fn() }
@@ -101,6 +107,12 @@ beforeEach(() => {
   currentPathname = "/app/projects/proj-123/brief"
   projectMock.value.mockReturnValue({ data: PROJECT, isLoading: false })
   renameMock.value.mockReturnValue({ mutate: vi.fn(), isPending: false })
+  shareLinkMock.value.mockReturnValue({
+    data: { url: "https://baruma.tampil.dev/s/tok123abc" },
+    isLoading: false,
+  })
+  createShareLinkMock.value.mockReturnValue({ mutate: vi.fn(), isPending: false, data: undefined })
+  revokeShareLinkMock.value.mockReturnValue({ mutate: vi.fn(), isPending: false })
   useUIStore.setState({ commandOpen: false, fokusMode: false })
   useSaveStatusStore.getState().reset()
   useProjectAgentUiStore.getState().reset()
@@ -116,6 +128,9 @@ afterEach(() => {
   projectMock.value.mockReset()
   trackMock.value.mockReset()
   renameMock.value.mockReset()
+  shareLinkMock.value.mockReset()
+  createShareLinkMock.value.mockReset()
+  revokeShareLinkMock.value.mockReset()
   pushSpy.mockReset()
   setThemeSpy.mockReset()
   vi.mocked(toast.success).mockReset()
@@ -227,12 +242,12 @@ describe("ProjectBar — name dropdown (rename/bagikan/⌘K)", () => {
     expect(screen.getByDisplayValue("Rumah Qyfa")).toBeTruthy()
   })
 
-  it("opens the share dialog with a copyable review link", async () => {
+  it("opens the share dialog with the public /s/[token] link (not the owner-only /review URL)", async () => {
     renderBar()
     openDropdown(screen.getByTestId("project-name-menu-trigger"))
     fireEvent.click(await screen.findByText("Bagikan…"))
     expect(await screen.findByText("Bagikan project")).toBeTruthy()
-    expect(screen.getByDisplayValue(/app\/projects\/proj-123\/review/)).toBeTruthy()
+    expect(screen.getByDisplayValue(/\/s\/tok123abc/)).toBeTruthy()
   })
 
   it("Cari… opens the command menu via ui-store.commandOpen", async () => {
@@ -240,6 +255,31 @@ describe("ProjectBar — name dropdown (rename/bagikan/⌘K)", () => {
     openDropdown(screen.getByTestId("project-name-menu-trigger"))
     fireEvent.click(await screen.findByText(/Cari…/))
     expect(useUIStore.getState().commandOpen).toBe(true)
+  })
+
+  it("auto-creates a link when the dialog opens and none exists yet", async () => {
+    shareLinkMock.value.mockReturnValue({ data: { url: null }, isLoading: false })
+    const createMutate = vi.fn()
+    createShareLinkMock.value.mockReturnValue({ mutate: createMutate, isPending: false, data: undefined })
+    renderBar()
+    openDropdown(screen.getByTestId("project-name-menu-trigger"))
+    fireEvent.click(await screen.findByText("Bagikan…"))
+    await screen.findByText("Bagikan project")
+    expect(createMutate).toHaveBeenCalledTimes(1)
+  })
+
+  it("Nonaktifkan tautan revokes the link and closes the dialog", async () => {
+    const revokeMutate = vi.fn((_vars, opts?: { onSuccess?: () => void }) => opts?.onSuccess?.())
+    revokeShareLinkMock.value.mockReturnValue({ mutate: revokeMutate, isPending: false })
+    renderBar()
+    openDropdown(screen.getByTestId("project-name-menu-trigger"))
+    fireEvent.click(await screen.findByText("Bagikan…"))
+    await screen.findByText("Bagikan project")
+    fireEvent.click(screen.getByRole("button", { name: "Nonaktifkan tautan" }))
+    expect(revokeMutate).toHaveBeenCalledTimes(1)
+    expect(toast.success).toHaveBeenCalledWith(
+      "Tautan dinonaktifkan. Penerima lama tak bisa lagi membukanya."
+    )
   })
 })
 

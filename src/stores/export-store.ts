@@ -14,9 +14,13 @@ type Job = {
   error?: string
 }
 
+/** Options threaded in from the UI layer (export-card.tsx), which already
+ *  has entitlements + the 3D preview store in scope. */
+type GenerateOpts = { watermark?: boolean; thumbnailDataUrl?: string }
+
 type ExportStore = {
   jobs: Record<string, Job>
-  generate: (projectId: string, format: ExportFormat) => Promise<void>
+  generate: (projectId: string, format: ExportFormat, opts?: GenerateOpts) => Promise<void>
   download: (projectId: string, format: ExportFormat) => void
 }
 
@@ -25,7 +29,7 @@ const key = (projectId: string, format: ExportFormat) => `${projectId}:${format}
 export const useExportStore = create<ExportStore>((set, get) => ({
   jobs: {},
 
-  generate: async (projectId, format) => {
+  generate: async (projectId, format, opts) => {
     const k = key(projectId, format)
     const existing = get().jobs[k]
     if (existing?.status === "processing") return // already running
@@ -54,6 +58,18 @@ export const useExportStore = create<ExportStore>((set, get) => ({
           : undefined
       const { blob, filename, sizeLabel } = await generateExport(projectId, format, {
         interiorPlan,
+        watermark: opts?.watermark,
+        thumbnailDataUrl: opts?.thumbnailDataUrl,
+        // Staged progress (currently only zip_all reports mid-way stages) —
+        // never regresses the bar below where the flat 40/80 steps left it.
+        onProgress: (pct) => {
+          set((s) => ({
+            jobs: {
+              ...s.jobs,
+              [k]: { ...s.jobs[k], progress: Math.max(s.jobs[k]?.progress ?? 0, pct) },
+            },
+          }))
+        },
       })
       const blobUrl = URL.createObjectURL(blob)
       set((s) => ({

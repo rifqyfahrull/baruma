@@ -6,7 +6,8 @@ import { listTemplates } from "@/lib/server/repo/templates"
 import { LayoutThumbnail } from "@/components/shared/layout-thumbnail"
 import { HOUSE_STYLES } from "@/lib/constants"
 import { formatArea } from "@/lib/format"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { UseTemplateButton } from "@/components/templates/use-template-button"
 
 export const metadata: Metadata = {
   title: "Galeri Template",
@@ -44,8 +45,12 @@ export default async function TemplatesPage() {
       ) : (
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {templates.map((t) => (
-            <Link key={t.id} href={`/templates/${t.slug}`} className="group block">
-              <Card className="gap-0 overflow-hidden pt-0 transition-shadow group-hover:shadow-md">
+            <Card
+              key={t.id}
+              data-testid={`template-card-${t.slug}`}
+              className="group gap-0 overflow-hidden pt-0 transition-shadow hover:shadow-md"
+            >
+              <Link href={`/templates/${t.slug}`} className="block">
                 <LayoutThumbnail
                   variant={t.thumbnail}
                   label={`Denah ${t.name}`}
@@ -87,8 +92,11 @@ export default async function TemplatesPage() {
                     <p className="line-clamp-2 text-sm text-muted-foreground">{t.description}</p>
                   )}
                 </CardContent>
-              </Card>
-            </Link>
+              </Link>
+              <CardFooter className="px-4 pb-4">
+                <UseTemplateButton slug={t.slug} size="sm" variant="outline" className="w-full" />
+              </CardFooter>
+            </Card>
           ))}
         </div>
       )}

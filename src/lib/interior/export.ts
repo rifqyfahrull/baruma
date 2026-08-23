@@ -6,11 +6,18 @@ import { COPY } from "@/lib/constants"
 import { formatIDR, formatIDRCompact } from "@/lib/format"
 import { generateInteriorPlan, interiorStyleFromHouseStyle } from "./plan"
 import { getInteriorStyle } from "./presets"
+import { applyDraftWatermark } from "@/lib/exports/watermark"
 
+/**
+ * `opts.watermark` (Free plan — `!entitlements.exportPdf`) tiles a
+ * translucent "DRAFT — Baruma (plan Free)" stamp across every page, applied
+ * once all pages are drawn — see `src/lib/exports/watermark.ts`.
+ */
 export async function buildInteriorPackPdf(
   project: Project,
   layout: DesignLayout,
-  interiorPlan?: InteriorPlan
+  interiorPlan?: InteriorPlan,
+  opts: { watermark?: boolean } = {}
 ): Promise<Blob> {
   const plan =
     interiorPlan?.projectId === project.id && interiorPlan.versionId === layout.versionId
@@ -124,6 +131,8 @@ export async function buildInteriorPackPdf(
     headStyles: { fillColor: [41, 87, 79] },
     margin: { left: 14, right: 14 },
   })
+
+  if (opts.watermark) applyDraftWatermark(doc)
 
   return doc.output("blob")
 }

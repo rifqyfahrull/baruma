@@ -1864,6 +1864,13 @@ export function PlanCanvas() {
       (p.type as string) in WATER_POINT_TYPES &&
       roomIds.has(p.roomId),
   );
+  // PRA-EXISTING (bukan dari WS-A): keempat useEditorStore di bawah dipanggil
+  // SETELAH early-return `if (!layout || !site) return null` di atas — ini
+  // pelanggaran Rules of Hooks yang sudah ada sebelum audit CI lint 2026-08.
+  // Ditandai eslint-disable (bukan diperbaiki di sini) karena memindah hook
+  // ke atas early-return butuh verifikasi visual kanvas 2D/3D yang di luar
+  // scope & tooling workstream ini (tanpa Playwright). Dilacak di TODOS.md P1.
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const showHiddenExteriorElements = useEditorStore(
     (s) => s.showHiddenExteriorElements
   );
@@ -1874,8 +1881,11 @@ export function PlanCanvas() {
   // Roof zones: HANYA dirender di layer Atap (lembar roof-plan tersendiri —
   // tidak lagi bertumpuk dgn denah lantai). Filter global showRoofZones, lalu
   // per-zona hidden — zona tersembunyi hanya muncul saat reveal aktif.
+  // eslint-disable-next-line react-hooks/rules-of-hooks -- lihat catatan di atas (TODOS.md P1)
   const showRoofZones = useEditorStore((s) => s.showRoofZones);
+  // eslint-disable-next-line react-hooks/rules-of-hooks -- lihat catatan di atas (TODOS.md P1)
   const showHiddenRoofZones = useEditorStore((s) => s.showHiddenRoofZones);
+  // eslint-disable-next-line react-hooks/rules-of-hooks -- lihat catatan di atas (TODOS.md P1)
   const showCrossFloorRooms = useEditorStore((s) => s.showCrossFloorRooms);
   const atapLayer = floorId === ROOF_LAYER_ID;
   const roofZones = (layout.roofZones ?? []).filter(

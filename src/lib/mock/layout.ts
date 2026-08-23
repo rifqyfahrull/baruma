@@ -17,7 +17,6 @@ import type {
 import { LIGHT_ROOM_TYPES, ROOM_TYPES, VENT_ROOM_TYPES } from "@/lib/constants"
 import { openingWallId, round2, roomArea, squarifiedTreemap } from "@/lib/geometry"
 import { generateConnectingDoors } from "@/lib/geometry/connect-rooms"
-import { analyzeRoomConnectivity } from "@/lib/geometry/connectivity"
 import { freeDoorPosition, sharedWallSpan } from "@/lib/geometry/opening-plan"
 import { structuralNotes, validateLayout } from "@/lib/validation"
 
@@ -59,60 +58,6 @@ type Unit = {
 
 function clampNum(v: number, min: number, max: number) {
   return Math.min(Math.max(v, min), max)
-}
-
-/**
- * Functional-adjacency ordering used to seed the treemap packer.
- *
- * squarifiedTreemap places items in INPUT ORDER (row/column by row/column), so
- * consecutive units land next to each other. Ordering units by functional zone
- * therefore CLUSTERS related rooms before packing — the missing "adjacency"
- * constraint the pure area-proportional treemap never had:
- *   public (tamu/keluarga/makan) → dapur → service (laundry/gudang) →
- *   wet (kamar mandi) → circulation core (tangga/koridor/void) →
- *   private (musholla/workspace/kamar tidur) → outdoor (balkon/taman/kolam).
- * The chain is intentional: dapur bridges social↔service, the circulation core
- * sits between public and private, and wet rooms group so their plumbing risers
- * stay close. generateConnectingDoors then wires doors across these now-sensible
- * adjacencies instead of across a random arrangement.
- */
-const ADJACENCY_RANK: Record<RoomType, number> = {
-  carport: 0,
-  ruang_tamu: 1,
-  ruang_keluarga: 2,
-  area_kumpul: 3,
-  ruang_makan: 4,
-  dapur: 5,
-  laundry: 6,
-  gudang: 7,
-  kamar_mandi: 8,
-  tangga: 9,
-  koridor: 10,
-  void: 11,
-  musholla: 12,
-  workspace: 13,
-  kamar_tidur: 14,
-  balkon: 16,
-  taman: 17,
-  kolam: 18,
-  rooftop_lounge: 19,
-}
-
-/**
- * Stable-sort units by functional zone so the treemap packs related rooms
- * adjacently. Stable → multiples of the same type (Kamar tidur 1/2/3) keep
- * their sequence and stay grouped. Unknown types sort last (rank 99) without
- * disturbing the known chain.
- */
-export function orderUnitsByAdjacency(units: Unit[]): Unit[] {
-  return units
-    .map((u, i) => ({ u, i }))
-    .sort((a, b) => {
-      const ra = ADJACENCY_RANK[a.u.type] ?? 99
-      const rb = ADJACENCY_RANK[b.u.type] ?? 99
-      return ra - rb || a.i - b.i
-    })
-    .map((x) => x.u)
 }
 
 /** Ruang yang menjadikan sebuah lantai "bisa dilalui dari dalam". */
@@ -170,13 +115,10 @@ function ensureStairs(units: Unit[], floor: number, topLevel: number): Unit[] {
   return [...units, { type: "tangga", name: ROOM_TYPES.tangga.label, floor, vent: false, light: false }]
 }
 
-type OrderStrategy = "adjacency" | "program"
-
 function packFloor(
   units: Unit[],
   site: { widthM: number; depthM: number },
-  floorId: string,
-  strategy: OrderStrategy = "program"
+  floorId: string
 ): Room[] {
   if (units.length === 0) return []
   const margin = 0.25
@@ -233,7 +175,7 @@ function packFloor(
     // dan freeDoorPosition menolak pintu apa pun — kamar lahir terkurung.
     const MIN_SLICE_H = 1.5
     const weights = rest.map((u) => ROOM_TYPES[u.type].defaultAreaM2 * sizeFactor(u.size))
-    let total = weights.reduce((a, b) => a + b, 0) || 1
+    const total = weights.reduce((a, b) => a + b, 0) || 1
     // Sisihkan ruang minimum tiap slice dulu, lalu bagi sisa proporsional.
     const reserved = rest.length * MIN_SLICE_H
     const proportional = Math.max(0, H - reserved)
@@ -279,20 +221,12 @@ function packFloor(
   }
 
   // Tile the footprint proportional to each room's desired area.
-  //
-  // ADJACENCY: when strategy === "adjacency", order units by functional zone
-  // BEFORE the treemap. squarifiedTreemap places items in INPUT ORDER, so
-  // clustering related rooms makes the packer put them next to each other;
-  // generateConnectingDoors then wires doors across sensible adjacencies. The
-  // caller (generateLayout) verifies connectivity and falls back to "program"
-  // order if clustering ever strands a room — so this never regresses.
-  const ordered = strategy === "adjacency" ? orderUnitsByAdjacency(units) : units
-  const weights = ordered.map(
+  const weights = units.map(
     (u) => ROOM_TYPES[u.type].defaultAreaM2 * sizeFactor(u.size)
   )
   const rects = squarifiedTreemap(weights, x0, y0, W, H)
 
-  return ordered.map((u, i) => {
+  return units.map((u, i) => {
     const r = rects[i] ?? { x: x0, y: y0, width: W, depth: H }
     const w = Math.max(0.8, r.width - inset)
     const d = Math.max(0.8, r.depth - inset)
@@ -312,22 +246,7 @@ function packFloor(
   })
 }
 
-/**
- * Generate a layout, preferring adjacency-clustered packing but NEVER
- * regressing connectivity: build with clustering, and if it strands any indoor
- * room, fall back to the proven program-order packing (using whichever strands
- * fewer). Clustering wins whenever it keeps every room reachable.
- */
 export function generateLayout(project: Project, brief: Brief): DesignLayout {
-  const adjacency = buildLayout(project, brief, "adjacency")
-  const isoAdj = analyzeRoomConnectivity(adjacency.rooms, adjacency.openings).isolated.length
-  if (isoAdj === 0) return adjacency
-  const program = buildLayout(project, brief, "program")
-  const isoProg = analyzeRoomConnectivity(program.rooms, program.openings).isolated.length
-  return isoProg < isoAdj ? program : adjacency
-}
-
-function buildLayout(project: Project, brief: Brief, strategy: OrderStrategy): DesignLayout {
   const site = project.site
   const floorCount = Math.max(1, project.floors)
   const hasRooftop = !!project.rooftop
@@ -380,7 +299,7 @@ function buildLayout(project: Project, brief: Brief, strategy: OrderStrategy): D
     // Tangga dulu (agar dapat petak dari treemap), baru koridor bila lantainya
     // ternyata hanya berisi ruang privat.
     const withStairs = ensureStairs(floorUnits, floor.level, maxFloor)
-    rooms.push(...packFloor(ensureCorridor(withStairs, floor.level), site, floor.id, strategy))
+    rooms.push(...packFloor(ensureCorridor(withStairs, floor.level), site, floor.id))
   }
 
   // Auto-add a window to rooms that need light/ventilation — on an EXTERIOR

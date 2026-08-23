@@ -28,6 +28,7 @@ import {
 } from "@/lib/drawings/layout-sheet"
 import { formatLength } from "@/lib/format"
 import { round2 } from "@/lib/geometry"
+import { applyDraftWatermark } from "./watermark"
 
 const ROOFTOP_FLOOR_ID = "floor-rooftop"
 
@@ -215,12 +216,15 @@ function drawSheet(doc: jsPDF, entry: SheetEntry, projectName: string, dateStr: 
  * tampak + 2 potongan tengah + kusen sheets + pola lantai / plafon / detail
  * atap), dimensioned and monochrome for print. `interiors` are the resolved
  * room interior plans (saved overlay if any, generated otherwise) — resolve
- * them with the same pure logic the `/drawings` page uses.
+ * them with the same pure logic the `/drawings` page uses. `opts.watermark`
+ * (Free plan — `!entitlements.exportPdf`) tiles a translucent draft stamp
+ * across every page after all sheets are drawn.
  */
 export async function buildDrawingsPdf(
   project: Project,
   layout: DesignLayout,
-  interiors: RoomInteriorPlan[]
+  interiors: RoomInteriorPlan[],
+  opts: { watermark?: boolean } = {}
 ): Promise<Blob> {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a3" })
   const sheets = defaultSheets(layout, interiors)
@@ -230,6 +234,8 @@ export async function buildDrawingsPdf(
     if (i > 0) doc.addPage("a3", "landscape")
     drawSheet(doc, entry, project.name, dateStr)
   })
+
+  if (opts.watermark) applyDraftWatermark(doc)
 
   return doc.output("blob")
 }

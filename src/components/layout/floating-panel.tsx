@@ -145,6 +145,8 @@ export function FloatingPanel({
   // When forceMinimized is released externally (clean mode exited), reset
   // the temporary override so the panel smoothly gives control back.
   React.useEffect(() => {
+    // PRA-EXISTING (bukan dari WS-A): setState sinkron dalam effect — lihat TODOS.md P1.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!forceMinimized) setTempOverride(false)
   }, [forceMinimized])
 

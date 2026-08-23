@@ -8,7 +8,8 @@ import { z } from "zod"
 
 export const entitlementsSchema = z.object({
   creditsPerPeriod: z.number().int().min(0, "Tidak boleh negatif"),
-  maxProjects: z.number().int().min(0, "Tidak boleh negatif"),
+  // null = tanpa batas (mis. Pro "Project tanpa batas").
+  maxProjects: z.number().int().min(0, "Tidak boleh negatif").nullable(),
   exportPdf: z.boolean(),
   glbUpload: z.boolean(),
   aiRenderHd: z.boolean(),

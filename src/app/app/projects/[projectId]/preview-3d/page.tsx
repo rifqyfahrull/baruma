@@ -10,6 +10,7 @@ import { useEditorStore } from "@/stores/editor-store"
 import { structuralNotes } from "@/lib/validation"
 import { pickEffectiveLayout } from "@/components/preview-3d/effective-layout"
 import { usePageView } from "@/lib/analytics"
+import { markOnboardingSeen } from "@/hooks/use-onboarding-progress"
 import { EmptyState } from "@/components/shared/empty-state"
 
 // three.js loads only when this view mounts (PRD §26: no 3D libs on other pages).
@@ -35,6 +36,8 @@ export default function Preview3DPage() {
   const initialRoomId = searchParams.get("room") ?? undefined
 
   usePageView("preview_3d_opened", { project_id: projectId })
+  // Checklist onboarding dashboard (WS-E §2) — tandai langkah "Lihat preview 3D".
+  React.useEffect(() => markOnboardingSeen("preview3d"), [])
 
   // Edit-dari-3D (mis. pintu/jendela via OpeningQuickEditor) memutasi editor
   // store — muat layout tersimpan ke store bila user belum membuka 2D editor,

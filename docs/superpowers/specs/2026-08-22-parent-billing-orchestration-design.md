@@ -26,9 +26,23 @@ Baruma (child)  →  tampil.dev (parent)  →  Mayar
   - `POST {PARENT_BILLING_URL}/api/billing/child/checkout`
   - Headers: `x-child-app: baruma`, `x-child-key: <PARENT_BILLING_SECRET>`
   - Body: `{ app, orderId, userId, email, fullName, mobile, plan, planName,
-    amountIdr, period, redirectUrl }`
+    amountIdr, period, redirectUrl, webhookUrl }`
   - **Baruma generates the order id** (`brm-<uid8>-<ts>`) so the pending
     subscription's `provider_ref` is exactly what the parent relays back.
+  - **`webhookUrl` is self-reported, not parent-side config** (added
+    2026-08-22, same day as the initial build): Baruma computes it from its
+    own `NEXT_PUBLIC_APP_URL`/`APP_URL`, same as `redirectUrl`. The parent
+    persists it verbatim on the `child_invoices` row and uses THAT value when
+    relaying — never a static per-app lookup. The original design used a
+    `CHILD_<APP>_WEBHOOK_URL` env var on the parent; that was wrong — it
+    required updating and redeploying the PARENT every time Baruma's own
+    domain changed, and already caused one real incident (a parent deploy
+    that ran before `PARENT_BILLING_SECRET` existed baked in an empty value,
+    surfacing as "Pembayaran belum aktif." until a redeploy). Validated
+    server-side (`isSafeChildWebhookUrl`: must be `https://` — or
+    `http://127.0.0.1` for a co-located dev child — and path must be exactly
+    `/api/webhooks/payment`) so accepting an arbitrary caller-supplied URL
+    doesn't become an SSRF vector for the parent's own `fetch()`.
 - Parent creates the Mayar invoice (its shared merchant account), records a
   `child_invoices` ledger row tagged by app, returns `{ data: { checkoutUrl,
   orderId } }`.
@@ -82,10 +96,11 @@ Must be equal. `PARENT_BILLING_URL` must be the parent's **public** origin
 - **Child** `subscriptions.provider` CHECK widened to include `'parent'`
   (`db/migrations/0038_parent_billing_provider.sql`).
 - **Parent** new `child_invoices` ledger (`app`, `child_user_id`,
-  `child_order_id`, `plan`, `amount_idr`, `provider_order_id`, `status`, …),
-  RLS-locked, service-role only (`035_child_billing.sql`). Kept separate from the
-  parent's own `invoices`/`subscriptions` so a child purchase never mutates
-  `users.plan`.
+  `child_order_id`, `plan`, `amount_idr`, `provider_order_id`, `webhook_url`,
+  `status`, …), RLS-locked, service-role only (`035_child_billing.sql`,
+  `webhook_url` added in `036_child_invoices_webhook_url.sql`). Kept separate
+  from the parent's own `invoices`/`subscriptions` so a child purchase never
+  mutates `users.plan`.
 
 ## Non-goals (unchanged)
 
@@ -94,11 +109,21 @@ coupons. Manual-renew, one period per payment, lazy expiry on read.
 
 ## Go-live prerequisites (config only — code is a safe no-op until set)
 
-1. Parent: set `CHILD_BILLING_SECRET`; optionally `CHILD_BARUMA_WEBHOOK_URL`
-   (defaults to `http://127.0.0.1:3000/api/webhooks/payment`, loopback on the
-   shared droplet). Run migration `035_child_billing.sql`.
+1. Parent: set `CHILD_BILLING_SECRET`. Run migrations `035_child_billing.sql`
+   + `036_child_invoices_webhook_url.sql`. No per-child webhook config needed
+   — each child self-reports its own webhook URL per checkout request.
 2. Child: set `PARENT_BILLING_URL=https://tampil.dev`, `PARENT_BILLING_SECRET`
-   (== parent's `CHILD_BILLING_SECRET`), `PARENT_BILLING_APP=baruma`. Run
-   migration `0038`.
+   (== parent's `CHILD_BILLING_SECRET`), `PARENT_BILLING_APP=baruma`,
+   `NEXT_PUBLIC_APP_URL` (used to build both `redirectUrl` and `webhookUrl` —
+   checkout now fails closed with `payment_not_configured` if this is unset,
+   since there's no safe fallback for webhookUrl the way there is for
+   redirectUrl). Run migration `0038`.
 3. Until both secrets are set: child checkout returns `503
    payment_not_configured`; parent child-endpoint returns `401`. Nothing breaks.
+4. **Real incident, 2026-08-22:** a Baruma deploy ran BEFORE
+   `PARENT_BILLING_SECRET` was set on GitHub, baking an empty value into that
+   deploy's `.env.local` — checkout kept showing "Pembayaran belum aktif."
+   until a fresh deploy re-read the (by-then-populated) secret. Whenever a
+   billing-related secret is added/changed on either app, trigger a redeploy
+   of that same app afterward — don't assume "the secret exists" means "the
+   running process has it."

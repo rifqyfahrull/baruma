@@ -8,6 +8,7 @@ import {
   updateLayoutAtRevision,
 } from "@/lib/server/repo/layouts"
 import { ok, err, handleError } from "@/lib/server/response"
+import { rateLimitGuard } from "@/lib/server/rate-limit"
 import { generateLayout } from "@/lib/mock/layout"
 import { normalizeDesignLayout, saveLayoutInputSchema } from "@/lib/schemas/layout"
 
@@ -117,6 +118,18 @@ export async function PUT(
 ): Promise<Response> {
   try {
     const { userId } = await requireUser(request)
+
+    // Autosave dipicu berulang saat pengguna mengedit denah — 60/menit/user
+    // cukup untuk autosave normal (jeda beberapa detik antar simpan) sambil
+    // tetap menahan penyalahgunaan endpoint tulis paling sering di aplikasi.
+    const limited = rateLimitGuard(request, {
+      scope: "layout-save",
+      limit: 60,
+      windowMs: 60_000,
+      keyExtra: userId,
+    })
+    if (limited) return limited
+
     const { id } = await ctx.params
     const project = await getOwnedProject(id, userId)
     if (!project) return err(404, "Project not found")

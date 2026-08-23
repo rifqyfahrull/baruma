@@ -22,7 +22,26 @@ vi.mock("@/lib/server/repo/plans", () => ({
 
 vi.mock("@/lib/server/repo/profiles", () => ({
   setProfilePlan: vi.fn(),
+  getProfileById: vi.fn(),
 }))
+
+vi.mock("@/lib/server/email", () => ({
+  sendEmail: vi.fn(),
+}))
+
+// Receipt email fires via next/server's `after()` — same immediate-but-
+// awaitable pattern as alternatives/generate/route.test.ts, so tests can
+// `await Promise.all(afterJobs)` to observe it.
+const { afterJobs } = vi.hoisted(() => ({ afterJobs: [] as Promise<unknown>[] }))
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>()
+  return {
+    ...actual,
+    after: (fn: () => unknown) => {
+      afterJobs.push(Promise.resolve().then(fn))
+    },
+  }
+})
 
 vi.mock("@/lib/server/repo/subscriptions", () => ({
   getSubscriptionByProviderRef: vi.fn(),
@@ -35,6 +54,10 @@ vi.mock("@/lib/server/repo/credits", () => ({
   grantPeriodCredits: vi.fn(),
 }))
 
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+}))
+
 import { POST } from "./route"
 import { getBillingProvider } from "@/lib/billing/providers"
 import {
@@ -42,7 +65,7 @@ import {
   recordPaymentEvent,
 } from "@/lib/server/repo/payment-events"
 import { getPlan } from "@/lib/server/repo/plans"
-import { setProfilePlan } from "@/lib/server/repo/profiles"
+import { getProfileById, setProfilePlan } from "@/lib/server/repo/profiles"
 import {
   activateSubscription,
   expireOtherActiveSubscriptions,
@@ -50,6 +73,9 @@ import {
   getSubscriptionByProviderRef,
 } from "@/lib/server/repo/subscriptions"
 import { grantPeriodCredits } from "@/lib/server/repo/credits"
+import { sendEmail } from "@/lib/server/email"
+import { __resetRateLimitStore } from "@/lib/server/rate-limit"
+import * as Sentry from "@sentry/nextjs"
 import type {
   BillingProvider,
   NormalizedWebhookEvent,
@@ -131,6 +157,22 @@ function jsonRequest(body: unknown): Request {
 describe("POST /api/webhooks/payment", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    __resetRateLimitStore()
+    afterJobs.length = 0
+  })
+
+  it("429s the 61st delivery from the same IP within a minute (generous — never blocks a normal retry storm)", async () => {
+    mockProvider({
+      isValid: true,
+      event: fakeEvent(),
+    })
+    vi.mocked(getSubscriptionByProviderRef).mockResolvedValue(null)
+    for (let i = 0; i < 60; i++) {
+      const res = await POST(jsonRequest({ any: "thing" }))
+      expect(res.status).not.toBe(429)
+    }
+    const blocked = await POST(jsonRequest({ any: "thing" }))
+    expect(blocked.status).toBe(429)
   })
 
   it("returns 401 when the token is invalid, without recording an event", async () => {
@@ -220,6 +262,60 @@ describe("POST /api/webhooks/payment", () => {
       "period_grant"
     )
     expect(markPaymentEventProcessed).toHaveBeenCalledWith("brm-order-1:paid")
+  })
+
+  it("sends a receipt email in the background after a winning activation", async () => {
+    mockProvider({ isValid: true, event: fakeEvent({ outcome: "paid" }) })
+    vi.mocked(recordPaymentEvent).mockResolvedValueOnce("inserted")
+    vi.mocked(getSubscriptionByProviderRef).mockResolvedValueOnce(fakeSub())
+    vi.mocked(getPlan).mockResolvedValueOnce(fakePlan())
+    vi.mocked(activateSubscription).mockResolvedValueOnce(
+      fakeSub({ status: "active", currentPeriodEnd: "2026-08-04T00:00:00.000Z" })
+    )
+    vi.mocked(getProfileById).mockResolvedValueOnce({
+      id: "profile-1",
+      email: "buyer@example.com",
+      name: "Buyer",
+      plan: "pro",
+      role: "user",
+      phone: null,
+      credits_used: 0,
+      credits_total: 100,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+
+    const res = await POST(
+      jsonRequest({ external_id: "brm-order-1", status: "paid" })
+    )
+    expect(res.status).toBe(200)
+
+    // Receipt email fires in the BACKGROUND (after the response) — await the
+    // scheduled job to observe it.
+    await Promise.all(afterJobs)
+    expect(sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "buyer@example.com",
+        subject: expect.stringContaining("kuitansi"),
+      })
+    )
+  })
+
+  it("does not send a receipt email when activateSubscription reports no row affected (no winning activation)", async () => {
+    mockProvider({ isValid: true, event: fakeEvent({ outcome: "paid" }) })
+    vi.mocked(recordPaymentEvent).mockResolvedValueOnce("inserted")
+    vi.mocked(getSubscriptionByProviderRef).mockResolvedValueOnce(
+      fakeSub({ status: "active" })
+    )
+    vi.mocked(getPlan).mockResolvedValueOnce(fakePlan())
+    vi.mocked(activateSubscription).mockResolvedValueOnce(null)
+
+    const res = await POST(
+      jsonRequest({ external_id: "brm-order-1", status: "paid" })
+    )
+    expect(res.status).toBe(200)
+    await Promise.all(afterJobs)
+    expect(sendEmail).not.toHaveBeenCalled()
   })
 
   it("activates a pending subscription on a paid outcome (year plan → ~365 days out)", async () => {
@@ -339,6 +435,21 @@ describe("POST /api/webhooks/payment", () => {
     expect(await res.json()).toEqual({ ok: true })
     expect(getBillingProvider).not.toHaveBeenCalled()
     expect(recordPaymentEvent).not.toHaveBeenCalled()
+  })
+
+  it("sends the unhandled error to Sentry (route + orderId tags) instead of swallowing it silently, still returning 200 to avoid a retry storm", async () => {
+    mockProvider({ isValid: true, event: fakeEvent({ providerOrderId: "brm-sentry-1" }) })
+    vi.mocked(getSubscriptionByProviderRef).mockRejectedValueOnce(new Error("db down"))
+
+    const res = await POST(jsonRequest({ any: "thing" }))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ ok: true })
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({
+        tags: expect.objectContaining({ route: "webhook-payment", orderId: "brm-sentry-1" }),
+      })
+    )
   })
 
   describe("CRITICAL regression (C1): payment_events must never gate processing", () => {

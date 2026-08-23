@@ -14,7 +14,7 @@ export const DEMO_PROJECT_ID = "proj-demo-8x8"
 
 // Demo/mock user is plan "studio" so local dev + e2e can exercise every
 // export format and other pro/studio-gated features without a real
-// subscription (billing plan Global Constraints).
+// subscription (see Task 7, Mayar billing plan Global Constraints).
 export const seedUser: User = {
   id: "user-1",
   name: "Budi Santoso",

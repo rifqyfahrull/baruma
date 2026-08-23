@@ -49,7 +49,7 @@ import {
 import { toast } from "sonner";
 
 import type { Project } from "@/types";
-import { useProject } from "@/lib/api/hooks";
+import { useProject, useShareLink, useCreateShareLink, useRevokeShareLink } from "@/lib/api/hooks";
 import {
   PROJECT_STAGES,
   lastSurfacePath,
@@ -282,8 +282,10 @@ function ProjectNameMenu({
   );
 }
 
-/** Dialog Bagikan — diekstrak dari `ProjectWorkspaceHeader` lama (perilaku &
- *  string identik: link ke halaman review, salin/WhatsApp/Email/pratinjau). */
+/** Dialog Bagikan — kini pakai tautan publik ber-token (`/s/[token]`, WS-D §2)
+ *  alih-alih URL /review yang owner-only (404 bagi penerima). Tautan dibuat
+ *  (atau dipakai ulang bila sudah ada) begitu dialog dibuka; "Nonaktifkan
+ *  tautan" merevoke-nya sehingga penerima lama mendapat 404 ramah. */
 function ShareProjectDialog({
   projectId,
   projectName,
@@ -295,15 +297,25 @@ function ShareProjectDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const origin = React.useSyncExternalStore(
-    React.useCallback(() => () => {}, []),
-    () => window.location.origin,
-    () => process.env.NEXT_PUBLIC_APP_URL || "https://proj-upgrade.emergent.host"
-  );
-  const shareUrl = `${origin}/app/projects/${projectId}/review`;
+  const { data: existing, isLoading } = useShareLink(projectId, { enabled: open });
+  const createLink = useCreateShareLink(projectId);
+  const revokeLink = useRevokeShareLink(projectId);
+
+  // Begitu dialog terbuka dan ternyata belum ada tautan aktif, buat satu
+  // otomatis (idempotent server-side) — pengguna tak perlu klik "Buat" dulu.
+  React.useEffect(() => {
+    if (open && !isLoading && existing && existing.url === null && !createLink.isPending) {
+      createLink.mutate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- hanya reaksi ke open/existing, bukan createLink identity
+  }, [open, isLoading, existing]);
+
+  const shareUrl = existing?.url ?? createLink.data?.url ?? null;
   const shareText = `Lihat project *${projectName}* di Baruma:`;
+  const pending = isLoading || createLink.isPending || (open && !shareUrl);
 
   const copy = async () => {
+    if (!shareUrl) return;
     try {
       await navigator.clipboard.writeText(shareUrl);
       toast.success("Tautan disalin.");
@@ -313,18 +325,34 @@ function ShareProjectDialog({
   };
 
   const shareWhatsApp = () => {
+    if (!shareUrl) return;
     const url = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const shareEmail = () => {
+    if (!shareUrl) return;
     const subject = `Project ${projectName} di Baruma`;
     const url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`;
     window.location.href = url;
   };
 
   const openLink = () => {
+    if (!shareUrl) return;
     window.open(shareUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const disable = () => {
+    revokeLink.mutate(undefined, {
+      onSuccess: () => {
+        toast.success("Tautan dinonaktifkan. Penerima lama tak bisa lagi membukanya.");
+        // Tutup dialog (bukan biarkan terbuka) — effect di atas akan langsung
+        // membuat tautan BARU begitu `existing.url` kembali null, yang bukan
+        // niat pengguna saat menekan "Nonaktifkan".
+        onOpenChange(false);
+      },
+      onError: () => toast.error("Gagal menonaktifkan tautan."),
+    });
   };
 
   const handleOpenChange = (next: boolean) => {
@@ -338,22 +366,27 @@ function ShareProjectDialog({
         <DialogHeader>
           <DialogTitle>Bagikan project</DialogTitle>
           <DialogDescription>
-            Tautan di bawah mengarah ke halaman review project. Penerima
-            perlu login untuk melihat detail lengkap.
+            Tautan publik lihat-saja — penerima bisa melihat denah, 3D, dan
+            ringkasan review tanpa perlu login, lalu meninggalkan komentar.
           </DialogDescription>
         </DialogHeader>
         <div className="flex items-center gap-2">
-          <Input readOnly value={shareUrl} className="font-mono text-xs" />
-          <Button size="icon" variant="outline" onClick={copy} aria-label="Salin tautan">
+          <Input
+            readOnly
+            aria-label="Tautan bagikan"
+            value={pending ? "Menyiapkan tautan…" : shareUrl ?? ""}
+            className="font-mono text-xs"
+          />
+          <Button size="icon" variant="outline" onClick={copy} disabled={!shareUrl} aria-label="Salin tautan">
             <Copy />
           </Button>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm" onClick={shareWhatsApp} aria-label="Bagikan via WhatsApp">
+          <Button variant="outline" size="sm" onClick={shareWhatsApp} disabled={!shareUrl} aria-label="Bagikan via WhatsApp">
             <MessageCircle className="size-4" />
             WhatsApp
           </Button>
-          <Button variant="outline" size="sm" onClick={shareEmail} aria-label="Bagikan via Email">
+          <Button variant="outline" size="sm" onClick={shareEmail} disabled={!shareUrl} aria-label="Bagikan via Email">
             <Mail className="size-4" />
             Email
           </Button>
@@ -364,14 +397,21 @@ function ShareProjectDialog({
             size="sm"
             className="h-auto px-0 py-0 text-xs"
             onClick={openLink}
+            disabled={!shareUrl}
             aria-label="Buka pratinjau tautan"
           >
             Buka pratinjau tautan
           </Button>
-          <p className="text-xs text-muted-foreground">
-            Tautan di atas mengarah ke halaman review dalam aplikasi. Bagikan
-            publik anonim masih dalam pengembangan.
-          </p>
+          <Button
+            variant="link"
+            size="sm"
+            className="h-auto px-0 py-0 text-xs text-destructive"
+            onClick={disable}
+            disabled={!shareUrl || revokeLink.isPending}
+            aria-label="Nonaktifkan tautan"
+          >
+            Nonaktifkan tautan
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

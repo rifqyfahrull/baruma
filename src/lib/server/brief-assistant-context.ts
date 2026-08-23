@@ -1,14 +1,14 @@
 /**
  * Converts Baruma's deterministic advisory context (brief summary, computed
  * standards audit, curated design knowledge, real asset suggestions, recent
- * chat history) into `askAssistant`'s context blocks. Pure for testing.
+ * chat history) into agent-lab Pattern B `context_blocks`. Pure for testing.
  *
- * The advisory SYSTEM PROMPT itself lives in llm.ts's ASSISTANT_SYSTEM_PROMPT,
- * NOT here — this only supplies grounding context.
+ * The advisory SYSTEM PROMPT itself lives in the agent-lab agent config
+ * (baruma-assistant), NOT here — this only supplies grounding context.
  */
 import type { Brief, RiskCategory, RiskWarning, RoomType, Severity, SpaceProgramItem } from "@/types"
 import type { AuditFinding } from "@/lib/audit/design-audit"
-import type { AssistantContextBlock } from "./llm"
+import type { AgentLabContext } from "./agent-lab"
 import type { AssistantTurn } from "./brief-assistant"
 
 const MAX_HISTORY = 8
@@ -20,9 +20,9 @@ export function buildAssistantContextBlocks(input: {
   designKnowledgeNote?: string
   assetSuggestionsNote?: string
   existingLayoutNote?: string
-}): AssistantContextBlock[] {
+}): AgentLabContext[] {
   const { brief, history, standardsNote, designKnowledgeNote, assetSuggestionsNote, existingLayoutNote } = input
-  const blocks: AssistantContextBlock[] = []
+  const blocks: AgentLabContext[] = []
 
   let briefContext = ""
   if (brief) {
@@ -94,7 +94,11 @@ export function buildAssistantContextBlocks(input: {
 }
 
 export function formatExistingLayoutNote(
-  layout: { rooms?: any[]; floors?: any[]; site?: { widthM?: number; depthM?: number } } | null,
+  layout: {
+    rooms?: Array<{ name?: string; type?: string; areaM2?: number }>
+    floors?: Array<{ id?: string; name?: string }>
+    site?: { widthM?: number; depthM?: number }
+  } | null,
   projectSite?: { widthM?: number; depthM?: number }
 ): string | undefined {
   if (!layout) return undefined
@@ -122,7 +126,11 @@ export function formatExistingLayoutNote(
 
 export function buildBriefFromLayout(
   projectId: string,
-  layout: { rooms?: any[]; floors?: any[]; site?: { widthM?: number; depthM?: number } } | null,
+  layout: {
+    rooms?: Array<{ name?: string; type?: string; areaM2?: number }>
+    floors?: Array<{ id?: string; name?: string }>
+    site?: { widthM?: number; depthM?: number }
+  } | null,
   projectSite?: { widthM?: number; depthM?: number }
 ): Brief {
   const rooms = layout?.rooms || []

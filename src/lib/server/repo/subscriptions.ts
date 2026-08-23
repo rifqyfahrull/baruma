@@ -26,6 +26,12 @@ export type SubRow = {
   currentPeriodEnd: string | null
   createdAt: string
   updatedAt: string
+  /**
+   * When the H-7 renewal reminder email was sent (migration 0040). Optional
+   * on the type (not every query selects it) — undefined and null both mean
+   * "not sent yet"; only the reminder-cron queries/mutate it.
+   */
+  reminderSentAt?: string | null
 }
 
 type DbSubRow = {
@@ -87,6 +93,7 @@ export async function createPendingSubscription(opts: {
       currentPeriodEnd: null,
       createdAt: now,
       updatedAt: now,
+      reminderSentAt: null,
     }
     memSubs.push(row)
     return { id: row.id }
@@ -248,4 +255,147 @@ export async function listSubscriptionsAdmin(): Promise<
     email: r.email,
     planName: r.plan_name,
   }))
+}
+
+/**
+ * User-facing "riwayat transaksi" listing (GET /api/v1/me/transactions):
+ * every subscription for ONE profile, joined with its plan's CURRENT name +
+ * price, newest first. Same join shape as listSubscriptionsAdmin but scoped
+ * + no email (the caller already knows who they are). Price is the plan's
+ * current price, not a historical snapshot — Baruma has no separate
+ * `invoices` table (see webhooks/payment/route.ts's doc comment: the
+ * subscription row itself IS the "invoice" record).
+ */
+export async function listSubscriptionsForProfile(
+  profileId: string
+): Promise<Array<SubRow & { planName: string; priceIdr: number }>> {
+  if (!hasDb()) {
+    const out: Array<SubRow & { planName: string; priceIdr: number }> = []
+    for (let i = memSubs.length - 1; i >= 0; i--) {
+      const s = memSubs[i]
+      if (s.profileId !== profileId) continue
+      const plan = await getPlan(s.planId)
+      out.push({
+        ...clone(s),
+        planName: plan?.name ?? s.planId,
+        priceIdr: plan?.priceIdr ?? 0,
+      })
+    }
+    return out
+  }
+  const res = await query<DbSubRow & { plan_name: string; price_idr: number }>(
+    `SELECT s.id, s.profile_id, s.plan_id, s.status, s.provider, s.provider_ref,
+            s.current_period_end, s.created_at, s.updated_at,
+            pl.name AS plan_name, pl.price_idr
+     FROM subscriptions s
+     JOIN plans pl ON pl.id = s.plan_id
+     WHERE s.profile_id = $1
+     ORDER BY s.created_at DESC`,
+    [profileId]
+  )
+  return res.rows.map((r) => ({
+    ...mapRow(r),
+    planName: r.plan_name,
+    priceIdr: r.price_idr,
+  }))
+}
+
+/**
+ * Maintenance cron (POST /api/internal/maintenance) sweep candidates: every
+ * 'active' subscription whose `current_period_end` has already lapsed,
+ * joined with the owner's email + plan name (for the expiry email). The
+ * actual expire+downgrade for each candidate goes through
+ * src/lib/server/billing-lifecycle.ts's `expireIfLapsed` — this is purely
+ * the "who needs sweeping" query.
+ */
+export async function listExpiredActiveSubscriptions(): Promise<
+  Array<SubRow & { email: string; planName: string }>
+> {
+  if (!hasDb()) {
+    const now = Date.now()
+    const out: Array<SubRow & { email: string; planName: string }> = []
+    for (const s of memSubs) {
+      if (
+        s.status === "active" &&
+        s.currentPeriodEnd &&
+        new Date(s.currentPeriodEnd).getTime() < now
+      ) {
+        const plan = await getPlan(s.planId)
+        out.push({ ...clone(s), email: s.profileId, planName: plan?.name ?? s.planId })
+      }
+    }
+    return out
+  }
+  const res = await query<DbSubRow & { email: string; plan_name: string }>(
+    `SELECT s.id, s.profile_id, s.plan_id, s.status, s.provider, s.provider_ref,
+            s.current_period_end, s.created_at, s.updated_at,
+            p.email, pl.name AS plan_name
+     FROM subscriptions s
+     JOIN profiles p ON p.id = s.profile_id
+     JOIN plans pl ON pl.id = s.plan_id
+     WHERE s.status = 'active' AND s.current_period_end < now()`
+  )
+  return res.rows.map((r) => ({ ...mapRow(r), email: r.email, planName: r.plan_name }))
+}
+
+/**
+ * Maintenance cron renewal-reminder candidates: 'active' subscriptions whose
+ * `current_period_end` is within `days` days (but not already past — a
+ * lapsed one belongs to listExpiredActiveSubscriptions instead) AND that
+ * haven't been reminded yet (`reminder_sent_at IS NULL`, migration 0040).
+ */
+export async function listSubscriptionsNeedingReminder(
+  days: number
+): Promise<Array<SubRow & { email: string; planName: string }>> {
+  if (!hasDb()) {
+    const now = Date.now()
+    const horizon = now + days * 24 * 60 * 60 * 1000
+    const out: Array<SubRow & { email: string; planName: string }> = []
+    for (const s of memSubs) {
+      if (s.status !== "active" || !s.currentPeriodEnd || s.reminderSentAt) continue
+      const end = new Date(s.currentPeriodEnd).getTime()
+      if (end > now && end <= horizon) {
+        const plan = await getPlan(s.planId)
+        out.push({ ...clone(s), email: s.profileId, planName: plan?.name ?? s.planId })
+      }
+    }
+    return out
+  }
+  const res = await query<DbSubRow & { email: string; plan_name: string }>(
+    `SELECT s.id, s.profile_id, s.plan_id, s.status, s.provider, s.provider_ref,
+            s.current_period_end, s.created_at, s.updated_at,
+            p.email, pl.name AS plan_name
+     FROM subscriptions s
+     JOIN profiles p ON p.id = s.profile_id
+     JOIN plans pl ON pl.id = s.plan_id
+     WHERE s.status = 'active'
+       AND s.reminder_sent_at IS NULL
+       AND s.current_period_end IS NOT NULL
+       AND s.current_period_end > now()
+       AND s.current_period_end <= now() + ($1 || ' days')::interval`,
+    [days]
+  )
+  return res.rows.map((r) => ({ ...mapRow(r), email: r.email, planName: r.plan_name }))
+}
+
+/**
+ * Stamp `reminder_sent_at` — atomic idempotency guard mirroring
+ * activateSubscription/expireSubscription's `WHERE ... IS NULL`/`WHERE
+ * status = ...` pattern: only flips a row whose reminder hasn't been sent
+ * yet, so concurrent/overlapping cron runs send the reminder email AT MOST
+ * ONCE per subscription. Returns whether THIS call did the stamping.
+ */
+export async function markReminderSent(id: string): Promise<boolean> {
+  if (!hasDb()) {
+    const row = memSubs.find((s) => s.id === id)
+    if (!row || row.reminderSentAt) return false
+    row.reminderSentAt = new Date().toISOString()
+    return true
+  }
+  const res = await query(
+    `UPDATE subscriptions SET reminder_sent_at = now()
+     WHERE id = $1 AND reminder_sent_at IS NULL`,
+    [id]
+  )
+  return (res.rowCount ?? 0) > 0
 }

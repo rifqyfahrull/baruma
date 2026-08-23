@@ -4,6 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import {
   FolderKanban,
+  HelpCircle,
   LayoutDashboard,
   Moon,
   Plus,
@@ -68,6 +69,10 @@ export function CommandMenu() {
           <CommandItem onSelect={() => go("/app/projects/new")}>
             <Plus />
             Buat Project Baru
+          </CommandItem>
+          <CommandItem onSelect={() => go("/app/help")}>
+            <HelpCircle />
+            Bantuan
           </CommandItem>
         </CommandGroup>
 

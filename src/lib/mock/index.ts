@@ -262,6 +262,11 @@ const db = {
   plans: structuredClone(DEFAULT_PLANS) as PlanRow[],
   templates: buildSeedTemplates() as TemplateDetail[],
   componentPresets: structuredClone(SEED_COMPONENT_PRESETS) as ComponentPreset[],
+  // Public share links (WS-D §2) — one active link per project, in-memory
+  // only (client mock, per browser tab). Real persistence lives server-side
+  // in src/lib/server/repo/share-links.ts; `/s/[token]` itself is a server
+  // component that never reads this mock store.
+  shareLinks: {} as Record<string, { token: string; revoked: boolean }>,
 }
 
 const assistantThreads: Record<string, AssistantMessage[]> = {}
@@ -471,6 +476,7 @@ export async function deleteProject(id: string): Promise<void> {
   delete db.reviews[id]
   delete db.reviewRevisions[id]
   delete db.rab[id]
+  delete db.shareLinks[id]
 }
 
 /**
@@ -533,6 +539,42 @@ export async function createProject(
   db.projects.unshift(project)
   db.briefs[id] = brief
   return { project: structuredClone(project), brief: structuredClone(brief) }
+}
+
+/**
+ * Clone a curated template's brief + layout into a brand-new owned project —
+ * mirrors `POST /api/v1/projects/from-template`. No quota gate here (the
+ * mock db doesn't model plan entitlements at all — see createProject above).
+ */
+export async function createProjectFromTemplate(slug: string): Promise<{ projectId: string }> {
+  await delay(500)
+  const template = db.templates.find((t) => t.slug === slug && t.active)
+  if (!template) throw new Error(`Template tidak ditemukan: ${slug}`)
+
+  const id = `proj-${nanoid(8)}`
+  const ts = nowISO()
+  const project: Project = {
+    id,
+    name: `${template.name} (salinan)`,
+    status: "editing",
+    readiness: "concept_ready",
+    location: template.city,
+    city: template.city,
+    province: template.province,
+    style: template.style,
+    projectType: "new",
+    thumbnail: template.thumbnail,
+    site: structuredClone(template.site),
+    floors: template.floors,
+    rooftop: template.rooftop,
+    createdAt: ts,
+    updatedAt: ts,
+  }
+  db.projects.unshift(project)
+  if (template.brief) db.briefs[id] = { ...structuredClone(template.brief), projectId: id }
+  db.layouts[id] = structuredClone(template.layout)
+
+  return { projectId: id }
 }
 
 /* ----- service: brief ----- */
@@ -954,6 +996,37 @@ export async function toggleWarningResolved(
   else set.add(warningId)
   review.resolvedWarningIds = [...set]
   return structuredClone(review)
+}
+
+/* ----- service: share links ----- */
+
+function mockShareUrl(token: string): string {
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://baruma.tampil.dev"
+  return `${origin}/s/${token}`
+}
+
+/** Mirrors GET /api/v1/projects/[id]/share — current active link, if any. */
+export async function getShareLink(projectId: string): Promise<{ url: string | null }> {
+  await delay(150)
+  const link = db.shareLinks[projectId]
+  return { url: link && !link.revoked ? mockShareUrl(link.token) : null }
+}
+
+/** Mirrors POST /api/v1/projects/[id]/share — idempotent per project. */
+export async function createShareLink(projectId: string): Promise<{ url: string }> {
+  await delay(300)
+  const existing = db.shareLinks[projectId]
+  if (existing && !existing.revoked) return { url: mockShareUrl(existing.token) }
+  const token = nanoid(21)
+  db.shareLinks[projectId] = { token, revoked: false }
+  return { url: mockShareUrl(token) }
+}
+
+/** Mirrors DELETE /api/v1/projects/[id]/share — "Nonaktifkan tautan". */
+export async function revokeShareLink(projectId: string): Promise<void> {
+  await delay(200)
+  const existing = db.shareLinks[projectId]
+  if (existing) existing.revoked = true
 }
 
 /* ----- internal builders ----- */

@@ -222,12 +222,20 @@ export function PlanForm({
               <Input
                 id="plan-max-projects"
                 type="number"
-                aria-label="Maksimal jumlah proyek"
-                value={form.entitlements.maxProjects}
+                min={0}
+                placeholder="Tanpa batas"
+                aria-label="Maksimal jumlah proyek (kosongkan untuk tanpa batas)"
+                value={form.entitlements.maxProjects ?? ""}
                 onChange={(e) =>
-                  setEntitlement("maxProjects", Number(e.target.value))
+                  setEntitlement(
+                    "maxProjects",
+                    e.target.value === "" ? null : Number(e.target.value)
+                  )
                 }
               />
+              <p className="text-xs text-muted-foreground">
+                Kosongkan untuk tanpa batas.
+              </p>
             </div>
 
             <div className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2">

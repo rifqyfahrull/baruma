@@ -73,9 +73,14 @@ jobs:
             STORAGE_ACCESS_KEY_ID=${{ secrets.STORAGE_ACCESS_KEY_ID }}
             STORAGE_SECRET_ACCESS_KEY=${{ secrets.STORAGE_SECRET_ACCESS_KEY }}
             STORAGE_BUCKET=${{ secrets.STORAGE_BUCKET }}
-            MAYAR_API_BASE_URL=${{ secrets.MAYAR_API_BASE_URL }}
-            MAYAR_API_KEY=${{ secrets.MAYAR_API_KEY }}
-            MAYAR_WEBHOOK_TOKEN=${{ secrets.MAYAR_WEBHOOK_TOKEN }}
+            # Payment via the tampil.dev parent (Baruma → tampil.dev → Mayar).
+            # Baruma no longer holds any Mayar credential. PARENT_BILLING_SECRET
+            # must equal the parent's CHILD_BILLING_SECRET. Use the parent's
+            # public origin (https://tampil.dev) — its origin gate rejects a
+            # loopback Host.
+            PARENT_BILLING_URL=${{ secrets.PARENT_BILLING_URL }}
+            PARENT_BILLING_SECRET=${{ secrets.PARENT_BILLING_SECRET }}
+            PARENT_BILLING_APP=baruma
             ADMIN_EMAILS=${{ secrets.ADMIN_EMAILS }}
             # Supabase SSO (shared with tampil.dev). NEXT_PUBLIC_AUTH_COOKIE_DOMAIN
             # MUST be NEXT_PUBLIC_ (the browser Supabase client reads it to scope
@@ -92,8 +97,32 @@ jobs:
             # secret configured in Supabase's captcha settings, and its Turnstile
             # widget must allow the baruma.tampil.dev domain.
             NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+            # Error tracking (WS-A) — empty-tolerant: no-op when unset (see
+            # src/instrumentation.ts / src/instrumentation-client.ts guards).
+            SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+            NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+            # Email transaksional (WS-B) — empty-tolerant: no-op when unset
+            # (see src/lib/server/email.ts's emailEnabled() guard).
+            RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+            EMAIL_FROM=${{ secrets.EMAIL_FROM }}
+            # Cron maintenance harian (WS-B) — POST /api/internal/maintenance.
+            # Kosong = endpoint menolak semua request (fail closed).
+            MAINTENANCE_SECRET=${{ secrets.MAINTENANCE_SECRET }}
+            # Analytics (WS-E) — empty-tolerant: no script dimuat sama sekali
+            # bila kosong (see src/components/analytics/umami-script.tsx).
+            NEXT_PUBLIC_UMAMI_SRC=${{ secrets.NEXT_PUBLIC_UMAMI_SRC }}
+            NEXT_PUBLIC_UMAMI_WEBSITE_ID=${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
+            # Halaman Bantuan (WS-E) — kontak support ditampilkan/mailto:.
+            NEXT_PUBLIC_SUPPORT_EMAIL=${{ secrets.NEXT_PUBLIC_SUPPORT_EMAIL }}
             ENVEOF
             sed -i 's/^[[:space:]]*//' .env.local
+
+            # GIT_SHA (WS-A): dipakai GET /api/health untuk field "version". TIDAK
+            # bisa masuk heredoc di atas (delimiter 'ENVEOF' SENGAJA di-quote agar
+            # nilai secret dengan karakter $/`/dst tidak pernah di-shell-expand —
+            # lihat komentar REPO/AUTHHDR di atas). Dihitung di sini (host remote,
+            # setelah git reset --hard di atas) lalu di-append biasa.
+            echo "GIT_SHA=$(git rev-parse --short HEAD)" >> .env.local
 
             # Validate required secrets are non-empty
             for v in AUTH_SECRET DATABASE_URL BARUMA_JWT_SECRET; do
@@ -112,9 +141,7 @@ jobs:
             # .env.local written above; idempotent (skips files already present).
             node scripts/sync-catalog-models.mjs download
 
-            # Scale down to 1 instance before building — the build's own
-            # --max-old-space-size=3072 heap plus a 2-instance cluster would
-            # otherwise both live in RAM at once on this 4GB droplet (OOM risk).
+            # Single instance only — see 2026-08-22 fix below for why.
             pm2 scale baruma 1 || true
 
             NODE_OPTIONS=--max-old-space-size=3072 node node_modules/next/dist/bin/next build
@@ -122,12 +149,27 @@ jobs:
             # Apply pending DB migrations (tracked in schema_migrations) before (re)start
             DATABASE_URL="${{ secrets.DATABASE_URL }}" node scripts/migrate.mjs
 
-            # (Re)start under pm2, cluster mode (2 workers). `reload` is
-            # zero-downtime and cluster-compatible (unlike `restart`, which
-            # drops connections); fall back to `start` on first-ever deploy
-            # when the "baruma" process doesn't exist yet.
-            pm2 reload baruma --update-env || pm2 start node_modules/next/dist/bin/next --name baruma --cwd "$APP" -i 2 --max-memory-restart 1G --interpreter node -- start -p 3000
-            pm2 scale baruma 2 || true
+            # (Re)start under pm2, SINGLE instance. `reload` is zero-downtime
+            # (unlike `restart`, which drops connections); fall back to
+            # `start` on first-ever deploy when "baruma" doesn't exist yet.
+            #
+            # 2026-08-22 fix: this used to run `-i 2` (pm2 cluster mode) then
+            # `pm2 scale baruma 2`, intending 2 workers for throughput. That
+            # never actually worked — `next start`'s own HTTP server doesn't
+            # participate in pm2 cluster mode's port-sharing (SO_REUSEPORT), a
+            # known Next.js/pm2 incompatibility (next start bypasses the
+            # net.Server hook pm2's cluster module relies on). The 2nd worker
+            # crash-looped on `EADDRINUSE :::3000` continuously — confirmed
+            # live: pm2 showed it restarting 900+ times in minutes, wasting
+            # CPU on the shared droplet and likely contributing to unrelated
+            # deploy flakiness (agent-lab health-check failures during
+            # concurrent deploys). The 1st worker was the only one ever
+            # actually serving traffic, so dropping to 1 instance changes
+            # nothing about real capacity — it just stops the crash loop.
+            # Real horizontal scaling would need a custom server.js (or
+            # separate ports + an nginx upstream), not pm2 cluster mode
+            # against the next CLI binary — a bigger change, not done here.
+            pm2 reload baruma --update-env || pm2 start node_modules/next/dist/bin/next --name baruma --cwd "$APP" -i 1 --max-memory-restart 1G --interpreter node -- start -p 3000
             pm2 save
 
             # Ensure nginx reverse-proxy :80 -> :3000 (idempotent — a fresh droplet serves the domain without manual setup)
@@ -169,9 +211,47 @@ jobs:
             rm -f /etc/nginx/sites-enabled/default
             nginx -t && systemctl reload nginx && echo "nginx ok"
 
-            # Smoke (app on :3000 + via nginx :80 with the real Host)
+            # Backup DB harian (WS-A): crontab entry idempoten untuk user yang
+            # menjalankan deploy (root oleh default, atau DEPLOY_USER bila
+            # hardening non-root sudah dipasang — lihat docs/runbook-rotasi-
+            # kredensial.md §8). scripts/backup-db.mjs memuat DATABASE_URL/
+            # STORAGE_* sendiri dari "$APP/.env.local" (sama seperti
+            # scripts/sync-catalog-models.mjs), jadi baris cron TIDAK perlu
+            # meng-export env apa pun secara manual. Log ke $APP/../backup.log
+            # (bukan /var/log — direktori itu belum tentu writable oleh user
+            # non-root). Pattern idempoten: buang baris lama bertanda marker
+            # unik sebelum menambah baris baru, supaya deploy berulang tidak
+            # menumpuk entry duplikat.
+            NODE_BIN="$(command -v node)"
+            BACKUP_LOG="$(dirname "$APP")/backup.log"
+            CRON_MARK="# baruma-backup-db"
+            CRON_LINE="0 19 * * * cd $APP && $NODE_BIN scripts/backup-db.mjs >> $BACKUP_LOG 2>&1 $CRON_MARK"
+            (crontab -l 2>/dev/null | grep -vF "$CRON_MARK"; echo "$CRON_LINE") | crontab -
+            echo "cron backup-db installed: $CRON_LINE"
+
+            # Maintenance harian (WS-B): expiry sweep + renewal reminder —
+            # POST /api/internal/maintenance, dipicu scripts/run-maintenance-
+            # cron.mjs (baca MAINTENANCE_SECRET dari .env.local sendiri, sama
+            # seperti backup-db.mjs, supaya baris crontab TIDAK memuat
+            # secret). Idempoten via marker unik, pola sama dgn backup-db di
+            # atas. 00:00 UTC setiap hari.
+            MAINT_LOG="$(dirname "$APP")/maintenance.log"
+            MAINT_MARK="# baruma-maintenance"
+            MAINT_LINE="0 0 * * * cd $APP && $NODE_BIN scripts/run-maintenance-cron.mjs >> $MAINT_LOG 2>&1 $MAINT_MARK"
+            (crontab -l 2>/dev/null | grep -vF "$MAINT_MARK"; echo "$MAINT_LINE") | crontab -
+            echo "cron maintenance installed: $MAINT_LINE"
+
+            # Smoke (app on :3000 + via nginx :80 with the real Host) — /api/health
+            # (WS-A), bukan "/", supaya smoke test benar-benar memverifikasi DB
+            # tersambung (bukan cuma HTML shell yang bisa 200 walau DB mati).
             sleep 4
-            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 http://127.0.0.1:3000/ || echo 000)
-            ngx=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 -H 'Host: baruma.tampil.dev' http://127.0.0.1/ || echo 000)
-            echo "local :3000 -> $code | nginx :80 -> $ngx"
+            health_local=$(curl -sS --max-time 10 http://127.0.0.1:3000/api/health || echo '{}')
+            health_ngx=$(curl -sS --max-time 10 -H 'Host: baruma.tampil.dev' http://127.0.0.1/api/health || echo '{}')
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 http://127.0.0.1:3000/api/health || echo 000)
+            ngx=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 -H 'Host: baruma.tampil.dev' http://127.0.0.1/api/health || echo 000)
+            echo "local :3000/api/health -> $code ($health_local)"
+            echo "nginx :80/api/health -> $ngx ($health_ngx)"
             test "$code" = "200"
+            test "$ngx" = "200"
+            echo "$health_local" | grep -q '"ok":true'
+            echo "$health_ngx" | grep -q '"ok":true'

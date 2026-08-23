@@ -8,6 +8,7 @@ vi.mock("@/lib/data", () => ({
     getRAB: vi.fn(),
     getBrief: vi.fn(),
     getLayout: vi.fn(),
+    getInterior: vi.fn(),
   },
 }))
 
@@ -48,8 +49,20 @@ vi.mock("three/examples/jsm/exporters/GLTFExporter.js", () => ({
   })),
 }))
 
+// contractor-pack.ts / zip-all.ts have their own dedicated content tests —
+// here we only verify generateExport WIRES the right project/layout/opts
+// into them, so this file doesn't need to grow a full jsPDF surface mock.
+vi.mock("./contractor-pack", () => ({
+  buildContractorPackPdf: vi.fn().mockResolvedValue(new Blob(["contractor"])),
+}))
+vi.mock("./zip-all", () => ({
+  buildZipAllBlob: vi.fn().mockResolvedValue(new Blob(["zip"])),
+}))
+
 import { generateExport } from "./generate"
 import { data } from "@/lib/data"
+import { buildContractorPackPdf } from "./contractor-pack"
+import { buildZipAllBlob } from "./zip-all"
 
 const mockProject = {
   id: "p1",
@@ -113,19 +126,80 @@ beforeEach(() => {
   vi.mocked(data.getRAB).mockResolvedValue(mockRab as never)
   vi.mocked(data.getBrief).mockResolvedValue(mockBrief as never)
   vi.mocked(data.getLayout).mockResolvedValue(mockLayout as never)
+  vi.mocked(data.getInterior).mockResolvedValue(null as never)
+  vi.mocked(buildContractorPackPdf).mockClear()
+  vi.mocked(buildZipAllBlob).mockClear()
 })
 
 describe("generateExport — unsupported formats", () => {
-  it("rejects dxf with 'belum tersedia'", async () => {
-    await expect(generateExport("p1", "dxf")).rejects.toThrow("belum tersedia")
-  })
-
-  it("rejects ifc with 'belum tersedia'", async () => {
+  it("rejects ifc with 'belum tersedia' — the only remaining stub (kartu 'Segera hadir', see EXPORT_META.ifc.comingSoon)", async () => {
     await expect(generateExport("p1", "ifc")).rejects.toThrow("belum tersedia")
   })
+})
 
-  it("rejects zip_all with 'belum tersedia'", async () => {
-    await expect(generateExport("p1", "zip_all")).rejects.toThrow("belum tersedia")
+describe("generateExport — dxf (real, no longer unsupported)", () => {
+  it("returns a real DXF Blob with a 'denah-{slug}.dxf' filename", async () => {
+    const result = await generateExport("p1", "dxf")
+    expect(result.blob).toBeInstanceOf(Blob)
+    expect(result.blob.type).toBe("application/dxf")
+    expect(result.blob.size).toBeGreaterThan(0)
+    expect(result.filename).toBe("denah-rumah-test.dxf")
+  })
+
+  it("is parseable ASCII DXF content (SECTION/ENTITIES/EOF)", async () => {
+    const result = await generateExport("p1", "dxf")
+    const text = await result.blob.text()
+    expect(text).toContain("SECTION")
+    expect(text).toContain("ENTITIES")
+    expect(text.trim().endsWith("0\nEOF")).toBe(true)
+  })
+
+  it("throws when the layout is missing", async () => {
+    vi.mocked(data.getLayout).mockResolvedValueOnce(null)
+    await expect(generateExport("p1", "dxf")).rejects.toThrow("Data belum lengkap")
+  })
+})
+
+describe("generateExport — zip_all (real, no longer unsupported)", () => {
+  it("delegates to buildZipAllBlob with project/brief/rab/layout/interior rooms and a 'baruma-{slug}.zip' filename", async () => {
+    const result = await generateExport("p1", "zip_all", { watermark: true })
+
+    expect(vi.mocked(buildZipAllBlob)).toHaveBeenCalledTimes(1)
+    const [project, brief, rab, layout, rooms, opts] = vi.mocked(buildZipAllBlob).mock.calls[0]
+    expect(project).toEqual(mockProject)
+    expect(brief).toEqual(mockBrief)
+    expect(rab).toEqual(mockRab)
+    expect(layout).toEqual(mockLayout)
+    expect(Array.isArray(rooms)).toBe(true)
+    expect(opts).toMatchObject({ watermark: true })
+
+    expect(result.blob.size).toBeGreaterThan(0)
+    expect(result.filename).toBe("baruma-rumah-test.zip")
+  })
+
+  it("throws when the layout is missing", async () => {
+    vi.mocked(data.getLayout).mockResolvedValueOnce(null)
+    await expect(generateExport("p1", "zip_all")).rejects.toThrow("Data belum lengkap")
+  })
+})
+
+describe("generateExport — contractor_pack threads layout/watermark/thumbnail into the builder", () => {
+  it("passes the fetched layout, opts.watermark, and opts.thumbnailDataUrl through", async () => {
+    await generateExport("p1", "contractor_pack", {
+      watermark: true,
+      thumbnailDataUrl: "data:image/png;base64,AAAA",
+    })
+
+    expect(vi.mocked(buildContractorPackPdf)).toHaveBeenCalledTimes(1)
+    const [project, brief, rab, opts] = vi.mocked(buildContractorPackPdf).mock.calls[0]
+    expect(project).toEqual(mockProject)
+    expect(brief).toEqual(mockBrief)
+    expect(rab).toEqual(mockRab)
+    expect(opts).toMatchObject({
+      layout: mockLayout,
+      watermark: true,
+      thumbnailDataUrl: "data:image/png;base64,AAAA",
+    })
   })
 })
 

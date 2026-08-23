@@ -2,8 +2,7 @@
 
 import * as React from "react"
 import dynamic from "next/dynamic"
-import Link from "next/link"
-import { ArrowRight, Layers, Loader2, MapPin, Ruler } from "lucide-react"
+import { Layers, Loader2, MapPin, Ruler } from "lucide-react"
 
 import type { Project } from "@/types"
 import type { TemplateDetail } from "@/types/templates"
@@ -11,9 +10,9 @@ import { HOUSE_STYLES } from "@/lib/constants"
 import { formatArea, formatDimensions } from "@/lib/format"
 import { isWebGLAvailable } from "@/lib/three/webgl-support"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import { TemplatePlanViewer } from "./template-plan-viewer"
 import { TemplateBrief } from "./template-brief"
+import { UseTemplateButton } from "./use-template-button"
 
 // three.js loads only when the "3D" tab is actually active — dynamic +
 // ssr:false, same pattern as the logged-in preview-3d page.
@@ -88,12 +87,7 @@ export function TemplateViewer({ template }: { template: TemplateDetail }) {
           </div>
         </div>
 
-        <Button asChild size="lg" className="shrink-0">
-          <Link href="/register">
-            Mulai Desain Gratis
-            <ArrowRight className="ml-1.5 size-4" />
-          </Link>
-        </Button>
+        <UseTemplateButton slug={template.slug} size="lg" className="shrink-0" />
       </div>
 
       <div className="mt-8 inline-flex items-center gap-1 rounded-lg border bg-muted/40 p-1">

@@ -36,6 +36,8 @@
 import { query } from "@/lib/server/db"
 
 import { clone, hasDb } from "./memory-fallback"
+import { computePaymentMismatch } from "@/lib/server/billing-reconciliation"
+import type { AdminPaymentRow } from "@/types"
 
 export type PaymentEventRow = {
   id: string
@@ -110,4 +112,127 @@ export async function markPaymentEventProcessed(id: string): Promise<void> {
     return
   }
   await query(`UPDATE payment_events SET processed = true WHERE id = $1`, [id])
+}
+
+/** Row count fetched per source query (events / stale-pending) before merge+limit. */
+const RECONCILIATION_FETCH_LIMIT = 200
+/** How stale a still-'pending' subscription must be to count as "stuck". */
+const STALE_PENDING_HOURS = 1
+
+type RawEventRow = {
+  id: string
+  provider: string
+  event_type: string
+  processed: boolean
+  created_at: string | Date
+  sub_status: string | null
+  email: string | null
+  plan_name: string | null
+  provider_ref: string | null
+}
+
+type RawStaleRow = {
+  id: string
+  provider: string | null
+  status: string
+  created_at: string | Date
+  email: string
+  plan_name: string
+  provider_ref: string | null
+}
+
+function toIsoDate(v: string | Date): string {
+  return typeof v === "string" ? v : v.toISOString()
+}
+
+/**
+ * Admin "Rekonsiliasi pembayaran" listing (Task WS-B): recent payment_events
+ * joined with the subscription (matched by extracting the providerOrderId
+ * baked into the event id, `${providerOrderId}:${outcome}` — see
+ * recordPaymentEvent's caller in webhooks/payment/route.ts) + owner profile
+ * + plan, UNIONed with subscriptions stuck 'pending' for over an hour that
+ * have no matching 'paid' event at all (those would otherwise never appear
+ * — there's no payment_events row for a webhook that never arrived). Each
+ * row gets a derived `mismatch` via the pure `computePaymentMismatch`
+ * (billing-reconciliation.ts). DB-only (no memory-fallback): reaching this
+ * function already required requireAdmin() to resolve a DB-backed admin
+ * profile, mirroring profiles.ts's `listProfiles` — an honest empty result
+ * in dev/mock mode rather than inventing a parallel in-memory join.
+ */
+export async function listPaymentReconciliation(): Promise<AdminPaymentRow[]> {
+  if (!hasDb()) return []
+
+  const events = await query<RawEventRow>(
+    `SELECT pe.id, pe.provider, pe.event_type, pe.processed, pe.created_at,
+            s.status AS sub_status, s.provider_ref,
+            p.email, pl.name AS plan_name
+     FROM payment_events pe
+     LEFT JOIN subscriptions s ON s.provider_ref = split_part(pe.id, ':', 1)
+     LEFT JOIN profiles p ON p.id = s.profile_id
+     LEFT JOIN plans pl ON pl.id = s.plan_id
+     ORDER BY pe.created_at DESC
+     LIMIT ${RECONCILIATION_FETCH_LIMIT}`
+  )
+
+  const stale = await query<RawStaleRow>(
+    `SELECT s.id, s.provider AS provider, s.status, s.created_at, s.provider_ref,
+            p.email, pl.name AS plan_name
+     FROM subscriptions s
+     JOIN profiles p ON p.id = s.profile_id
+     JOIN plans pl ON pl.id = s.plan_id
+     WHERE s.status = 'pending'
+       AND s.created_at < now() - interval '${STALE_PENDING_HOURS} hour'
+       AND NOT EXISTS (
+         SELECT 1 FROM payment_events pe
+         WHERE pe.event_type = 'paid' AND split_part(pe.id, ':', 1) = s.provider_ref
+       )
+     ORDER BY s.created_at DESC
+     LIMIT ${RECONCILIATION_FETCH_LIMIT}`
+  )
+
+  const eventRows: AdminPaymentRow[] = events.rows.map((r) => {
+    const candidate = {
+      kind: "event" as const,
+      eventType: r.event_type,
+      processed: r.processed,
+      subscriptionStatus: r.sub_status,
+    }
+    return {
+      id: r.id,
+      provider: r.provider,
+      eventType: r.event_type,
+      processed: r.processed,
+      createdAt: toIsoDate(r.created_at),
+      email: r.email,
+      planName: r.plan_name,
+      subscriptionStatus: r.sub_status,
+      providerOrderId: r.provider_ref,
+      mismatch: computePaymentMismatch(candidate),
+    }
+  })
+
+  const staleRows: AdminPaymentRow[] = stale.rows.map((r) => {
+    const candidate = {
+      kind: "pending_stale" as const,
+      eventType: null,
+      processed: false,
+      subscriptionStatus: r.status,
+    }
+    return {
+      id: `sub:${r.id}`,
+      provider: r.provider,
+      eventType: null,
+      processed: false,
+      createdAt: toIsoDate(r.created_at),
+      email: r.email,
+      planName: r.plan_name,
+      subscriptionStatus: r.status,
+      providerOrderId: r.provider_ref,
+      mismatch: computePaymentMismatch(candidate),
+    }
+  })
+
+  return [...eventRows, ...staleRows].sort((a, b) =>
+    b.createdAt.localeCompare(a.createdAt)
+  )
 }

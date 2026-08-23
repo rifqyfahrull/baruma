@@ -42,7 +42,21 @@ afterEach(() => {
   cleanup()
   getCurrentUser.mockReset()
   getPlans.mockReset()
+  vi.unstubAllGlobals()
 })
+
+/** useMyTransactions (billing-hooks.ts) fetches directly, not via @/lib/data. */
+function mockTransactionsFetch(body: unknown) {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(body), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      })
+    )
+  )
+}
 
 describe("BillingPage", () => {
   it("renders loading skeletons while plans are still fetching", async () => {
@@ -123,5 +137,59 @@ describe("BillingPage", () => {
     // unique, to know the plan cards have finished loading.
     await waitFor(() => expect(screen.getByText("Studio")).toBeTruthy())
     expect(screen.queryByText(/Langganan berakhir dalam/)).toBeNull()
+  })
+
+  it("shows an empty state for Riwayat transaksi when there are no transactions", async () => {
+    getCurrentUser.mockResolvedValue(user)
+    getPlans.mockResolvedValue(DEFAULT_PLANS)
+    mockTransactionsFetch([])
+
+    renderPage()
+
+    await waitFor(() => expect(screen.getByText("Riwayat transaksi")).toBeTruthy())
+    await waitFor(() => expect(screen.getByText("Belum ada transaksi.")).toBeTruthy())
+  })
+
+  it("renders a transaction row with a download-receipt button for an active paid plan", async () => {
+    getCurrentUser.mockResolvedValue(user)
+    getPlans.mockResolvedValue(DEFAULT_PLANS)
+    mockTransactionsFetch([
+      {
+        id: "sub-1",
+        planName: "Pro",
+        priceIdr: 149000,
+        status: "active",
+        createdAt: "2026-08-01T00:00:00.000Z",
+        currentPeriodEnd: "2026-09-01T00:00:00.000Z",
+        providerOrderId: "brm-abc123-1700000000000",
+      },
+    ])
+
+    renderPage()
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /Unduh kuitansi Pro/ })).toBeTruthy()
+    )
+  })
+
+  it("does not show a download button for a pending (unpaid) transaction row", async () => {
+    getCurrentUser.mockResolvedValue(user)
+    getPlans.mockResolvedValue(DEFAULT_PLANS)
+    mockTransactionsFetch([
+      {
+        id: "sub-2",
+        planName: "Pro",
+        priceIdr: 149000,
+        status: "pending",
+        createdAt: "2026-08-01T00:00:00.000Z",
+        currentPeriodEnd: null,
+        providerOrderId: "brm-def456-1700000000000",
+      },
+    ])
+
+    renderPage()
+
+    await waitFor(() => expect(screen.getAllByText("Pro").length).toBeGreaterThan(0))
+    expect(screen.queryByRole("button", { name: /Unduh kuitansi/ })).toBeNull()
   })
 })

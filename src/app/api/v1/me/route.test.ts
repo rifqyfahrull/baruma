@@ -260,17 +260,23 @@ describe("GET /api/v1/me — lazy subscription expiry", () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
-    vi.mocked(subscriptionsRepo.getActiveSubscription).mockResolvedValueOnce({
+    const lapsedSub = {
       id: "sub-expired",
       profileId: "user-expired-sub",
       planId: "pro",
-      status: "active",
+      status: "active" as const,
       provider: "mayar",
       providerRef: "brm-expired-1",
       currentPeriodEnd: "2020-01-01T00:00:00.000Z",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    })
+    }
+    // Called twice: once by the route's own initial read, once again inside
+    // billing-lifecycle.ts's expireIfLapsed (it re-fetches so it can run
+    // standalone from the maintenance cron too) — both see the same lapsed row.
+    vi.mocked(subscriptionsRepo.getActiveSubscription)
+      .mockResolvedValueOnce(lapsedSub)
+      .mockResolvedValueOnce(lapsedSub)
     const freePlan = {
       id: "free",
       name: "Free",
@@ -348,17 +354,21 @@ describe("GET /api/v1/me — lazy subscription expiry", () => {
       updated_at: new Date().toISOString(),
     })
     vi.mocked(plansRepo.getPlan).mockResolvedValueOnce(fakePlan)
-    vi.mocked(subscriptionsRepo.getActiveSubscription).mockResolvedValueOnce({
+    const lapsedSub = {
       id: "sub-concurrent",
       profileId: "user-concurrent-expiry",
       planId: "pro",
-      status: "active",
+      status: "active" as const,
       provider: "mayar",
       providerRef: "brm-concurrent-1",
       currentPeriodEnd: "2020-01-01T00:00:00.000Z",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    })
+    }
+    // Called twice — see the "downgrades to free" test above for why.
+    vi.mocked(subscriptionsRepo.getActiveSubscription)
+      .mockResolvedValueOnce(lapsedSub)
+      .mockResolvedValueOnce(lapsedSub)
     // Simulate: a concurrent request already flipped this row to 'expired'
     // between our getActiveSubscription read and our expireSubscription call.
     vi.mocked(subscriptionsRepo.expireSubscription).mockResolvedValueOnce(false)

@@ -1,10 +1,13 @@
 import { z } from "zod"
 import { nanoid } from "nanoid"
+import { after } from "next/server"
 import { adminEmailAllowlist, hashPassword } from "@/lib/server/auth-server"
 import { createProfile, getProfileByEmail } from "@/lib/server/repo/profiles"
 import { signToken } from "@/lib/server/auth-server"
 import { ok, err, handleError } from "@/lib/server/response"
 import { rateLimitGuard } from "@/lib/server/rate-limit"
+import { sendEmail } from "@/lib/server/email"
+import { welcomeEmail } from "@/lib/server/email-templates"
 
 const schema = z.object({
   email: z.string().email(),
@@ -45,6 +48,18 @@ export async function POST(request: Request): Promise<Response> {
     const id = `usr-${nanoid(10)}`
     const profile = await createProfile({ id, email, name, passwordHash })
     const accessToken = await signToken(profile.id)
+
+    // Email selamat datang di BACKGROUND (after response) — sendEmail sendiri
+    // tidak pernah throw (no-op ke false saat RESEND_API_KEY/EMAIL_FROM
+    // kosong), tapi tetap dijalankan lewat after() supaya kegagalan/latensi
+    // provider email TIDAK PERNAH menunda atau menggagalkan registrasi.
+    after(async () => {
+      await sendEmail({
+        to: profile.email,
+        subject: "Selamat datang di Baruma",
+        html: welcomeEmail(profile.name),
+      })
+    })
 
     return ok({
       user: {

@@ -39,7 +39,10 @@ vi.mock("@/lib/server/repo/credits", () => ({
   spendCreditsOnce: vi.fn(async () => "ok"), refundCreditsOnce: vi.fn(async () => "ok"),
 }))
 vi.mock("@/lib/server/llm", () => ({
-  llmEnabled: vi.fn(() => false), chatText: vi.fn(), chatJSON: vi.fn(), askAssistant: vi.fn(),
+  llmEnabled: vi.fn(() => false), chatText: vi.fn(), chatJSON: vi.fn(),
+}))
+vi.mock("@/lib/server/agent-lab", () => ({
+  askAgentLab: vi.fn(), agentLabEnabled: vi.fn(() => true),
 }))
 vi.mock("@/app/api/v1/projects/[id]/editor/assistant/route", () => ({
   EDITOR_AGENT_FALLBACK: "fallback",
@@ -52,6 +55,7 @@ import { POST } from "./route"
 import * as assistantRepo from "@/lib/server/repo/assistant"
 import * as creditsRepo from "@/lib/server/repo/credits"
 import * as llm from "@/lib/server/llm"
+import * as agentLab from "@/lib/server/agent-lab"
 import * as layoutsRepo from "@/lib/server/repo/layouts"
 import * as briefsRepo from "@/lib/server/repo/briefs"
 import * as editorAssistantRoute from "@/app/api/v1/projects/[id]/editor/assistant/route"
@@ -85,11 +89,12 @@ describe("POST /api/v1/projects/[id]/agent", () => {
       ...reply,
     }))
     vi.mocked(llm.llmEnabled).mockReturnValue(false)
-    vi.mocked(llm.askAssistant).mockReset()
+    vi.mocked(agentLab.askAgentLab).mockReset()
+    vi.mocked(agentLab.agentLabEnabled).mockReturnValue(true)
   })
 
   it("persists a Brief reply in the same project thread without charging when LLM is disabled", async () => {
-    vi.mocked(llm.llmEnabled).mockReturnValue(false)
+    vi.mocked(agentLab.agentLabEnabled).mockReturnValue(false)
     const response = await POST(request({
       surface: "brief", requestedMode: "brief", instruction: "halo", clientRequestId: "req-12345678",
     }), { params: Promise.resolve({ id: "p1" }) })
@@ -116,8 +121,8 @@ describe("POST /api/v1/projects/[id]/agent", () => {
   })
 
   it("reserves credit before calling the Brief LLM", async () => {
-    vi.mocked(llm.llmEnabled).mockReturnValue(true)
-    vi.mocked(llm.askAssistant).mockResolvedValue("jawaban")
+    vi.mocked(agentLab.agentLabEnabled).mockReturnValue(true)
+    vi.mocked(agentLab.askAgentLab).mockResolvedValue("jawaban")
     const response = await POST(request({
       surface: "brief", requestedMode: "brief", instruction: "halo", clientRequestId: "req-12345678",
     }), { params: Promise.resolve({ id: "p1" }) })
@@ -126,7 +131,7 @@ describe("POST /api/v1/projects/[id]/agent", () => {
     await parseSSE(response)
     expect(creditsRepo.spendCreditsOnce).toHaveBeenCalledWith("u1", 1, "project_agent", "req-12345678")
     expect(vi.mocked(creditsRepo.spendCreditsOnce).mock.invocationCallOrder[0])
-      .toBeLessThan(vi.mocked(llm.askAssistant).mock.invocationCallOrder[0])
+      .toBeLessThan(vi.mocked(agentLab.askAgentLab).mock.invocationCallOrder[0])
   })
 
   it("routes a floorplan-mode instruction that misses the deterministic matchers to runFloorplanAgentPass", async () => {
@@ -222,6 +227,32 @@ describe("POST /api/v1/projects/[id]/agent", () => {
     expect(vi.mocked(creditsRepo.spendCreditsOnce)).not.toHaveBeenCalled()
   })
 
+  // BAR-SEC-04 (2026-08-23): `requestIdForRefund` was declared but never
+  // assigned, so the refund guard in the catch-all (`creditReserved &&
+  // userIdForRefund && requestIdForRefund`) was permanently dead — a thrown
+  // error AFTER a successful spend never refunded the credit. Fixed by
+  // assigning it inside reserveCredit() right after spendCreditsOnce
+  // succeeds. This test forces an unhandled error post-spend (completeTurn
+  // throwing) and proves the credit comes back.
+  it("refunds the spent credit when an unhandled error is thrown after spend (BAR-SEC-04)", async () => {
+    vi.mocked(agentLab.agentLabEnabled).mockReturnValue(true)
+    vi.mocked(agentLab.askAgentLab).mockResolvedValue("jawaban")
+    vi.mocked(assistantRepo.completeTurn).mockImplementationOnce(async () => {
+      throw new Error("boom — kegagalan tak terduga setelah kredit terpotong")
+    })
+
+    const response = await POST(request({
+      surface: "brief", requestedMode: "brief", instruction: "halo", clientRequestId: "req-refund-1",
+    }), { params: Promise.resolve({ id: "p1" }) })
+
+    expect(response.status).toBe(200)
+    await parseSSE(response)
+    expect(creditsRepo.spendCreditsOnce).toHaveBeenCalledWith("u1", 1, "project_agent", "req-refund-1")
+    expect(creditsRepo.refundCreditsOnce).toHaveBeenCalledWith(
+      "u1", 1, "project_agent_refund", "req-refund-1",
+    )
+  })
+
   // AI-abuse hardening (2026-08-15): rate guard sits ABOVE claimTurn/credit
   // spend, sharing scope "editor-assistant" with editor/assistant/route.ts.
   describe("rate limiting", () => {
@@ -245,8 +276,8 @@ describe("POST /api/v1/projects/[id]/agent", () => {
     })
 
     it("never spends credit on a 429 — the guard runs before claimTurn/spendCreditsOnce", async () => {
-      vi.mocked(llm.llmEnabled).mockReturnValue(true)
-      vi.mocked(llm.askAssistant).mockResolvedValue("jawaban")
+      vi.mocked(agentLab.agentLabEnabled).mockReturnValue(true)
+      vi.mocked(agentLab.askAgentLab).mockResolvedValue("jawaban")
 
       for (let i = 0; i < 15; i++) {
         const res = await POST(request({

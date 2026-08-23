@@ -3,6 +3,10 @@
 # eksplisit (ERR_PNPM_IGNORED_BUILDS), sehingga `pnpm exec` — termasuk
 # webServer Playwright — gagal start. Nilai false = pertahankan status quo.
 allowBuilds:
+  # @sentry/nextjs pulls this in as a subdependency; kita TIDAK memakai
+  # sentry-cli (tanpa source-map upload/CI auth token — lihat
+  # instrumentation.ts), jadi build script binary-nya tak perlu jalan.
+  '@sentry/cli': false
   core-js: false
   onnxruntime-node: false
   protobufjs: false

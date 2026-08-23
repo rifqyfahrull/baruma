@@ -26,21 +26,11 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  output: "standalone",
-  allowedDevOrigins: [
-    "baruma-nextjs.preview.emergentagent.com",
-    "baruma-nextjs.cluster-5.preview.emergentcf.cloud",
-    "*.preview.emergentagent.com",
-    "*.cluster-5.preview.emergentcf.cloud",
-  ],
   experimental: {
-    optimizePackageImports: [
-      "radix-ui",
-      "@react-three/drei",
-      "lucide-react",
-      "date-fns",
-      "three",
-    ],
+    // radix-ui (barrel dengan puluhan subpath) tidak masuk daftar default
+    // optimizePackageImports Next — tanpa ini seluruh barrel ikut di-resolve
+    // ke module graph (compile dev lambat + bundle lebih besar).
+    optimizePackageImports: ["radix-ui", "@react-three/drei"],
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

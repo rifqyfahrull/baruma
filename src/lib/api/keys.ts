@@ -11,6 +11,7 @@ export const queryKeys = {
   layout: (projectId: string) => ["layout", projectId] as const,
   interior: (projectId: string) => ["interior", projectId] as const,
   review: (projectId: string) => ["review", projectId] as const,
+  shareLink: (projectId: string) => ["share-link", projectId] as const,
 
   assistant: (projectId: string) => ["assistant", projectId] as const,
 

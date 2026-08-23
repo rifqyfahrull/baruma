@@ -80,7 +80,7 @@ export function TemplatesTable() {
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">
           Template dibuat dari snapshot sebuah proyek dan tampil di halaman
-          publik "Mulai dari Template" bila aktif.
+          publik &quot;Mulai dari Template&quot; bila aktif.
         </p>
         <Button size="sm" className="gap-1.5 shrink-0" onClick={() => setCreating(true)}>
           <Plus className="size-4" />

@@ -6,6 +6,7 @@ import { isParentBillingConfigured } from "@/lib/billing/providers/parent"
 import { getPlan } from "@/lib/server/repo/plans"
 import { getProfileById } from "@/lib/server/repo/profiles"
 import { createPendingSubscription } from "@/lib/server/repo/subscriptions"
+import { rateLimitGuard } from "@/lib/server/rate-limit"
 
 /**
  * Creates a checkout for a plan and records a pending subscription, activated
@@ -35,6 +36,16 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 })
   }
+
+  // Rate-limit: 5 percobaan checkout / menit / user — cukup untuk klik ganda
+  // & retry wajar, ketat terhadap penyalahgunaan (spam order ke provider parent).
+  const limited = rateLimitGuard(req, {
+    scope: "checkout",
+    limit: 5,
+    windowMs: 60_000,
+    keyExtra: userId,
+  })
+  if (limited) return limited
 
   const { planId } = (await req.json().catch(() => ({}))) as {
     planId?: string

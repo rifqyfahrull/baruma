@@ -1,144 +1,98 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { chatJSON, chatText, llmEnabled } from "./llm"
 
-const completeChat = vi.fn()
-const llmProviderEnabled = vi.fn()
-
-vi.mock("./openai-client", () => ({
-  completeChat: (...args: unknown[]) => completeChat(...args),
-  llmProviderEnabled: () => llmProviderEnabled(),
-}))
-
-import { askAssistant, chatJSON, chatText, formatJsonToMarkdown, llmEnabled, PROSE_SLUG } from "./llm"
+const fetchMock = vi.fn()
+vi.stubGlobal("fetch", fetchMock)
 
 beforeEach(() => {
   vi.clearAllMocks()
-  delete process.env.OPENAI_MODEL
-  delete process.env.OPENAI_MODEL_PROSE
+  process.env.AGENT_LAB_URL = "http://lab.local"
+  process.env.AGENT_LAB_KEY = "alk_baruma"
 })
 
-describe("llmEnabled", () => {
-  it("mirrors the underlying openai-client provider check", () => {
-    llmProviderEnabled.mockReturnValue(false)
+afterEach(() => {
+  delete process.env.AGENT_LAB_URL
+  delete process.env.AGENT_LAB_KEY
+  delete process.env.AGENT_LAB_KEY_FLOORPLAN_ACTIONS
+})
+
+function response(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  })
+}
+
+describe("central Agent Lab LLM facade", () => {
+  it("is disabled without the Agent Lab product key", async () => {
+    delete process.env.AGENT_LAB_KEY
     expect(llmEnabled()).toBe(false)
-    llmProviderEnabled.mockReturnValue(true)
-    expect(llmEnabled()).toBe(true)
-  })
-})
-
-describe("chatJSON", () => {
-  it("returns null when completeChat resolves null (LLM disabled/failed)", async () => {
-    completeChat.mockResolvedValue(null)
     expect(await chatJSON([{ role: "user", content: "x" }])).toBeNull()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it("parses a clean JSON completion", async () => {
-    completeChat.mockResolvedValue({ content: '{"a":1}' })
+  it("parses JSON returned by Agent Lab", async () => {
+    fetchMock.mockResolvedValue(response({
+      content: '{"a":1}', tool_calls: [], finish_reason: "stop",
+    }))
     expect(await chatJSON<{ a: number }>([{ role: "user", content: "x" }])).toEqual({ a: 1 })
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe("http://lab.local/v1/agents/baruma-floorplan-actions/complete")
+    expect((init.headers as Record<string, string>)["X-API-Key"]).toBe("alk_baruma")
+    const body = JSON.parse(init.body as string)
+    expect(body.response_format).toBe("json")
+    expect(body).not.toHaveProperty("provider")
+    expect(body).not.toHaveProperty("model")
+    expect(body).not.toHaveProperty("api_key")
   })
 
-  it("strips ```json fences before parsing", async () => {
-    completeChat.mockResolvedValue({ content: '```json\n{"a":1}\n```' })
-    expect(await chatJSON<{ a: number }>([{ role: "user", content: "x" }])).toEqual({ a: 1 })
-  })
-
-  it("falls back to {reply, actions:[]} when content isn't valid or repairable JSON", async () => {
-    completeChat.mockResolvedValue({ content: "not-json" })
+  it("returns null on service error or malformed JSON content", async () => {
+    fetchMock.mockResolvedValueOnce(response({}, 502))
+    expect(await chatJSON([{ role: "user", content: "x" }])).toBeNull()
+    fetchMock.mockResolvedValueOnce(response({ content: "not-json", tool_calls: [] }))
     expect(await chatJSON([{ role: "user", content: "x" }])).toEqual({ reply: "not-json", actions: [] })
   })
 
-  it("uses the actions profile (low temperature, json responseFormat) by default", async () => {
-    completeChat.mockResolvedValue({ content: "{}" })
-    await chatJSON([{ role: "user", content: "x" }])
-    const args = completeChat.mock.calls[0][0]
-    expect(args.responseFormat).toBe("json")
-    expect(args.temperature).toBe(0.2)
-  })
-
-  it("switches to the prose profile's higher temperature when opts.slug is PROSE_SLUG", async () => {
-    completeChat.mockResolvedValue({ content: "{}" })
-    await chatJSON([{ role: "user", content: "x" }], { slug: PROSE_SLUG })
-    const args = completeChat.mock.calls[0][0]
-    expect(args.temperature).toBe(0.7)
-  })
-
-  it("reads OPENAI_MODEL for the model passed to completeChat", async () => {
-    process.env.OPENAI_MODEL = "deepseek-chat"
-    completeChat.mockResolvedValue({ content: "{}" })
-    await chatJSON([{ role: "user", content: "x" }])
-    expect(completeChat.mock.calls[0][0].model).toBe("deepseek-chat")
-  })
-})
-
-describe("chatText", () => {
-  it("returns trimmed text", async () => {
-    completeChat.mockResolvedValue({ content: "  Halo  " })
+  it("returns trimmed text from Agent Lab", async () => {
+    fetchMock.mockResolvedValue(response({ content: "  Halo  ", tool_calls: [] }))
     expect(await chatText([{ role: "user", content: "x" }])).toBe("Halo")
   })
 
-  it("returns null when completeChat resolves null", async () => {
-    completeChat.mockResolvedValue(null)
-    expect(await chatText([{ role: "user", content: "x" }])).toBeNull()
-  })
-
-  it("uses the prose model profile", async () => {
-    process.env.OPENAI_MODEL_PROSE = "gpt-4.1"
-    process.env.OPENAI_MODEL = "gpt-4o-mini"
-    completeChat.mockResolvedValue({ content: "halo" })
+  it("chatText uses the prose slug, distinct from chatJSON's actions slug", async () => {
+    fetchMock.mockResolvedValue(response({ content: "halo", tool_calls: [] }))
     await chatText([{ role: "user", content: "x" }])
-    expect(completeChat.mock.calls[0][0].model).toBe("gpt-4.1")
-    expect(completeChat.mock.calls[0][0].responseFormat).toBe("text")
-  })
-})
-
-describe("formatJsonToMarkdown", () => {
-  it("prefers a primary prose field when present", () => {
-    expect(formatJsonToMarkdown({ response: "Halo dunia" })).toBe("Halo dunia")
+    const [url] = fetchMock.mock.calls[0]
+    expect(url).toBe("http://lab.local/v1/agents/baruma-assistant/complete")
   })
 
-  it("renders arbitrary keys as markdown sections", () => {
-    const md = formatJsonToMarkdown({ analisis: "Bagus", catatan_risiko: ["a", "b"] })
-    expect(md).toContain("**Analisis**:")
-    expect(md).toContain("Bagus")
-    expect(md).toContain("**Catatan Risiko**:")
-    expect(md).toContain("- a")
-  })
-})
-
-describe("askAssistant", () => {
-  it("returns null when completeChat resolves null", async () => {
-    completeChat.mockResolvedValue(null)
-    expect(await askAssistant({ userId: "u1", text: "halo" })).toBeNull()
+  it("chatJSON posts to an explicit opts.slug override instead of the default actions slug", async () => {
+    fetchMock.mockResolvedValue(response({ content: '{"a":1}', tool_calls: [] }))
+    await chatJSON([{ role: "user", content: "x" }], { slug: "some-other-slug" })
+    const [url] = fetchMock.mock.calls[0]
+    expect(url).toBe("http://lab.local/v1/agents/some-other-slug/complete")
   })
 
-  it("returns the trimmed reply and forwards context blocks + userId as the request's user field", async () => {
-    completeChat.mockResolvedValue({ content: "  Tentu, saya bisa bantu.  " })
-    const result = await askAssistant({
-      userId: "u1",
-      text: "tolong buatkan brief",
-      contextBlocks: [{ title: "Brief proyek", content: "kosong" }],
-    })
-    expect(result).toBe("Tentu, saya bisa bantu.")
-    const args = completeChat.mock.calls[0][0]
-    expect(args.user).toBe("u1")
-    expect(args.messages.some((m: { content: string }) => m.content.includes("Brief proyek"))).toBe(true)
-    expect(args.messages.some((m: { content: string }) => m.content.includes("kosong"))).toBe(true)
-    expect(args.messages.at(-1)).toEqual({ role: "user", content: "tolong buatkan brief" })
+  it("chatJSON uses the dedicated AGENT_LAB_KEY_FLOORPLAN_ACTIONS key when set", async () => {
+    process.env.AGENT_LAB_KEY_FLOORPLAN_ACTIONS = "alk_actions_only"
+    fetchMock.mockResolvedValue(response({ content: '{"a":1}', tool_calls: [] }))
+    await chatJSON([{ role: "user", content: "x" }])
+    const [, init] = fetchMock.mock.calls[0]
+    expect((init.headers as Record<string, string>)["X-API-Key"]).toBe("alk_actions_only")
   })
 
-  it("unwraps a raw-JSON reply into markdown", async () => {
-    completeChat.mockResolvedValue({ content: JSON.stringify({ response: "Jawaban bersih" }) })
-    expect(await askAssistant({ userId: "u1", text: "x" })).toBe("Jawaban bersih")
+  it("chatJSON falls back to AGENT_LAB_KEY when no dedicated actions key is set", async () => {
+    fetchMock.mockResolvedValue(response({ content: '{"a":1}', tool_calls: [] }))
+    await chatJSON([{ role: "user", content: "x" }])
+    const [, init] = fetchMock.mock.calls[0]
+    expect((init.headers as Record<string, string>)["X-API-Key"]).toBe("alk_baruma")
   })
 
-  it("keeps a needs_clarify JSON payload intact instead of reformatting it", async () => {
-    const payload = JSON.stringify({ reply: "butuh info", needs_clarify: [{ question: "Gaya?", suggestions: ["Modern"] }] })
-    completeChat.mockResolvedValue({ content: payload })
-    expect(await askAssistant({ userId: "u1", text: "x" })).toBe(payload)
-  })
-
-  it("strips <think> reasoning tags before returning", async () => {
-    completeChat.mockResolvedValue({ content: "<think>internal musing</think>Jawaban final" })
-    expect(await askAssistant({ userId: "u1", text: "x" })).toBe("Jawaban final")
+  it("chatText always uses AGENT_LAB_KEY, ignoring the dedicated actions key", async () => {
+    process.env.AGENT_LAB_KEY_FLOORPLAN_ACTIONS = "alk_actions_only"
+    fetchMock.mockResolvedValue(response({ content: "halo", tool_calls: [] }))
+    await chatText([{ role: "user", content: "x" }])
+    const [, init] = fetchMock.mock.calls[0]
+    expect((init.headers as Record<string, string>)["X-API-Key"]).toBe("alk_baruma")
   })
 })

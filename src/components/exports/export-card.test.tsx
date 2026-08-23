@@ -125,4 +125,58 @@ describe("ExportCard", () => {
     expect(screen.getByText("Pro")).toBeTruthy()
     expect(screen.queryByRole("button", { name: "Generate" })).toBeNull()
   })
+
+  it("zip_all generates for real for an unlocked (Pro/Studio) user — no longer a stub", () => {
+    render(
+      <ExportCard
+        format="zip_all"
+        readiness="concept_ready"
+        plan="studio"
+        entitlements={studioEntitlements}
+        projectId="proj-zip-1"
+        projectName="Demo"
+      />
+    )
+    expect(screen.queryByText("Pro")).toBeNull()
+    expect(screen.getByRole("button", { name: "Generate" })).toBeTruthy()
+  })
+
+  it("shows a disabled 'Segera hadir' state for ifc when unlocked (Pro/Studio) — never a Buat that errors", () => {
+    render(
+      <ExportCard
+        format="ifc"
+        readiness="concept_ready"
+        plan="studio"
+        entitlements={studioEntitlements}
+        projectId="proj-comingsoon-1"
+        projectName="Demo"
+      />
+    )
+
+    expect(screen.getAllByText("Segera hadir").length).toBeGreaterThan(0)
+    expect(screen.queryByRole("button", { name: "Generate" })).toBeNull()
+    const button = screen.getByRole("button", { name: "Segera hadir" }) as HTMLButtonElement
+    expect(button.disabled).toBe(true)
+    // Locked-state "Pro" upsell isn't shown once unlocked either.
+    expect(screen.queryByText("Pro")).toBeNull()
+  })
+
+  it("still shows the Pro upsell (not 'Segera hadir') for ifc while locked — existing free-plan behaviour is unchanged", () => {
+    render(
+      <ExportCard
+        format="ifc"
+        readiness="concept_ready"
+        plan="free"
+        entitlements={freeEntitlements}
+        projectId="proj-comingsoon-locked-1"
+        projectName="Demo"
+      />
+    )
+
+    expect(screen.getByText("Pro")).toBeTruthy()
+    expect(screen.queryByText("Segera hadir")).toBeNull()
+    expect(
+      screen.getByRole("link", { name: /Upgrade untuk akses/ })
+    ).toBeTruthy()
+  })
 })

@@ -54,6 +54,9 @@ export interface DataSource {
   createProject(
     input: CreateProjectInput
   ): Promise<{ project: Project; brief: Brief }>
+  /** Clone a curated template (brief + layout) into a brand-new owned
+   *  project — the "Gunakan template ini" CTA on the public gallery. */
+  createProjectFromTemplate(slug: string): Promise<{ projectId: string }>
   deleteProject(id: string): Promise<void>
   /** Ganti nama project. */
   updateProject(id: string, patch: { name: string }): Promise<Project>
@@ -114,6 +117,15 @@ export interface DataSource {
     status: ReviewChecklistItem["status"]
   ): Promise<Review>
   toggleWarningResolved(projectId: string, warningId: string): Promise<Review>
+
+  // ── share links (public, no-auth read-only project view at /s/[token]) ──
+
+  /** Current active link's absolute URL, or `null` if none has been created yet. */
+  getShareLink(projectId: string): Promise<{ url: string | null }>
+  /** Create (or reuse the existing active) share link — returns its absolute URL. */
+  createShareLink(projectId: string): Promise<{ url: string }>
+  /** "Nonaktifkan tautan" — revokes the project's active link(s). */
+  revokeShareLink(projectId: string): Promise<void>
 
   // ── asset management (furnimesh model ingestion) ──
 

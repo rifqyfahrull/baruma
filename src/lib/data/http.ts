@@ -207,6 +207,8 @@ export const httpSource: DataSource = {
   getProject: (id) => req<Project | null>("GET", `/projects/${id}`),
   createProject: (input) =>
     req<{ project: Project; brief: Brief }>("POST", "/projects", input),
+  createProjectFromTemplate: (slug) =>
+    req<{ projectId: string }>("POST", "/projects/from-template", { slug }),
   deleteProject: (id) =>
     req<void>("DELETE", `/projects/${id}`),
   updateProject: (id, patch) =>
@@ -278,6 +280,11 @@ export const httpSource: DataSource = {
     req<Review>("PATCH", `/projects/${id}/review/checklist`, { role, status }),
   toggleWarningResolved: (id, wid) =>
     req<Review>("PATCH", `/projects/${id}/review/warnings/${wid}/toggle`),
+
+  // ── share links ──
+  getShareLink: (id) => req<{ url: string | null }>("GET", `/projects/${id}/share`),
+  createShareLink: (id) => req<{ url: string }>("POST", `/projects/${id}/share`),
+  revokeShareLink: (id) => req<void>("DELETE", `/projects/${id}/share`),
 
   // ── assets ──
   // NOTE: paths are relative to BASE (NEXT_PUBLIC_API_URL already ends with

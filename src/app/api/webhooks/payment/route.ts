@@ -1,5 +1,7 @@
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
+import * as Sentry from "@sentry/nextjs"
 
+import { rateLimitGuard } from "@/lib/server/rate-limit"
 import { getBillingProvider } from "@/lib/billing/providers"
 import { grantPeriodCredits } from "@/lib/server/repo/credits"
 import {
@@ -7,13 +9,15 @@ import {
   recordPaymentEvent,
 } from "@/lib/server/repo/payment-events"
 import { getPlan } from "@/lib/server/repo/plans"
-import { setProfilePlan } from "@/lib/server/repo/profiles"
+import { getProfileById, setProfilePlan } from "@/lib/server/repo/profiles"
 import {
   activateSubscription,
   expireOtherActiveSubscriptions,
   expireSubscription,
   getSubscriptionByProviderRef,
 } from "@/lib/server/repo/subscriptions"
+import { sendEmail } from "@/lib/server/email"
+import { receiptEmail } from "@/lib/server/email-templates"
 import type { Plan } from "@/types"
 
 /**
@@ -58,6 +62,17 @@ export async function POST(req: Request): Promise<Response> {
   // before we'd otherwise have captured them.
   let providerOrderId: string | undefined
   let outcome: string | undefined
+  // Rate-limit LONGGAR per IP (60/menit) — hanya untuk meredam banjir/flood
+  // anomali, BUKAN menghalangi retry sah dari relay parent (yang bisa retry
+  // beberapa kali per order saat Baruma lambat). 429 di sini masih aman:
+  // idempotency guard di activateSubscription/expireSubscription membuat
+  // retry berikutnya dari parent tetap idempoten begitu limit reset.
+  const limited = rateLimitGuard(req, {
+    scope: "webhook-payment",
+    limit: 60,
+    windowMs: 60_000,
+  })
+  if (limited) return limited
   try {
     const raw = await req.text()
     const payload = JSON.parse(raw) as unknown
@@ -132,6 +147,29 @@ export async function POST(req: Request): Promise<Response> {
           )
         }
         await markPaymentEventProcessed(`${providerOrderId}:${outcome}`)
+
+        // Kuitansi via email di BACKGROUND (after response) — sendEmail
+        // sendiri tidak pernah throw dan sudah no-op tanpa RESEND_API_KEY/
+        // EMAIL_FROM; after() memastikan latensi/kegagalan provider email
+        // tidak pernah menunda balasan 200 ke relay parent (lihat komentar
+        // besar di atas soal retry-storm). `orderId` di-const-kan dulu — TS
+        // tak bisa menyempitkan `let providerOrderId: string | undefined`
+        // (dideklarasikan di atas try) menembus closure `after()`.
+        const orderId = providerOrderId
+        after(async () => {
+          const receiptProfile = await getProfileById(sub.profileId)
+          if (!receiptProfile) return
+          await sendEmail({
+            to: receiptProfile.email,
+            subject: "Pembayaran berhasil — kuitansi Baruma",
+            html: receiptEmail({
+              planName: plan?.name ?? sub.planId,
+              priceIdr: plan?.priceIdr ?? 0,
+              periodEnd: currentPeriodEnd,
+              orderId,
+            }),
+          })
+        })
       }
     } else if (
       outcome === "failed" ||
@@ -153,6 +191,14 @@ export async function POST(req: Request): Promise<Response> {
       `[webhook/payment] handler error (providerOrderId=${providerOrderId ?? "?"}, outcome=${outcome ?? "?"}):`,
       e
     )
+    // Kegagalan di sini TIDAK BOLEH senyap (lihat komentar besar di atas: 200
+    // dibalas untuk mencegah retry-storm dari relay parent, tapi itu berarti
+    // "user bayar tapi tak ter-upgrade" hanya kelihatan di log pm2 kalau
+    // tidak dikirim ke sini). No-op sepenuhnya tanpa SENTRY_DSN.
+    Sentry.captureException(e, {
+      tags: { route: "webhook-payment", orderId: providerOrderId ?? "unknown" },
+      extra: { outcome: outcome ?? "unknown" },
+    })
     return NextResponse.json({ ok: true }) // Prevent provider retry storm.
   }
 }

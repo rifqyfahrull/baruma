@@ -150,8 +150,9 @@ export async function POST(
           const body = await response.json()
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'result', data: body })}\n\n`))
         }
-      } catch (e: any) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: e?.message ?? String(e) })}\n\n`))
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e)
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: message })}\n\n`))
       } finally {
         clearInterval(sendPing)
         controller.close()
@@ -406,7 +407,7 @@ async function runLogic(
             onProgress,
           );
           reply = res.rawContent ?? res.reply;
-          actions = res.actions as any;
+          actions = res.actions;
           llmFailed = !!res.llmFailed;
           plannerNote = res.plannerNote;
         } else {

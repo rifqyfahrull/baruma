@@ -79,11 +79,11 @@ export type User = {
   avatarUrl?: string;
   /** Server-managed role (admin backoffice). Absent in older payloads = "user". */
   role?: "user" | "admin";
-  /** Phone number, collected for profile completeness. Null when never set. */
+  /** Phone number — Mayar invoices require `mobile`. Null when never set. */
   phone?: string | null;
   /** Entitlements of the user's current plan. Null when the plan row is missing (defensive). */
   entitlements?: Entitlements | null;
-  /** Active subscription summary, if any (manual-renew billing). Null when none active. */
+  /** Active subscription summary, if any (manual-renew Mayar billing). Null when none active. */
   subscription?: { status: string; currentPeriodEnd: string } | null;
 };
 
@@ -93,7 +93,8 @@ export type User = {
  */
 export type Entitlements = {
   creditsPerPeriod: number;
-  maxProjects: number;
+  /** null = tanpa batas (Pro: "Project tanpa batas" — lihat plan-defaults.ts). */
+  maxProjects: number | null;
   exportPdf: boolean;
   glbUpload: boolean;
   /** Render AI mode Presisi (HD, tanpa watermark) — lihat src/lib/server/ai-render. */
@@ -188,6 +189,41 @@ export type AdminUserRow = {
   role: "user" | "admin";
   creditsUsed: number;
   creditsTotal: number;
+};
+
+/**
+ * One row of the user-facing "Riwayat transaksi" listing (WS-B) — GET
+ * /api/v1/me/transactions. Mirrors `listSubscriptionsForProfile`'s return
+ * shape (src/lib/server/repo/subscriptions.ts), redeclared here for the same
+ * reason as AdminSubscriptionRow above (client bundles never reach into
+ * lib/server/repo).
+ */
+export type TransactionRow = {
+  id: string;
+  planName: string;
+  priceIdr: number;
+  status: string;
+  createdAt: string;
+  currentPeriodEnd: string | null;
+  providerOrderId: string | null;
+};
+
+/**
+ * One row of the admin "Rekonsiliasi pembayaran" listing (WS-B) — GET
+ * /api/v1/admin/payments. Mirrors listPaymentReconciliation's return shape
+ * (src/lib/server/repo/payment-events.ts).
+ */
+export type AdminPaymentRow = {
+  id: string;
+  provider: string | null;
+  eventType: string | null;
+  processed: boolean;
+  createdAt: string;
+  email: string | null;
+  planName: string | null;
+  subscriptionStatus: string | null;
+  providerOrderId: string | null;
+  mismatch: boolean;
 };
 
 /* ------------------------------------------------------------------ */

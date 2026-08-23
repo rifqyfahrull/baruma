@@ -1,4 +1,4 @@
-export function repairAndExtractJson(raw: string): any {
+export function repairAndExtractJson(raw: string): unknown {
   let repaired = raw
     .replace(/<think>[\s\S]*?<\/think>/gi, "")
     .replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, "")

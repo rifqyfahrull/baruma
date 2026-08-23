@@ -14,9 +14,7 @@
 /coverage
 
 # next.js
-/.next/*
-!/.next/standalone/
-!/.next/static/
+/.next/
 /out/
 
 # production
@@ -31,11 +29,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-
-# local dev/debug artifacts (never commit — clutter, may capture request/console output)
-dev-server.log
-*-watch.console.log
-wall-dump-*.txt
 
 # env files (can opt-in for committing if needed)
 .env*
@@ -82,13 +75,3 @@ public/textures/*.jpg
 src/components/faucet-check/tokens.txt
 scripts/asset-harvest/out-answer-eval.jsonl
 scripts/test-prod-agent.mjs
-
-# local pnpm content-addressable store (from install)
-.pnpm-store/
-.env
-.env.*
-!.env.example
-*.env
-credentials.json
-*.key
-.credentials

@@ -8,12 +8,14 @@ import { track } from "@/lib/analytics"
 import {
   ChevronsUpDown,
   CreditCard,
+  HelpCircle,
   LogOut,
   Settings,
   Sparkles,
   User,
 } from "lucide-react"
 
+import { clearPhantomSession } from "@/lib/auth/phantom-session"
 import { useCurrentUser } from "@/lib/api/hooks"
 import { PLANS } from "@/lib/constants"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -48,10 +50,19 @@ export function UserMenu() {
   const { data: user, isLoading } = useCurrentUser()
 
   async function handleSignOut() {
-    const supabase = createSupabaseBrowserClient()
-    await supabase.auth.signOut()
-    router.push("/login")
-    router.refresh()
+    try {
+      clearPhantomSession()
+      const supabase = createSupabaseBrowserClient()
+      await supabase.auth.signOut()
+    } catch {
+      // ignore
+    }
+    try {
+      await fetch("/api/auth/logout", { method: "POST" })
+    } catch {
+      // ignore
+    }
+    window.location.href = "/login"
   }
 
   if (isLoading || !user) {
@@ -132,9 +143,17 @@ export function UserMenu() {
                   Billing
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem disabled>
-                <Settings />
-                Pengaturan
+              <DropdownMenuItem asChild>
+                <Link href="/app/profile">
+                  <Settings />
+                  Pengaturan
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/app/help">
+                  <HelpCircle />
+                  Bantuan
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

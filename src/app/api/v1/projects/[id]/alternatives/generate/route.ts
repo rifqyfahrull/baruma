@@ -5,6 +5,7 @@ import { upsertAlternatives } from "@/lib/server/repo/alternatives"
 import { updateProject } from "@/lib/server/repo/projects"
 import { spendCredits, refundCredits } from "@/lib/server/repo/credits"
 import { ok, err, errCode, handleError } from "@/lib/server/response"
+import { rateLimitGuard } from "@/lib/server/rate-limit"
 import { enrichAlternatives } from "@/lib/server/enrich-alternatives"
 import { after } from "next/server"
 import type {
@@ -114,6 +115,17 @@ export async function POST(
 ): Promise<Response> {
   try {
     const { userId } = await requireUser(request)
+
+    // 6/menit/user — cukup untuk regenerate ulang-alik wajar (tiap panggilan
+    // memotong 1 kredit & memicu LLM background), ketat terhadap spam.
+    const limited = rateLimitGuard(request, {
+      scope: "alternatives-generate",
+      limit: 6,
+      windowMs: 60_000,
+      keyExtra: userId,
+    })
+    if (limited) return limited
+
     const { id } = await ctx.params
     const project = await getOwnedProject(id, userId)
     if (!project) return err(404, "Project not found")

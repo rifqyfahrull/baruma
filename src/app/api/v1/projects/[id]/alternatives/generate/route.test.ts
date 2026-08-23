@@ -59,6 +59,7 @@ import * as alternativesRepo from "@/lib/server/repo/alternatives"
 import * as creditsRepo from "@/lib/server/repo/credits"
 import * as enrichLib from "@/lib/server/enrich-alternatives"
 import { signToken } from "@/lib/server/auth-server"
+import { __resetRateLimitStore } from "@/lib/server/rate-limit"
 import type { Brief, Project } from "@/types"
 
 const ctx = { params: Promise.resolve({ id: "proj-xyz" }) }
@@ -112,6 +113,7 @@ beforeEach(() => {
   vi.mocked(creditsRepo.spendCredits).mockReset()
   vi.mocked(creditsRepo.refundCredits).mockReset()
   vi.mocked(enrichLib.enrichAlternatives).mockReset()
+  __resetRateLimitStore()
 })
 
 describe("POST /api/v1/projects/[id]/alternatives/generate", () => {
@@ -222,5 +224,20 @@ describe("POST /api/v1/projects/[id]/alternatives/generate", () => {
       "generate_alternatives_refund",
       "proj-xyz"
     )
+  })
+
+  it("429s the 7th generate attempt from the same user within a minute", async () => {
+    const token = await signToken("user-rl")
+    vi.mocked(projectsRepo.getOwnedProject).mockResolvedValue(ownedProject)
+    vi.mocked(briefsRepo.getBriefPayload).mockResolvedValue(fakeBrief)
+    vi.mocked(creditsRepo.spendCredits).mockResolvedValue("ok")
+    vi.mocked(enrichLib.enrichAlternatives).mockImplementation(async (base) => [...base])
+    for (let i = 0; i < 6; i++) {
+      const res = await POST(await authedReq(token), ctx)
+      expect(res.status).not.toBe(429)
+    }
+    const blocked = await POST(await authedReq(token), ctx)
+    expect(blocked.status).toBe(429)
+    await Promise.all(afterJobs)
   })
 })

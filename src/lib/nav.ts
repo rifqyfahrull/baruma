@@ -7,6 +7,7 @@ import {
   Download,
   FileText,
   FolderKanban,
+  HelpCircle,
   LayoutDashboard,
   LayoutGrid,
   Library,
@@ -33,7 +34,12 @@ export const APP_NAV: NavItem[] = [
   { title: "Billing", href: "/app/billing", icon: CreditCard },
 ]
 
-export const APP_NAV_SECONDARY: NavItem[] = []
+/** Rendered below the main nav in `AppSidebar` (WS-E §3) — separate list so
+ *  it can grow (Bantuan today) without competing with `APP_NAV`'s primary
+ *  workflow items for visual weight. */
+export const APP_NAV_SECONDARY: NavItem[] = [
+  { title: "Bantuan", href: "/app/help", icon: HelpCircle },
+]
 
 /**
  * Admin backoffice link (Task 8) — kept separate because it is conditionally

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useParams } from "next/navigation"
-import { Copy, FileSpreadsheet, FileText, Info, Loader2, Pencil, RotateCcw, Save, X } from "lucide-react"
+import { FileSpreadsheet, FileText, Info, Loader2, Pencil, RotateCcw, Save, X } from "lucide-react"
 import { toast } from "sonner"
 
 import { exportRabExcel, printRab } from "@/lib/rab/export-rab"
@@ -10,6 +10,7 @@ import { exportRabExcel, printRab } from "@/lib/rab/export-rab"
 import type { BOQItem, FinishingLevel } from "@/types"
 import { useBrief, useProject, useRAB, useSaveRAB, useResetRAB } from "@/lib/api/hooks"
 import { usePageView } from "@/lib/analytics"
+import { markOnboardingSeen } from "@/hooks/use-onboarding-progress"
 import { COPY } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -42,6 +43,8 @@ export default function RABPage() {
   const resetRAB = useResetRAB(projectId)
 
   usePageView("rab_opened", { project_id: projectId })
+  // Checklist onboarding dashboard (WS-E §2) — tandai langkah "Cek estimasi RAB".
+  React.useEffect(() => markOnboardingSeen("rab"), [])
 
   if (isLoading && !rab) return <RABSkeleton />
   if (!rab || !project) {
@@ -54,8 +57,6 @@ export default function RABPage() {
       </div>
     )
   }
-
-  const mock_ = (msg: string) => () => toast.info(msg)
 
   // Narrow rab for closures — already guarded above.
   const safeRab = rab
@@ -187,10 +188,6 @@ export default function RABPage() {
             Reset ke otomatis
           </Button>
         )}
-
-        <Button variant="outline" size="sm" onClick={mock_("Skenario diduplikasi (mock).")}>
-          <Copy /> Duplikat skenario
-        </Button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">

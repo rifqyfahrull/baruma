@@ -12,7 +12,11 @@ import {
   expireSubscription,
   getActiveSubscription,
   getSubscriptionByProviderRef,
+  listExpiredActiveSubscriptions,
   listSubscriptionsAdmin,
+  listSubscriptionsForProfile,
+  listSubscriptionsNeedingReminder,
+  markReminderSent,
 } from "./subscriptions"
 
 beforeAll(() => {
@@ -204,6 +208,121 @@ describe("expireOtherActiveSubscriptions", () => {
     expect((await getSubscriptionByProviderRef("inv-14"))?.status).toBe(
       "active"
     )
+  })
+})
+
+describe("listSubscriptionsForProfile (memory join)", () => {
+  it("returns only that profile's subscriptions, newest first, with plan name", async () => {
+    await createPendingSubscription({
+      profileId: "u20",
+      planId: "pro",
+      provider: "parent",
+      providerRef: "inv-20",
+    })
+    await createPendingSubscription({
+      profileId: "u20",
+      planId: "studio",
+      provider: "parent",
+      providerRef: "inv-21",
+    })
+    const rows = await listSubscriptionsForProfile("u20")
+    expect(rows.length).toBe(2)
+    expect(rows[0].providerRef).toBe("inv-21") // newest first
+    expect(rows[0].planName).toBe("Studio")
+    expect(rows.every((r) => r.profileId === "u20")).toBe(true)
+  })
+
+  it("returns an empty array for a profile with no subscriptions", async () => {
+    expect(await listSubscriptionsForProfile("u-nobody")).toEqual([])
+  })
+})
+
+describe("listExpiredActiveSubscriptions (memory)", () => {
+  it("finds an active subscription whose period has lapsed, with email + plan name", async () => {
+    await createPendingSubscription({
+      profileId: "u21",
+      planId: "pro",
+      provider: "parent",
+      providerRef: "inv-22",
+    })
+    await activateSubscription({
+      providerRef: "inv-22",
+      currentPeriodEnd: "2020-01-01T00:00:00.000Z",
+    })
+    const rows = await listExpiredActiveSubscriptions()
+    const found = rows.find((r) => r.providerRef === "inv-22")
+    expect(found).toBeTruthy()
+    expect(found?.planName).toBe("Pro")
+    expect(found?.email).toBe("u21")
+  })
+
+  it("does not include a subscription whose period is still in the future", async () => {
+    await createPendingSubscription({
+      profileId: "u22",
+      planId: "pro",
+      provider: "parent",
+      providerRef: "inv-23",
+    })
+    await activateSubscription({
+      providerRef: "inv-23",
+      currentPeriodEnd: "2099-01-01T00:00:00.000Z",
+    })
+    const rows = await listExpiredActiveSubscriptions()
+    expect(rows.find((r) => r.providerRef === "inv-23")).toBeUndefined()
+  })
+})
+
+describe("listSubscriptionsNeedingReminder + markReminderSent (memory)", () => {
+  it("finds an active subscription ending within the window with no reminder sent yet", async () => {
+    await createPendingSubscription({
+      profileId: "u23",
+      planId: "pro",
+      provider: "parent",
+      providerRef: "inv-24",
+    })
+    const soon = new Date(Date.now() + 3 * 86_400_000).toISOString()
+    await activateSubscription({ providerRef: "inv-24", currentPeriodEnd: soon })
+
+    const rows = await listSubscriptionsNeedingReminder(7)
+    const found = rows.find((r) => r.providerRef === "inv-24")
+    expect(found).toBeTruthy()
+    expect(found?.planName).toBe("Pro")
+  })
+
+  it("excludes a subscription ending beyond the window", async () => {
+    await createPendingSubscription({
+      profileId: "u24",
+      planId: "pro",
+      provider: "parent",
+      providerRef: "inv-25",
+    })
+    const farAway = new Date(Date.now() + 30 * 86_400_000).toISOString()
+    await activateSubscription({ providerRef: "inv-25", currentPeriodEnd: farAway })
+
+    const rows = await listSubscriptionsNeedingReminder(7)
+    expect(rows.find((r) => r.providerRef === "inv-25")).toBeUndefined()
+  })
+
+  it("markReminderSent stamps once, then excludes it from future listings and reports false on a repeat call", async () => {
+    await createPendingSubscription({
+      profileId: "u25",
+      planId: "pro",
+      provider: "parent",
+      providerRef: "inv-26",
+    })
+    const soon = new Date(Date.now() + 2 * 86_400_000).toISOString()
+    const sub = await activateSubscription({ providerRef: "inv-26", currentPeriodEnd: soon })
+
+    const before = await listSubscriptionsNeedingReminder(7)
+    expect(before.find((r) => r.providerRef === "inv-26")).toBeTruthy()
+
+    const first = await markReminderSent(sub!.id)
+    expect(first).toBe(true)
+    const second = await markReminderSent(sub!.id)
+    expect(second).toBe(false)
+
+    const after = await listSubscriptionsNeedingReminder(7)
+    expect(after.find((r) => r.providerRef === "inv-26")).toBeUndefined()
   })
 })
 

@@ -7,7 +7,11 @@
  */
 import { describe, it, expect, beforeAll } from "vitest"
 
-import { markPaymentEventProcessed, recordPaymentEvent } from "./payment-events"
+import {
+  listPaymentReconciliation,
+  markPaymentEventProcessed,
+  recordPaymentEvent,
+} from "./payment-events"
 
 beforeAll(() => {
   delete process.env.DATABASE_URL
@@ -147,5 +151,11 @@ describe("markPaymentEventProcessed (memory fallback)", () => {
     await expect(
       markPaymentEventProcessed("brm-evt-ghost")
     ).resolves.toBeUndefined()
+  })
+})
+
+describe("listPaymentReconciliation (memory fallback)", () => {
+  it("returns an empty array — profiles.ts has no memory-fallback join, honest empty state (like listProfiles)", async () => {
+    expect(await listPaymentReconciliation()).toEqual([])
   })
 })

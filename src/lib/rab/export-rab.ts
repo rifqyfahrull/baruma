@@ -50,6 +50,29 @@ export function rabToAoa(rab: RAB, project?: Project): (string | number)[][] {
   ]
 }
 
+/**
+ * Second worksheet ("Asumsi") — the Excel RAB used to throw away
+ * `rab.assumptions` entirely (Bagian 2.2 janji-vs-kode: "Excel RAB membuang
+ * asumsi"). Lists every assumption plus the generation date and the
+ * estimate's overall confidence, so it survives the trip to a spreadsheet
+ * the same way the print/PDF view already does.
+ */
+export function rabToAssumptionsAoa(rab: RAB): (string | number)[][] {
+  const rows: (string | number)[][] = [
+    ["Asumsi & Catatan RAB"],
+    ["Tanggal dibuat", new Date().toLocaleDateString("id-ID")],
+    ["Keyakinan estimasi", CONF[rab.summary.confidence] ?? rab.summary.confidence],
+    [],
+    ["No", "Asumsi"],
+  ]
+  if (rab.assumptions.length > 0) {
+    rab.assumptions.forEach((a, i) => rows.push([i + 1, a]))
+  } else {
+    rows.push(["-", "Tidak ada catatan asumsi khusus."])
+  }
+  return rows
+}
+
 /** Returns a real .xlsx Blob (suitable for URL.createObjectURL or tests). */
 export async function rabToXlsxBlob(rab: RAB, project?: Project): Promise<Blob> {
   const XLSX = await import("xlsx")
@@ -57,6 +80,11 @@ export async function rabToXlsxBlob(rab: RAB, project?: Project): Promise<Blob> 
   ws["!cols"] = [{ wch: 14 }, { wch: 34 }, { wch: 9 }, { wch: 8 }, { wch: 18 }, { wch: 18 }, { wch: 10 }, { wch: 30 }]
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, "RAB")
+
+  const wsAssumptions = XLSX.utils.aoa_to_sheet(rabToAssumptionsAoa(rab))
+  wsAssumptions["!cols"] = [{ wch: 6 }, { wch: 90 }]
+  XLSX.utils.book_append_sheet(wb, wsAssumptions, "Asumsi")
+
   const out = XLSX.write(wb, { type: "array", bookType: "xlsx" }) as ArrayBuffer
   return new Blob([out], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

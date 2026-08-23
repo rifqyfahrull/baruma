@@ -1,6 +1,6 @@
 /**
  * Enrich deterministic design alternatives with LLM-generated narrative
- * (name/description/keyFeatures/pros/cons). The computed,
+ * (name/description/keyFeatures/pros/cons) via NVIDIA NIM. The computed,
  * money-sensitive fields (estimatedCost, areaM2, readiness, type, score,
  * floors, risks) are NEVER touched — the LLM only improves the wording.
  * Falls back to the deterministic narrative if the LLM is unavailable/invalid.

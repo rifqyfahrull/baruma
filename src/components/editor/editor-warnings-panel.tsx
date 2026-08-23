@@ -186,6 +186,9 @@ export function EditorWarningsList({
     if (el && typeof el.scrollIntoView === "function") {
       el.scrollIntoView({ block: "center", behavior: "smooth" })
     }
+    // PRA-EXISTING (bukan dari WS-A): setState sinkron dalam effect, respons
+    // ke nonce eksternal — lihat TODOS.md P1.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHighlightId(match.id)
     const t = window.setTimeout(() => setHighlightId(null), 1800)
     return () => window.clearTimeout(t)

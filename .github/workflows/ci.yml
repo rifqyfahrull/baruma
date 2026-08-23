@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Dummy env, cukup untuk lolos `next build` TANPA menyentuh secret asli
+    # ataupun Postgres sungguhan.
+    #
+    # DATABASE_URL SENGAJA TIDAK diset: beberapa halaman marketing (mis.
+    # /pricing) statis-generate saat build lewat repo server (src/lib/server/
+    # repo/plans.ts) yang membaca DB langsung. Diverifikasi lokal: dengan
+    # DATABASE_URL kosong, repo itu jatuh ke memory-fallback dev/test (lihat
+    # src/lib/server/memory-fallback.ts) dan build lolos bersih; DIBERI nilai
+    # dummy yang tak bisa dikoneksi justru bikin build GAGAL keras (build
+    # coba connect sungguhan, dapat auth/connection error) — jadi kosong di
+    # sini lebih aman daripada dummy string.
+    #
+    # NEXT_PUBLIC_DATA_SOURCE sengaja "mock" (bukan "http" seperti produksi):
+    # env-check.ts (instrumentation.ts) hanya menegakkan "http" saat proses
+    # BENAR-BENAR boot sebagai server (register() dipanggil saat start, bukan
+    # saat `next build` — sudah diverifikasi lokal), jadi build tetap lolos.
+    env:
+      NODE_ENV: test
+      AUTH_SECRET: ci-dummy-auth-secret-at-least-32-characters-long
+      AUTH_URL: http://localhost:3000
+      AUTH_TRUST_HOST: "true"
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_DATA_SOURCE: mock
+      BARUMA_JWT_SECRET: ci-dummy-jwt-secret-at-least-32-characters-long
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --config.confirmModulesPurge=false
+
+      - name: Type-check (tsc --noEmit)
+        run: pnpm exec tsc --noEmit
+
+      - name: Lint (eslint)
+        run: pnpm run lint
+
+      - name: Unit tests (vitest)
+        run: pnpm run test
+
+      - name: Build (next build)
+        run: node node_modules/next/dist/bin/next build

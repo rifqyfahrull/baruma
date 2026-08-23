@@ -589,6 +589,11 @@ export const EXPORT_META: Record<
     whenToUse: string
     limitation: string
     proOnly: boolean
+    /** True only for IFC (G2, needs a web-ifc pipeline) — the export card
+     *  renders a disabled "Segera hadir" state instead of a Generate button
+     *  that would just throw. Not a downgrade of the marketing promise:
+     *  DXF (the other CAD format) is now real. */
+    comingSoon?: boolean
   }
 > = {
   contractor_pack: {
@@ -633,8 +638,9 @@ export const EXPORT_META: Record<
     audience: "Konsultan BIM / MEP",
     opensWith: "Revit, ArchiCAD, BIM viewer",
     whenToUse: "Saat butuh koordinasi BIM dasar.",
-    limitation: "BIM tingkat konsep, belum detail teknis.",
+    limitation: "Menyusul — pipeline BIM sedang dibangun.",
     proOnly: true,
+    comingSoon: true,
   },
   glb: {
     title: "GLB 3D",

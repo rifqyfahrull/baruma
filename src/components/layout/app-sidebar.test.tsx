@@ -87,3 +87,21 @@ describe("AppSidebar — Admin nav item (Task 8)", () => {
     expect(link.getAttribute("href")).toBe("/app/admin")
   })
 })
+
+describe("AppSidebar — nav sekunder (WS-E §3)", () => {
+  it("renders the 'Bantuan' link from APP_NAV_SECONDARY, pointing at /app/help", async () => {
+    getCurrentUser.mockResolvedValue({
+      id: "u3",
+      name: "User Biasa",
+      email: "user@example.com",
+      plan: "free",
+      creditsUsed: 0,
+      creditsTotal: 10,
+      role: "user",
+    })
+
+    renderSidebar()
+    const link = await screen.findByRole("link", { name: "Bantuan" })
+    expect(link.getAttribute("href")).toBe("/app/help")
+  })
+})

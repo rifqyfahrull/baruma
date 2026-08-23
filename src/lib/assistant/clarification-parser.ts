@@ -67,12 +67,16 @@ export function parseClarificationSteps(
     try {
       const parsed = JSON.parse(trimmedContent)
       if (parsed && typeof parsed === "object" && Array.isArray(parsed.needs_clarify) && parsed.needs_clarify.length > 0) {
-        return parsed.needs_clarify.map((item: any, idx: number) => ({
-          index: idx + 1,
-          title: item.question || `Poin ${idx + 1}`,
-          question: item.question || `Poin ${idx + 1}`,
-          options: Array.isArray(item.suggestions) ? item.suggestions : [],
-        }))
+        return parsed.needs_clarify.map((item: { question?: unknown; suggestions?: unknown }, idx: number) => {
+          const question =
+            typeof item.question === "string" && item.question.trim().length > 0
+              ? item.question
+              : `Poin ${idx + 1}`
+          const options = Array.isArray(item.suggestions)
+            ? item.suggestions.filter((s: unknown): s is string => typeof s === "string")
+            : []
+          return { index: idx + 1, title: question, question, options }
+        })
       }
     } catch {
       /* ignore */

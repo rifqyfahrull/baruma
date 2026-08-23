@@ -1,13 +1,16 @@
 "use client"
 
 import * as React from "react"
-import { Check, Clock, Loader2, Sparkles, Zap } from "lucide-react"
+import { Check, Clock, Download, Loader2, Sparkles, Zap } from "lucide-react"
 import { toast } from "sonner"
 
 import { useCurrentUser, usePlans } from "@/lib/api/hooks"
+import { useMyTransactions } from "@/lib/api/billing-hooks"
+import { buildReceiptPdf, receiptFilename } from "@/lib/billing/receipt-pdf"
 import { formatPlanPeriod, formatPlanPrice, planCtaLabel } from "@/lib/pricing"
 import { track } from "@/lib/analytics"
 import { cn } from "@/lib/utils"
+import type { TransactionRow } from "@/types"
 import { PageHeader } from "@/components/shared/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -15,6 +18,14 @@ import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 /** Show the renewal reminder once the active period is this many days out (or less). */
 const RENEWAL_REMINDER_DAYS = 7
@@ -213,7 +224,131 @@ export default function BillingPage() {
         Pembayaran diproses via Mayar. Langganan aktif 1 periode, perpanjang
         manual saat mendekati atau setelah berakhir.
       </p>
+
+      <TransactionsHistory />
     </div>
+  )
+}
+
+const TRANSACTION_STATUS_VARIANT: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
+  active: "default",
+  pending: "secondary",
+  past_due: "destructive",
+  canceled: "outline",
+  incomplete: "outline",
+  expired: "destructive",
+}
+
+function transactionDate(iso: string | null): string {
+  if (!iso) return "-"
+  return new Date(iso).toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  })
+}
+
+/** Baris yang dianggap "transaksi berbayar selesai" — layak diunduh kuitansinya. */
+function isDownloadableReceipt(row: TransactionRow): boolean {
+  return row.priceIdr > 0 && (row.status === "active" || row.status === "expired")
+}
+
+function TransactionsHistory() {
+  const { data: transactions, isLoading } = useMyTransactions()
+  const [downloadingId, setDownloadingId] = React.useState<string | null>(null)
+
+  async function downloadReceipt(row: TransactionRow) {
+    setDownloadingId(row.id)
+    try {
+      const blob = await buildReceiptPdf(row)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = receiptFilename(row)
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast.error("Gagal membuat kuitansi.")
+    } finally {
+      setDownloadingId(null)
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <h3 className="font-semibold">Riwayat transaksi</h3>
+        <p className="text-sm text-muted-foreground">
+          Semua langganan yang pernah Anda buat, terbaru dulu.
+        </p>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Plan</TableHead>
+              <TableHead>Nominal</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Dibuat</TableHead>
+              <TableHead>Berakhir</TableHead>
+              <TableHead className="text-right">Kuitansi</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              Array.from({ length: 2 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell colSpan={6}>
+                    <Skeleton className="h-6 w-full" />
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : !transactions || transactions.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  Belum ada transaksi.
+                </TableCell>
+              </TableRow>
+            ) : (
+              transactions.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>{row.planName}</TableCell>
+                  <TableCell>{formatPlanPrice(row.priceIdr)}</TableCell>
+                  <TableCell>
+                    <Badge variant={TRANSACTION_STATUS_VARIANT[row.status] ?? "outline"}>
+                      {row.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{transactionDate(row.createdAt)}</TableCell>
+                  <TableCell>{transactionDate(row.currentPeriodEnd)}</TableCell>
+                  <TableCell className="text-right">
+                    {isDownloadableReceipt(row) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={downloadingId === row.id}
+                        onClick={() => downloadReceipt(row)}
+                        aria-label={`Unduh kuitansi ${row.planName}`}
+                      >
+                        {downloadingId === row.id ? (
+                          <Loader2 className="animate-spin" />
+                        ) : (
+                          <Download />
+                        )}
+                        Unduh
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   )
 }
 

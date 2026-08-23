@@ -60,7 +60,10 @@ export const DEFAULT_PLANS: PlanRow[] = [
     limits: ["Tanpa watermark"],
     entitlements: {
       creditsPerPeriod: 100,
-      maxProjects: 10,
+      // null = tanpa batas — menepati janji copy "Project tanpa batas" di
+      // atas (sebelumnya diam-diam 10, lihat docs/analisa-production-
+      // ready-2026-08.md Bagian 1).
+      maxProjects: null,
       exportPdf: true,
       glbUpload: true,
       aiRenderHd: true,

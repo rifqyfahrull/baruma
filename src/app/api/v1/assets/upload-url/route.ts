@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/server/auth-server"
 import { requirePlanFeature } from "@/lib/server/entitlements"
 import { ok, err, handleError } from "@/lib/server/response"
+import { rateLimitGuard } from "@/lib/server/rate-limit"
 import { storageEnabled, assetKey, assetPublicUrl } from "@/lib/server/storage"
 import { z } from "zod"
 
@@ -14,6 +15,17 @@ const bodySchema = z.object({
 export async function POST(request: Request): Promise<Response> {
   try {
     const { userId } = await requireUser(request)
+
+    // 20/menit/user — cukup untuk upload beberapa aset beruntun, ketat
+    // terhadap penyalahgunaan endpoint yang men-generate URL upload ke storage.
+    const limited = rateLimitGuard(request, {
+      scope: "assets-upload-url",
+      limit: 20,
+      windowMs: 60_000,
+      keyExtra: userId,
+    })
+    if (limited) return limited
+
     // Feature gate — checked before the storage-config check: a 403 telling a
     // free-plan user this feature is locked is clearer than a 503 about
     // storage config they have no reason to know about.

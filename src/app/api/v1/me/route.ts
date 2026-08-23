@@ -1,16 +1,12 @@
 import { requireUser } from "@/lib/server/auth-server"
-import { grantPeriodCredits } from "@/lib/server/repo/credits"
 import {
   getProfileById,
   setProfileName,
-  setProfilePlan,
   type ProfileRow,
 } from "@/lib/server/repo/profiles"
 import { getPlan } from "@/lib/server/repo/plans"
-import {
-  expireSubscription,
-  getActiveSubscription,
-} from "@/lib/server/repo/subscriptions"
+import { getActiveSubscription } from "@/lib/server/repo/subscriptions"
+import { expireIfLapsed } from "@/lib/server/billing-lifecycle"
 import { updateProfileSchema } from "@/lib/schemas/profile"
 import { ok, err, handleError } from "@/lib/server/response"
 import type { User } from "@/types"
@@ -46,34 +42,25 @@ export async function GET(request: Request): Promise<Response> {
 
     let activeSubscription = await getActiveSubscription(profile.id)
 
-    // Lazy expiry (manual-renew billing, no cron/email in v1): a subscription
-    // whose period has lapsed is downgraded to free right here, on read — see
-    // docs/superpowers/specs/2026-07-05-mayar-billing-admin-design.md
-    // §"Expiry lazy". Runs before `plan`/entitlements are computed below so
-    // the response reflects the just-applied downgrade instead of stale data.
+    // Lazy expiry (belt-and-suspenders alongside the daily maintenance cron
+    // — POST /api/internal/maintenance — which sweeps lapsed subscriptions
+    // proactively): a subscription whose period has lapsed is downgraded to
+    // free right here too, on read, in case the cron hasn't caught it yet.
+    // Shared logic lives in src/lib/server/billing-lifecycle.ts's
+    // `expireIfLapsed` (used by both this route and the cron) so the two
+    // paths can never drift on what "downgrade a lapsed subscription" means.
+    // Runs before `plan`/entitlements are computed below so the response
+    // reflects the just-applied downgrade instead of stale data.
     if (
       activeSubscription?.currentPeriodEnd &&
       new Date(activeSubscription.currentPeriodEnd) < new Date()
     ) {
-      // Atomic guard (see subscriptions.ts): only the request that actually
-      // flips active → expired runs the downgrade side effects. Two
-      // concurrent requests for the same lapsed subscription both reach
-      // here, but only one gets `true` back — the other must not re-grant
-      // free credits (grantPeriodCredits sets absolute totals so the final
-      // numbers are harmless either way, but re-running it would duplicate
-      // the credits_ledger "downgrade" audit row).
-      const didExpire = await expireSubscription(activeSubscription.id)
+      // `activeSubscription` is known-lapsed regardless of which caller
+      // (this request, a concurrent one, or the cron) ends up being the one
+      // that actually flips the row — see expireIfLapsed's doc comment for
+      // the atomic idempotency guard.
       activeSubscription = null
-      if (didExpire) {
-        await setProfilePlan(userId, "free")
-        const freePlan = await getPlan("free")
-        if (freePlan) {
-          await grantPeriodCredits(
-            userId,
-            freePlan.entitlements.creditsPerPeriod,
-            "downgrade"
-          )
-        }
+      if (await expireIfLapsed(userId)) {
         profile = await getProfileById(userId)
         if (!profile) return err(404, "User not found")
       }

@@ -176,7 +176,7 @@ export function tracePolygon(
   const remaining = [...edges];
 
   // Start with the first edge
-  let current = remaining.shift()!;
+  const current = remaining.shift()!;
   pts.push({ x: current.x1, y: current.y1 });
   pts.push({ x: current.x2, y: current.y2 });
 

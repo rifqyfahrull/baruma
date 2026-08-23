@@ -29,6 +29,7 @@ import * as briefsRepo from "@/lib/server/repo/briefs"
 import * as layoutsRepo from "@/lib/server/repo/layouts"
 import { signToken } from "@/lib/server/auth-server"
 import { makeLayout, sampleBrief } from "@/test-utils/fixtures"
+import { __resetRateLimitStore } from "@/lib/server/rate-limit"
 
 const ctx = { params: Promise.resolve({ id: "proj-xyz" }) }
 
@@ -285,5 +286,30 @@ describe("PUT /api/v1/projects/[id]/layout", () => {
 
       expect(res.status).toBe(409)
     })
+  })
+
+  it("429s the 61st autosave from the same user within a minute", async () => {
+    __resetRateLimitStore()
+    const token = await signToken("user-rl-layout")
+    const layout = makeLayout()
+    vi.mocked(projectsRepo.getOwnedProject).mockResolvedValue(ownedProject)
+    vi.mocked(layoutsRepo.updateLayoutAtRevision).mockResolvedValue({ layout, revision: 3 })
+
+    const send = () =>
+      PUT(
+        new Request("http://localhost/api/v1/projects/proj-xyz/layout", {
+          method: "PUT",
+          headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+          body: JSON.stringify({ layout, expectedRevision: 2 }),
+        }),
+        ctx
+      )
+
+    for (let i = 0; i < 60; i++) {
+      const res = await send()
+      expect(res.status).not.toBe(429)
+    }
+    const blocked = await send()
+    expect(blocked.status).toBe(429)
   })
 })

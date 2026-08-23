@@ -57,7 +57,7 @@ describe("computeAllBuildingPerimeters / totalBuildingPerimeter", () => {
         room({ id: "A", type: "ruang_tamu", x: 0, y: 0, width: 4, depth: 3, floorId: "floor-1" }),
         room({ id: "B", type: "kamar_tidur", x: 0, y: 0, width: 3, depth: 3, floorId: "floor-2" }),
       ],
-    } as any;
+    } as unknown as Parameters<typeof computeAllBuildingPerimeters>[0];
     const perimeters = computeAllBuildingPerimeters(layout);
     expect(perimeters.get("floor-1")?.perimeter).toBe(14);
     expect(perimeters.get("floor-2")?.perimeter).toBe(12);

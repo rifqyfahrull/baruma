@@ -13,6 +13,7 @@ export const mockSource: DataSource = {
   listProjects: mock.listProjects,
   getProject: mock.getProject,
   createProject: mock.createProject,
+  createProjectFromTemplate: mock.createProjectFromTemplate,
   deleteProject: mock.deleteProject,
   updateProject: mock.updateProject,
   getProjectCapabilities: mock.getProjectCapabilities,
@@ -39,6 +40,11 @@ export const mockSource: DataSource = {
   toggleCommentResolved: mock.toggleCommentResolved,
   setChecklistStatus: mock.setChecklistStatus,
   toggleWarningResolved: mock.toggleWarningResolved,
+
+  // share links
+  getShareLink: mock.getShareLink,
+  createShareLink: mock.createShareLink,
+  revokeShareLink: mock.revokeShareLink,
 
   // assets
   requestUploadUrl: mock.requestUploadUrl,

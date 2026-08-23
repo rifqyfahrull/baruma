@@ -92,6 +92,18 @@ export function useCreateProject() {
   })
 }
 
+/** Clone a curated template into a brand-new owned project — the "Gunakan
+ *  template ini" CTA on the public gallery/detail pages and dashboard cards. */
+export function useCreateProjectFromTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (slug: string) => data.createProjectFromTemplate(slug),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.projects })
+    },
+  })
+}
+
 export function useDuplicateProject() {
   const qc = useQueryClient()
   return useMutation({
@@ -151,6 +163,7 @@ export function useUpdateBrief(projectId: string) {
 }
 
 export function useBriefAssistant(projectId: string) {
+  const qc = useQueryClient()
   return useMutation({
     mutationFn: ({
       question,
@@ -159,6 +172,9 @@ export function useBriefAssistant(projectId: string) {
       question: string
       history: BriefChatTurn[]
     }) => data.askBriefAssistant(projectId, question, history),
+    // Kredit terpakai per pertanyaan — saldo di sidebar (useCurrentUser,
+    // staleTime 5 menit) tak boleh basi setelah aksi ber-kredit (WS-D §5).
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.user }),
   })
 }
 
@@ -224,6 +240,9 @@ export function useSendProjectAgentMessage(projectId: string) {
     onSettled: () => {
       setProgressMessage(null)
       qc.invalidateQueries({ queryKey: queryKeys.assistant(projectId) })
+      // Setiap pesan ke AI Agent memakai 1 kredit — refresh saldo sidebar
+      // (WS-D §5, keluhan "saldo sidebar bisa basi 5 menit").
+      qc.invalidateQueries({ queryKey: queryKeys.user })
     },
   })
 }
@@ -255,6 +274,8 @@ export function useGenerateAlternatives(projectId: string) {
       qc.setQueryData(queryKeys.alternatives(projectId), alts)
       qc.invalidateQueries({ queryKey: queryKeys.project(projectId) })
       qc.invalidateQueries({ queryKey: queryKeys.projects })
+      // Regenerate memakai 1 kredit — refresh saldo sidebar (WS-D §5).
+      qc.invalidateQueries({ queryKey: queryKeys.user })
       // The backend enriches the narrative via LLM in the background (~40s).
       // Refetch a few times to pick up the AI-enriched copy without a reload.
       for (const ms of [15_000, 40_000, 70_000, 105_000]) {
@@ -399,6 +420,34 @@ export function useToggleWarning(projectId: string) {
     mutationFn: (warningId: string) =>
       data.toggleWarningResolved(projectId, warningId),
     onSuccess: (review) => qc.setQueryData(queryKeys.review(projectId), review),
+  })
+}
+
+/* ----- share links ----- */
+
+/** Current active public share link for a project, if any (`null` = none created yet). */
+export function useShareLink(projectId: string, opts?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.shareLink(projectId),
+    queryFn: () => data.getShareLink(projectId),
+    enabled: !!projectId && (opts?.enabled ?? true),
+  })
+}
+
+export function useCreateShareLink(projectId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => data.createShareLink(projectId),
+    onSuccess: (result) => qc.setQueryData(queryKeys.shareLink(projectId), result),
+  })
+}
+
+/** "Nonaktifkan tautan". */
+export function useRevokeShareLink(projectId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => data.revokeShareLink(projectId),
+    onSuccess: () => qc.setQueryData(queryKeys.shareLink(projectId), { url: null }),
   })
 }
 

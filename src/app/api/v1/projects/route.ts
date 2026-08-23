@@ -137,7 +137,8 @@ export async function POST(request: Request): Promise<Response> {
     // §Enforcement). Checked before any create side effect.
     const entitlements = await getEntitlements(userId)
     const existing = await listProjectsByOwner(userId)
-    if (existing.length >= entitlements.maxProjects) {
+    // maxProjects null = tanpa batas (plan Pro) — lewati gate sepenuhnya.
+    if (entitlements.maxProjects != null && existing.length >= entitlements.maxProjects) {
       return errCode(
         403,
         "plan_limit_projects",

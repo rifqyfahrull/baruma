@@ -1,11 +1,7 @@
 /**
- * Generates a RAB/BOQ from a layout (PRD §10.8). Line items are REAL BOQ:
- * quantities come from the layout geometry (walls, structure grid, roof, kusen,
- * electrical, plumbing/SNI sanitation, pool, stairs) × unit prices. Unit prices
- * are DKI Jakarta 2026 baselines scaled to the project's province by the BPS
- * IKK 2024 factor (see lib/rab/regional-pricing.ts), with an explicit
- * uncertainty band. A few empty-project fallback lines remain ratio-based only
- * until the user models points.
+ * Generates a believable RAB/BOQ from a layout (PRD §10.8). The total budget
+ * (built area × finishing rate) is allocated across categories by typical
+ * residential shares, then split into line items so the BOQ sums to the summary.
  */
 import type {
   Brief,
@@ -19,7 +15,6 @@ import type {
   RAB,
 } from "@/types"
 import { FINISHING_LEVELS, ROOF_MATERIALS, ROOF_PRICES, ROOF_TYPES } from "@/lib/constants"
-import { PRICE_BOOK_META, isPriceBookStale, resolveRegion } from "@/lib/rab/regional-pricing"
 import { effectiveRoof } from "@/lib/drawings/elevation"
 import {
   isUnpricedFurniture,
@@ -58,14 +53,8 @@ import { columnLoad } from "@/lib/structural/takedown"
 import { sizeColumn, sizeBeam } from "@/lib/structural/sizing"
 import { sizeFooting } from "@/lib/structural/foundation"
 import { computeExteriorWallArea, computeInternalWallArea } from "@/lib/exterior/quantities"
-import { SOIL_DEFAULT_KPA, floorWu } from "@/lib/structural/loads"
-import {
-  REBAR_KG_PER_M,
-  rebarKg,
-  columnLongitudinalAs,
-  beamBottomAs,
-  barsForArea,
-} from "@/lib/structural/rebar"
+import { isOutdoorRoom } from "@/lib/geometry/connectivity"
+import { SOIL_DEFAULT_KPA } from "@/lib/structural/loads"
 import { exteriorElementQuantities } from "@/lib/exterior/quantities"
 import { exteriorRateFor } from "@/lib/exterior/rates"
 import {
@@ -94,34 +83,9 @@ type Spec = {
   sourceElementIds?: string[]
 }
 
-/** National finishing unit prices (DKI Jakarta baseline 2026), scaled per
- *  region by `regionFactor` in `toItem` like every other BOQ line. */
-const FLOOR_FINISH_IDR_M2: Record<FinishingLevel, number> = {
-  standar: 250_000,
-  menengah: 450_000,
-  premium: 850_000,
-}
-const CEILING_IDR_M2: Record<FinishingLevel, number> = {
-  standar: 180_000,
-  menengah: 250_000,
-  premium: 400_000,
-}
-const INTERIOR_PAINT_IDR_M2 = 35_000
-
-// Struktur beton TERURAI per komponen AHSP (baseline DKI 2026, diskalakan region
-// di toItem). Memecah "beton terpasang" lama menjadi beton-polos + pembesian +
-// bekisting agar bisa dipakai kontraktor untuk BOQ nyata.
-const BETON_POLOS_IDR_M3 = 1_250_000 // K250–300: cor + upah (tanpa besi & bekisting)
-const PEMBESIAN_IDR_KG = 18_500 // besi tulangan + bendrat + fabrikasi + pasang
-const BEKISTING_IDR_M2 = 185_000 // multiplek + rangka, pasang + bongkar (2× pakai)
-// Rasio pembesian (kg besi per m³ beton) — tipikal rumah tinggal 2–3 lantai.
-// Berat besi tulangan per meter & takeoff batang: lihat structural/rebar.ts.
-
-function toItem(spec: Spec, i: number, regionFactor: number): BOQItem {
+function toItem(spec: Spec, i: number): BOQItem {
   const volume = round1(spec.volume) || 1
-  // Every baseline (DKI Jakarta) unit price is scaled to the project's region
-  // by the BPS-IKK factor — the single, auditable regional adjustment.
-  const total = round1k(spec.total * regionFactor)
+  const total = round1k(spec.total)
   return {
     id: `${spec.category}-${i}`,
     category: spec.category,
@@ -145,13 +109,14 @@ export function generateRAB(
   const finishing = finishingOverride ?? brief.building.finishingLevel
   const perM2 = FINISHING_LEVELS[finishing].perM2IDR
 
-  // Per-region unit-price adjustment (BPS IKK 2024). All baseline prices below
-  // are DKI Jakarta 2026; `region.factor` scales them to the project's
-  // province in `toItem`, and `region.uncertaintyPct` drives the low/high band.
-  const region = resolveRegion(project.city, project.province)
-
+  // Hanya ruang TERTUTUP (bukan taman/kolam/carport/balkon/rooftop_lounge/
+  // void — lihat isOutdoorRoom) yang dihitung sebagai "luas bangunan": itulah
+  // yang benar-benar punya slab/plafon/lantai/cat, sehingga jadi basis biaya
+  // finishing (`base` di bawah). Sebelum ini SEMUA ruang (termasuk taman &
+  // kolam) ikut menaikkan builtArea — slab & finishing dihitung DI BAWAH
+  // taman, koreksi akurasi paling murah-berdampak (WS-D §4a).
   const builtArea = round1(
-    layout.rooms.reduce((sum, r) => sum + r.areaM2, 0)
+    layout.rooms.filter((r) => !isOutdoorRoom(r)).reduce((sum, r) => sum + r.areaM2, 0)
   ) || project.site.areaM2 * project.floors
 
   const floors = project.floors
@@ -422,155 +387,44 @@ export function generateRAB(
   // Plat lantai: built floor area × 12 cm slab thickness m³.
   const slabVol = round1(builtArea * 0.12)
 
-  // Pembesian — TAKEOFF batang (BBTB indikatif): n × Ø × panjang + sengkang/jaring,
-  // dihitung dari geometri elemen, bukan rasio kg/m³ selimut.
-  // Kolom: n longitudinal D16 dari As aksial (Pu), + sengkang D8-150.
-  const colLenM = STOREY_HEIGHT_M * floors
-  const colAs = columnLongitudinalAs(load.Pu, column.side)
-  const colLongN = barsForArea(colAs, 16, 4)
-  const colTieLenM = 2 * (2 * (column.side - 50) / 1000)
-  const columnRebarKg = round1(
-    columnCount * (rebarKg(16, colLongN * colLenM) + rebarKg(8, colTieLenM * (colLenM / 0.15)))
-  )
-  const columnSchedule = `${colLongN}D16 (As≈${Math.round(colAs)}mm² dari Pu ${load.Pu}kN) + sengkang D8-150`
-  const columnFormM2 = round1(4 * (column.side / 1000) * STOREY_HEIGHT_M * columnCount * floors)
-  // Balok: n D16 bawah + top dari As lentur (Mu = w·L²/10), sengkang D8-150.
-  const beamLineLoad = floorWu() * grid.spanY
-  const beamMu = round1((beamLineLoad * grid.spanX * grid.spanX) / 10)
-  const beamAs = beamBottomAs(beamMu, beam.b, beam.h)
-  const beamBottomN = barsForArea(beamAs, 16, 2)
-  const beamTopN = barsForArea(0.4 * beamAs, 16, 2)
-  const beamTieLenM = 2 * ((beam.b - 50) / 1000 + (beam.h - 50) / 1000)
-  const sloofTieLenM = 2 * ((150 - 50) / 1000 + (200 - 50) / 1000)
-  const beamRebarKg = round1(
-    rebarKg(16, (beamBottomN + beamTopN) * totalBeamLenM) +
-      rebarKg(8, beamTieLenM * (totalBeamLenM / 0.15)) +
-      rebarKg(12, 4 * sloofLenM) +
-      rebarKg(8, sloofTieLenM * (sloofLenM / 0.2))
-  )
-  const beamSchedule = `balok ${beamBottomN}D16 bawah + ${beamTopN}D16 atas (Mu≈${beamMu}kNm) sengkang D8-150; sloof 4D12`
-  const beamFormM2 = round1(((beam.b + 2 * beam.h) / 1000) * totalBeamLenM + 0.55 * sloofLenM)
-  // Pondasi & plat: jaring baja tulangan minimum (geometri/min-steel, bukan demand).
-  const footBarsPerWay = footing.side / 0.15 + 1
-  const footingRebarKg = round1(columnCount * rebarKg(13, 2 * footBarsPerWay * footing.side))
-  const footingSchedule = "jaring D13-150 dua arah (min-steel)"
-  const footingFormM2 = round1(4 * footing.side * footing.thickness * columnCount)
-  // Plat: jaring D10-150 dua arah (≈ 8.23 kg/m²).
-  const slabRebarKg = round1(builtArea * ((2 * REBAR_KG_PER_M[10]) / 0.15))
-  const slabSchedule = "jaring D10-150 dua arah (min-steel)"
-  const slabFormM2 = round1(builtArea)
-
   const specs: Spec[] = [
     ...wallItems,
-    // Struktur — volume beton nyata (SP6), TERURAI per komponen AHSP:
-    // beton-polos (m³) + pembesian (kg) + bekisting (m²) untuk tiap elemen.
+    // Struktur — real concrete volumes (SP6). Unit m³, prices patoked per m³.
     {
       category: "struktur",
-      item: "Pondasi telapak — beton",
+      item: "Pondasi telapak",
       volume: footingVol,
       unit: "m³",
-      total: footingVol * BETON_POLOS_IDR_M3,
+      total: footingVol * 3_500_000,
       confidence: "medium",
-      notes: `${columnCount} telapak ${footing.side}×${footing.side}×${footing.thickness} m dari σ ${sigmaKPa} kPa (Ps ${load.Ps} kN).${footing.deepNote ? ` ${footing.deepNote}.` : ""} Beton K-250 tanpa besi/bekisting.`,
+      notes: `${columnCount} telapak ${footing.side}×${footing.side}×${footing.thickness} m dari σ ${sigmaKPa} kPa (Ps ${load.Ps} kN).${footing.deepNote ? ` ${footing.deepNote}.` : ""}`,
     },
     {
       category: "struktur",
-      item: "Pondasi telapak — pembesian",
-      volume: footingRebarKg,
-      unit: "kg",
-      total: footingRebarKg * PEMBESIAN_IDR_KG,
-      confidence: "low",
-      notes: `${footingSchedule}, ${columnCount} telapak. Takeoff batang — perlu konfirmasi gambar penulangan (BBTB).`,
-    },
-    {
-      category: "struktur",
-      item: "Pondasi telapak — bekisting",
-      volume: footingFormM2,
-      unit: "m²",
-      total: footingFormM2 * BEKISTING_IDR_M2,
-      confidence: "low",
-      notes: `Sisi telapak ${columnCount} titik.`,
-    },
-    {
-      category: "struktur",
-      item: "Kolom — beton",
+      item: "Kolom beton",
       volume: columnVol,
       unit: "m³",
-      total: columnVol * BETON_POLOS_IDR_M3,
+      total: columnVol * 4_500_000,
       confidence: "medium",
-      notes: `${columnCount} kolom ${column.side}×${column.side} mm × ${floors} lantai (Pu ${load.Pu} kN). Beton K-300.`,
+      notes: `${columnCount} kolom ${column.side}×${column.side} mm × ${floors} lantai (Pu ${load.Pu} kN).`,
     },
     {
       category: "struktur",
-      item: "Kolom — pembesian",
-      volume: columnRebarKg,
-      unit: "kg",
-      total: columnRebarKg * PEMBESIAN_IDR_KG,
-      confidence: "low",
-      notes: `${columnSchedule}, ${columnCount} kolom × ${floors} lantai.`,
-    },
-    {
-      category: "struktur",
-      item: "Kolom — bekisting",
-      volume: columnFormM2,
-      unit: "m²",
-      total: columnFormM2 * BEKISTING_IDR_M2,
-      confidence: "low",
-      notes: `Keliling kolom × tinggi × ${floors} lantai.`,
-    },
-    {
-      category: "struktur",
-      item: "Balok & sloof — beton",
+      item: "Balok & sloof",
       volume: beamVol,
       unit: "m³",
-      total: beamVol * BETON_POLOS_IDR_M3,
+      total: beamVol * 4_500_000,
       confidence: "medium",
-      notes: `Balok ${beam.b}×${beam.h} mm + sloof 150×200 mm, ~${round1(totalBeamLenM)} m grid. Beton K-300.`,
+      notes: `Balok ${beam.b}×${beam.h} mm + sloof 150×200 mm, ~${round1(totalBeamLenM)} m grid.`,
     },
     {
       category: "struktur",
-      item: "Balok & sloof — pembesian",
-      volume: beamRebarKg,
-      unit: "kg",
-      total: beamRebarKg * PEMBESIAN_IDR_KG,
-      confidence: "low",
-      notes: `${beamSchedule}.`,
-    },
-    {
-      category: "struktur",
-      item: "Balok & sloof — bekisting",
-      volume: beamFormM2,
-      unit: "m²",
-      total: beamFormM2 * BEKISTING_IDR_M2,
-      confidence: "low",
-      notes: `Bidang bawah + 2 sisi balok & sloof sepanjang grid.`,
-    },
-    {
-      category: "struktur",
-      item: "Plat lantai — beton",
+      item: "Plat lantai",
       volume: slabVol,
       unit: "m³",
-      total: slabVol * BETON_POLOS_IDR_M3,
+      total: slabVol * 3_800_000,
       confidence: "medium",
-      notes: `Plat beton t=12 cm seluas ${builtArea} m² lantai. K-250.`,
-    },
-    {
-      category: "struktur",
-      item: "Plat lantai — pembesian",
-      volume: slabRebarKg,
-      unit: "kg",
-      total: slabRebarKg * PEMBESIAN_IDR_KG,
-      confidence: "low",
-      notes: `${slabSchedule}, luas ${builtArea} m².`,
-    },
-    {
-      category: "struktur",
-      item: "Plat lantai — bekisting",
-      volume: slabFormM2,
-      unit: "m²",
-      total: slabFormM2 * BEKISTING_IDR_M2,
-      confidence: "low",
-      notes: `Bekisting bawah plat = luas lantai.`,
+      notes: `Plat beton t=12 cm seluas ${builtArea} m² lantai.`,
     },
     // Arsitektur ~22% — dinding bata/plester kini dari `wallItems` (geometri
     // riil: perimeter luar + partisi dalam), bukan builtArea × multiplier.
@@ -604,35 +458,31 @@ export function generateRAB(
           ]
         })()
       : []),
-    // Finishing — quantity × explicit national unit price (per m²), scaled by
-    // region in toItem. Replaces the old ratio allocation (base × 0.28 × share)
-    // so each finishing line is a real BOQ item with a defensible unit price.
+    // Finishing ~28%
     {
       category: "finishing",
       item: "Lantai (keramik/granit)",
       volume: builtArea,
       unit: "m²",
-      total: builtArea * FLOOR_FINISH_IDR_M2[finishing],
+      total: base * 0.28 * 0.4,
       confidence: "medium",
-      notes: `Level ${FINISHING_LEVELS[finishing].label.toLowerCase()} — material + pasang ~Rp${(FLOOR_FINISH_IDR_M2[finishing] / 1000).toLocaleString("id-ID")}k/m².`,
+      notes: `Level ${FINISHING_LEVELS[finishing].label.toLowerCase()}.`,
     },
     {
       category: "finishing",
       item: "Pengecatan",
       volume: round1(builtArea * 2.6),
       unit: "m²",
-      total: round1(builtArea * 2.6) * INTERIOR_PAINT_IDR_M2,
+      total: base * 0.28 * 0.3,
       confidence: "medium",
-      notes: `Luas cat ≈ 2,6× luas lantai (dinding + plafon), ~Rp${(INTERIOR_PAINT_IDR_M2 / 1000).toLocaleString("id-ID")}k/m².`,
     },
     {
       category: "finishing",
       item: "Plafon",
       volume: builtArea,
       unit: "m²",
-      total: builtArea * CEILING_IDR_M2[finishing],
+      total: base * 0.28 * 0.3,
       confidence: "medium",
-      notes: `Gypsum/GRC + rangka, ~Rp${(CEILING_IDR_M2[finishing] / 1000).toLocaleString("id-ID")}k/m².`,
     },
     // Plumbing ~8% (core water lines) + land-level sanitation (SNI sizing).
     {
@@ -1086,29 +936,28 @@ export function generateRAB(
     }
   }
 
-  const items = specs.map((spec, i) => toItem(spec, i, region.factor))
+  const items = specs.map(toItem)
   const mid = items.reduce((s, it) => s + it.totalIDR, 0)
 
-  const unc = region.uncertaintyPct
   return {
     projectId: project.id,
     versionId: project.currentVersionId ?? `ver-${project.id}`,
     areaM2: builtArea,
     summary: {
-      lowIDR: round1k(mid * (1 - unc)),
+      lowIDR: round1k(mid * 0.88),
       midIDR: round1k(mid),
-      highIDR: round1k(mid * (1 + unc)),
+      highIDR: round1k(mid * 1.15),
       perM2IDR: round1k(mid / builtArea),
-      confidence: poolArea > 0 || floors >= 3 ? "low" : region.confidence,
+      confidence: poolArea > 0 || floors >= 3 ? "low" : "medium",
     },
     items,
     assumptions: [
-      `Buku harga v${PRICE_BOOK_META.version} — berlaku ${PRICE_BOOK_META.effectiveDate}. Baseline ${PRICE_BOOK_META.baselineRegion}: ${PRICE_BOOK_META.standard}; penyesuaian wilayah: ${PRICE_BOOK_META.regionalIndex}.`,
-      ...(isPriceBookStale()
-        ? [`⚠ Buku harga sudah melewati jadwal tinjau (${PRICE_BOOK_META.nextReviewDate}) — kalibrasi ulang terhadap AHSP/HSPK terbaru sebelum dipakai untuk kontrak.`]
-        : []),
-      region.source,
-      `Estimasi "mid" dengan margin ketidakpastian ±${Math.round(unc * 100)}% (rentang low–high).${region.matchLevel === "province" ? " Wilayah dikenali di tingkat provinsi — harga kota spesifik bisa berbeda." : region.matchLevel === "none" ? " Wilayah tidak dikenali — verifikasi harga lokal." : ""}`,
+      // Sebelumnya menyiratkan harga sudah spesifik per-provinsi ("mengacu
+      // rata-rata Jawa Barat 2026") padahal tak ada satu pun harga satuan
+      // regional di kode — semua unit price di modul ini adalah angka
+      // rata-rata nasional flat. G2: tabel harga regional nyata
+      // (`CostingPolicy.rateId` di types sudah menyiapkan slot-nya).
+      "Harga satuan estimasi rata-rata nasional 2026 — sesuaikan dengan harga daerahmu.",
       `Level finishing: ${FINISHING_LEVELS[finishing].label}.`,
       "Belum termasuk perizinan (PBG), pajak, dan biaya tak terduga (~10%).",
       "Estimasi awal untuk diskusi — harga final perlu diverifikasi kontraktor lokal.",

@@ -33,6 +33,7 @@ vi.mock("@/lib/server/repo/subscriptions", () => ({
 }))
 
 import { POST } from "./route"
+import { __resetRateLimitStore } from "@/lib/server/rate-limit"
 import { requireUser } from "@/lib/server/auth-server"
 import { getBillingProvider } from "@/lib/billing/providers"
 import { getPlan } from "@/lib/server/repo/plans"
@@ -105,9 +106,27 @@ const ORIGINAL_ENV = Object.fromEntries(
 describe("POST /api/checkout", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Same "user-checkout-test" userId is reused across every `it()` below —
+    // without resetting the rate-limit store (scope "checkout", keyed by
+    // userId), the 6th test onward would 429 instead of exercising its
+    // actual assertion.
+    __resetRateLimitStore()
     process.env.PARENT_BILLING_URL = "https://tampil.dev"
     process.env.PARENT_BILLING_SECRET = "test-secret"
     process.env.NEXT_PUBLIC_APP_URL = "https://app.test"
+  })
+
+  it("429s the 6th checkout attempt within a minute for the same user", async () => {
+    vi.mocked(requireUser).mockResolvedValue({
+      userId: "user-checkout-test",
+    } as Awaited<ReturnType<typeof requireUser>>)
+    vi.mocked(getPlan).mockResolvedValue(fakePlan())
+    for (let i = 0; i < 5; i++) {
+      const res = await POST(jsonRequest({ planId: "pro" }))
+      expect(res.status).not.toBe(429)
+    }
+    const blocked = await POST(jsonRequest({ planId: "pro" }))
+    expect(blocked.status).toBe(429)
   })
 
   afterAll(() => {

@@ -12,7 +12,8 @@ import {
 import { refundCreditsOnce, spendCreditsOnce } from "@/lib/server/repo/credits"
 import { err, errCode, handleError, ok } from "@/lib/server/response"
 import { rateLimitGuard } from "@/lib/server/rate-limit"
-import { askAssistant, chatJSON, llmEnabled } from "@/lib/server/llm"
+import { chatJSON, llmEnabled } from "@/lib/server/llm"
+import { askAgentLab, agentLabEnabled } from "@/lib/server/agent-lab"
 import { buildAssistantContextBlocks, formatExistingLayoutNote, buildBriefFromLayout, mapAuditFindingsToRisks } from "@/lib/server/brief-assistant-context"
 import {
   describeAction,
@@ -56,6 +57,7 @@ import { clarificationReply, routeAgentIntent } from "@/lib/server/project-agent
 
 export const maxDuration = 120;
 const BRIEF_FALLBACK = "Maaf, AI Agent sedang sibuk. Coba lagi sebentar ya."
+const AGENT_SLUG = "baruma-assistant"
 
 function responseForExisting(claim: Awaited<ReturnType<typeof claimTurn>>) {
   if (claim.kind === "completed" && claim.reply) return ok({ message: claim.reply, duplicate: true })
@@ -115,8 +117,9 @@ export async function POST(
           const body = await response.json()
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'result', data: body })}\n\n`))
         }
-      } catch (e: any) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: e?.message ?? String(e) })}\n\n`))
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e)
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: message })}\n\n`))
       } finally {
         clearInterval(sendPing)
         controller.close()
@@ -238,6 +241,14 @@ async function runLogic(
         return errCode(402, "insufficient_credits", "Kredit AI Anda telah habis. Upgrade plan untuk melanjutkan.")
       }
       creditReserved = true
+      // BAR-SEC-04 fix: sebelumnya field ini dideklarasikan tapi TIDAK PERNAH
+      // di-assign, sehingga guard refund di catch-all (di bawah) selalu mati
+      // (kondisi `requestIdForRefund` selalu falsy) — kredit yang sudah
+      // terpotong tidak pernah dikembalikan saat error tak tertangani terjadi
+      // SETELAH spend berhasil. clientRequestId yang sama dipakai di
+      // spendCreditsOnce di atas, jadi refundCreditsOnce di catch-all
+      // mem-refund entry ledger yang tepat (idempotent by requestId).
+      requestIdForRefund = input.clientRequestId
       return null
     }
 
@@ -249,7 +260,7 @@ async function runLogic(
       const briefFeatureAnswer = answerFeatureQuestion(input.instruction)
       if (briefFeatureAnswer) {
         reply = briefFeatureAnswer
-      } else if (!llmEnabled()) {
+      } else if (!agentLabEnabled()) {
         reply = EDITOR_AGENT_FALLBACK_NO_LLM
       } else {
         let standardsNote: string | undefined
@@ -269,7 +280,7 @@ async function runLogic(
         const contextBlocks = buildAssistantContextBlocks({
           brief, history, standardsNote, designKnowledgeNote, assetSuggestionsNote, existingLayoutNote,
         })
-        const answer = await askAssistant({
+        const answer = await askAgentLab(AGENT_SLUG, {
           userId, text: input.instruction, contextBlocks,
         })
         llmFailed = answer === null

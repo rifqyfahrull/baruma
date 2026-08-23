@@ -60,10 +60,10 @@ function parseNeedsClarifyFromContent(content: string): Array<{ question: string
     try {
       const parsed = JSON.parse(trimmed)
       if (parsed && typeof parsed === "object" && Array.isArray(parsed.needs_clarify) && parsed.needs_clarify.length > 0) {
-        return parsed.needs_clarify.map((item: any) => ({
+        return parsed.needs_clarify.map((item: { question?: unknown; suggestions?: unknown }) => ({
           question: typeof item.question === "string" ? item.question : String(item.question ?? ""),
           suggestions: Array.isArray(item.suggestions)
-            ? item.suggestions.filter((s: unknown) => typeof s === "string" && s.trim().length > 0)
+            ? item.suggestions.filter((s: unknown): s is string => typeof s === "string" && s.trim().length > 0)
             : [],
         }))
       }

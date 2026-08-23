@@ -121,7 +121,9 @@ describe("PlansTable", () => {
     expect(screen.getByLabelText("Daftar fitur plan, satu per baris")).toBeTruthy()
     expect(screen.getByLabelText("Daftar batasan plan, satu per baris")).toBeTruthy()
     expect(screen.getByLabelText("Kredit AI per periode")).toBeTruthy()
-    expect(screen.getByLabelText("Maksimal jumlah proyek")).toBeTruthy()
+    expect(
+      screen.getByLabelText("Maksimal jumlah proyek (kosongkan untuk tanpa batas)")
+    ).toBeTruthy()
     expect(screen.getByLabelText("Izinkan export PDF")).toBeTruthy()
     expect(screen.getByLabelText("Izinkan upload model GLB")).toBeTruthy()
 

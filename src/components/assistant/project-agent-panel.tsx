@@ -135,7 +135,7 @@ function MarkdownMessage({ content }: { content: string }) {
 
 function unwrapContentText(content: string): string {
   if (!content) return ""
-  let text = content.trim()
+  const text = content.trim()
   if (text.startsWith("{") && text.endsWith("}")) {
     try {
       const parsed = JSON.parse(text)
@@ -514,19 +514,22 @@ export function ProjectAgentPanel({
         />
       )}
 
-      <form className="flex gap-2 border-t p-4" onSubmit={(event) => { event.preventDefault(); submit(input) }}>
-        <Input
-          ref={inputRef}
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          placeholder="Tanyakan atau minta perubahan…"
-          disabled={send.isPending}
-          aria-label="Pesan untuk AI Agent"
-        />
-        <Button type="submit" size="icon" disabled={send.isPending || !input.trim()} aria-label="Kirim pesan">
-          <Send />
-        </Button>
-      </form>
+      <div className="border-t px-4 pt-3">
+        <form className="flex gap-2" onSubmit={(event) => { event.preventDefault(); submit(input) }}>
+          <Input
+            ref={inputRef}
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            placeholder="Tanyakan atau minta perubahan…"
+            disabled={send.isPending}
+            aria-label="Pesan untuk AI Agent"
+          />
+          <Button type="submit" size="icon" disabled={send.isPending || !input.trim()} aria-label="Kirim pesan">
+            <Send />
+          </Button>
+        </form>
+        <p className="pb-3 pt-1.5 text-[11px] text-muted-foreground">1 kredit per pesan.</p>
+      </div>
     </div>
   )
 }

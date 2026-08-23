@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Plus } from "lucide-react"
 
-import { ADMIN_NAV_ITEM, APP_NAV } from "@/lib/nav"
+import { ADMIN_NAV_ITEM, APP_NAV, APP_NAV_SECONDARY } from "@/lib/nav"
 import { useCurrentUser } from "@/lib/api/hooks"
 import { Logo } from "@/components/shared/logo"
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { CreditsIndicator } from "./credits-indicator"
 import { UserMenu } from "./user-menu"
@@ -100,6 +101,39 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Nav sekunder (WS-E §3) — sebelumnya array `APP_NAV_SECONDARY` ada
+            di nav.ts tapi tak pernah dirender di sini. */}
+        {APP_NAV_SECONDARY.length > 0 && (
+          <>
+            <SidebarSeparator className="mx-0" />
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {APP_NAV_SECONDARY.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={item.title}
+                        isActive={isActive(pathname, item.href)}
+                      >
+                        <Link
+                          href={item.href}
+                          aria-current={
+                            isActive(pathname, item.href) ? "page" : undefined
+                          }
+                        >
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="gap-2">

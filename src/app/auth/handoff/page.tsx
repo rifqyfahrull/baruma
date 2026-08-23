@@ -51,6 +51,9 @@ function HandoffHandler() {
     const final = params?.get('final') || '/home'
 
     if (!tokenHash || type !== 'magiclink') {
+      // PRA-EXISTING (bukan dari WS-A): setState sinkron dalam effect saat
+      // parsing query param — lihat TODOS.md P1.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError('Tautan login tidak valid. Silakan ulangi dari halaman login.')
       return
     }

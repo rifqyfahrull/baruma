@@ -152,6 +152,9 @@ function EditorClient({ projectId }: { projectId: string }) {
     lastSelectionNonceRef.current = selectionNonce
     if (!hasSelection) return
     if (window.matchMedia("(min-width: 64rem)").matches) return // desktop: panel kanan
+    // PRA-EXISTING (bukan dari WS-A): setState sinkron dalam effect, respons
+    // ke nonce eksternal (bukan derivable dari state React) — lihat TODOS.md P1.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInspectorDrawerOpen("properti")
   }, [selectionNonce, hasSelection])
 
@@ -164,6 +167,8 @@ function EditorClient({ projectId }: { projectId: string }) {
     if (lastFocusNonceRef.current === focusNonce) return
     lastFocusNonceRef.current = focusNonce
     if (window.matchMedia("(min-width: 64rem)").matches) return // desktop: panel kanan
+    // PRA-EXISTING (bukan dari WS-A): lihat catatan di atas (TODOS.md P1).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInspectorDrawerOpen("cek")
   }, [focusNonce])
 

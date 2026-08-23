@@ -100,7 +100,7 @@ describe("DEFAULT_PLANS content is locked verbatim (pixel-parity contract for T2
     })
     expect(byId.get("pro")?.entitlements).toEqual({
       creditsPerPeriod: 100,
-      maxProjects: 10,
+      maxProjects: null,
       exportPdf: true,
       glbUpload: true,
       aiRenderHd: true,

@@ -73,7 +73,7 @@ function jobIdFromClientRequestId(clientRequestId: string): string {
 
 function appBaseUrl(): string {
   const url =
-    process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://proj-upgrade.emergent.host"
+    process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://baruma.tampil.dev"
   return url.replace(/\/$/, "")
 }
 

@@ -173,4 +173,35 @@ describe("POST /api/v1/projects — plan quota gate", () => {
     const upsertCall = vi.mocked(briefsRepo.upsertBrief).mock.calls.at(-1)!
     expect(upsertCall[1].site.regulation).toEqual(bodyWithRegulation.regulation)
   })
+
+  it("skips the quota gate entirely when maxProjects is null (unlimited — Pro)", async () => {
+    const token = await signToken("user-unlimited")
+    vi.mocked(entitlementsLib.getEntitlements).mockResolvedValueOnce(
+      entitlements({ maxProjects: null })
+    )
+    // Deliberately a large existing count — null must bypass the check
+    // regardless of how many projects the owner already has.
+    vi.mocked(projectsRepo.listProjectsByOwner).mockResolvedValueOnce(
+      Array.from({ length: 500 }, (_, i) => ({ id: `proj-${i}` }) as never)
+    )
+    vi.mocked(projectsRepo.createProject).mockResolvedValueOnce({
+      id: "proj-new-unlimited",
+      name: validBody.name,
+      status: "brief",
+      readiness: "concept_ready",
+      projectType: "new",
+      thumbnail: "family",
+      floors: 1,
+      rooftop: false,
+      site: { widthM: 8, depthM: 10, areaM2: 80 },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
+    vi.mocked(briefsRepo.upsertBrief).mockResolvedValueOnce(undefined as never)
+
+    const res = await POST(postRequest(token, validBody))
+    expect(res.status).toBe(200)
+    const createCall = vi.mocked(projectsRepo.createProject).mock.calls.at(-1)![0]
+    expect(createCall.name).toBe(validBody.name)
+  })
 })

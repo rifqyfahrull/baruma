@@ -72,20 +72,17 @@ jobs:
           git remote add mainrepo "$GITHUB_WORKSPACE"
           git fetch mainrepo
 
-      - name: Cherry-pick new commits onto Emergent main
+      - name: Sync main branch to Emergent
         if: steps.range.outputs.has_new == 'true'
         run: |
           set -e
           cd emergent-clone
-          git checkout -b sync-$(date +%s) main
-          while read -r sha; do
-            echo "=== cherry-picking $sha ==="
-            git cherry-pick "$sha" || {
-              echo "::error::Cherry-pick of $sha failed — real conflict with an Emergent-specific change. Port this range manually (see .github/workflows/sync-emergent.yml header) and move the emergent-synced tag yourself once fixed."
-              git cherry-pick --abort
-              exit 1
-            }
-          done < /tmp/commits.txt
+          git config user.name "baruma-sync-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git rm -rf . || true
+          git checkout mainrepo/main -- .
+          git add -A
+          git diff-index --quiet HEAD || git commit -m "sync: port latest main changes from rfq13/baruma"
 
       - name: Install pnpm
         if: steps.range.outputs.has_new == 'true'
@@ -104,7 +101,9 @@ jobs:
         working-directory: emergent-clone
         run: |
           set -e
-          pnpm install --config.confirmModulesPurge=false
+          pnpm install --no-frozen-lockfile --config.confirmModulesPurge=false
+          git add -A
+          git diff-index --quiet HEAD || git commit -m "chore: update pnpm-lock.yaml"
           pnpm exec tsc --noEmit
           pnpm exec vitest run
           NODE_OPTIONS=--max-old-space-size=3072 pnpm exec next build
@@ -112,7 +111,7 @@ jobs:
       - name: Push to Emergent main
         if: steps.range.outputs.has_new == 'true'
         working-directory: emergent-clone
-        run: git push origin HEAD:main
+        run: git push origin main
 
       - name: Advance emergent-synced tag
         if: steps.range.outputs.has_new == 'true'

@@ -2,6 +2,7 @@
  * Route handler response helpers. Never leak DB/pg errors to the client.
  */
 import { NextResponse } from "next/server"
+import * as Sentry from "@sentry/nextjs"
 import { ForbiddenError, UnauthorizedError } from "./auth-server"
 import { PlanFeatureLockedError } from "./entitlements"
 
@@ -39,6 +40,10 @@ export function handleError(e: unknown): NextResponse {
   const message =
     e instanceof Error && !isPgError(e) ? e.message : "Internal server error"
   console.error("[api]", e)
+  // Hanya jalur 500 tak terduga yang dikirim ke Sentry (bukan 401/403/plan-
+  // locked yang sudah di-return di atas — itu bukan bug, itu perilaku
+  // normal). No-op sepenuhnya tanpa SENTRY_DSN (lihat instrumentation.ts).
+  Sentry.captureException(e)
   return err(500, message)
 }
 

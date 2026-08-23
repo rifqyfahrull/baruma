@@ -150,6 +150,9 @@ export function Preview3DView({
     lastNonceRef.current = selectionNonce
     if (!selectedKind || selectedKind === "room") return
     if (window.matchMedia("(min-width: 64rem)").matches) return // desktop: panel kanan
+    // PRA-EXISTING (bukan dari WS-A): setState sinkron dalam effect, respons
+    // ke nonce eksternal — lihat TODOS.md P1.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setControlsDrawerOpen(true)
   }, [selectionNonce, selectedKind])
 

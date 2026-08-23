@@ -28,6 +28,7 @@ import { POST } from "./route"
 import * as entitlementsLib from "@/lib/server/entitlements"
 import * as storageLib from "@/lib/server/storage"
 import { signToken } from "@/lib/server/auth-server"
+import { __resetRateLimitStore } from "@/lib/server/rate-limit"
 
 function bodyReq(token: string | null, body: unknown) {
   return new Request("http://localhost/api/v1/assets/upload-url", {
@@ -50,6 +51,7 @@ const validBody = {
 beforeEach(() => {
   vi.mocked(entitlementsLib.requirePlanFeature).mockReset()
   vi.mocked(storageLib.storageEnabled).mockReset()
+  __resetRateLimitStore()
 })
 
 describe("POST /api/v1/assets/upload-url", () => {
@@ -90,5 +92,17 @@ describe("POST /api/v1/assets/upload-url", () => {
 
     const res = await POST(bodyReq(token, validBody))
     expect(res.status).toBe(503)
+  })
+
+  it("429s the 21st upload-url request from the same user within a minute", async () => {
+    const token = await signToken("user-rl")
+    vi.mocked(entitlementsLib.requirePlanFeature).mockResolvedValue(undefined)
+    vi.mocked(storageLib.storageEnabled).mockReturnValue(true)
+    for (let i = 0; i < 20; i++) {
+      const res = await POST(bodyReq(token, validBody))
+      expect(res.status).not.toBe(429)
+    }
+    const blocked = await POST(bodyReq(token, validBody))
+    expect(blocked.status).toBe(429)
   })
 })

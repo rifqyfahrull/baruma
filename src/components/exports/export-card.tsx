@@ -23,6 +23,7 @@ import { EXPORT_META } from "@/lib/constants"
 import { formatRelative } from "@/lib/format"
 import { track } from "@/lib/analytics"
 import { exportJobKey, triggerDownload, useExportStore } from "@/stores/export-store"
+import { usePreviewStore } from "@/stores/preview-store"
 import { ReadinessBadge } from "@/components/shared/readiness-badge"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -72,6 +73,11 @@ export function ExportCard({
   // bypassable via devtools; see spec §Enforcement / plan Global Constraints).
   // Missing/null entitlements defaults to locked, never to free access.
   const locked = meta.proOnly && !entitlements?.exportPdf
+  // IFC (G2, needs web-ifc) — only relevant once a user is actually unlocked;
+  // a locked user already sees the Pro upsell below, never a Buat that errors.
+  const comingSoon = !!meta.comingSoon
+  // Free plan (no exportPdf) → every generated PDF gets a draft watermark.
+  const watermark = !entitlements?.exportPdf
 
   const job = useExportStore((s) => s.jobs[exportJobKey(projectId, format)])
   const generate = useExportStore((s) => s.generate)
@@ -116,6 +122,8 @@ export function ExportCard({
             <Badge variant="secondary" className="gap-1">
               <Lock className="size-3" /> Pro
             </Badge>
+          ) : comingSoon ? (
+            <Badge variant="secondary">Segera hadir</Badge>
           ) : (
             <ReadinessBadge status={readiness} size="sm" showDot={false} />
           )}
@@ -160,6 +168,10 @@ export function ExportCard({
               <Sparkles className="text-warning" /> Upgrade untuk akses
             </Link>
           </Button>
+        ) : comingSoon ? (
+          <Button size="sm" variant="outline" disabled className="w-full">
+            Segera hadir
+          </Button>
         ) : (
           <>
             <AlertDialog>
@@ -197,7 +209,14 @@ export function ExportCard({
                   <AlertDialogAction
                     onClick={() => {
                       track("export_started", { project_id: projectId, format })
-                      void generate(projectId, format)
+                      // Only meaningful for contractor_pack, and only when the
+                      // 3D canvas happens to be mounted (a different route
+                      // usually — see ContractorPackOpts.thumbnailDataUrl).
+                      const thumbnailDataUrl =
+                        format === "contractor_pack"
+                          ? (usePreviewStore.getState().captureFrame?.() ?? undefined)
+                          : undefined
+                      void generate(projectId, format, { watermark, thumbnailDataUrl })
                     }}
                   >
                     Saya mengerti, lanjut

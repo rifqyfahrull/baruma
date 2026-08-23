@@ -78,6 +78,8 @@ export function TemplateForm(
 
   // Reset the create form whenever the dialog opens.
   React.useEffect(() => {
+    // PRA-EXISTING (bukan dari WS-A): setState sinkron dalam effect — lihat TODOS.md P1.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (mode === "create" && open) setCreateForm(EMPTY_CREATE_FORM)
   }, [mode, open])
 
@@ -253,7 +255,7 @@ export function TemplateForm(
             <DialogTitle>Edit template {form.name}</DialogTitle>
             <DialogDescription>
               Perubahan metadata ini tidak mengubah denah/brief — gunakan
-              "Resync" untuk menarik ulang dari proyek sumber.
+              &quot;Resync&quot; untuk menarik ulang dari proyek sumber.
             </DialogDescription>
           </DialogHeader>
 

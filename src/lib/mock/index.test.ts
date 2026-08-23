@@ -211,6 +211,55 @@ describe("mock templates", () => {
   })
 })
 
+describe("mock createProjectFromTemplate (WS-D §1)", () => {
+  it("clones brief + full layout into a NEW project owned separately from the template", async () => {
+    const { createProjectFromTemplate, getProject, getBrief, getLayout, getTemplate } =
+      await import("@/lib/mock")
+    const template = await getTemplate("rumah-8x8-modern-tropis")
+
+    const { projectId } = await createProjectFromTemplate("rumah-8x8-modern-tropis")
+    expect(projectId).not.toBe(template.sourceProjectId)
+
+    const project = await getProject(projectId)
+    expect(project?.name).toBe(`${template.name} (salinan)`)
+    expect(project?.floors).toBe(template.floors)
+
+    const layout = await getLayout(projectId)
+    expect(layout?.rooms.length).toBe(template.layout.rooms.length)
+
+    const brief = await getBrief(projectId)
+    expect(brief?.projectId).toBe(projectId)
+  })
+
+  it("throws for an unknown/inactive template slug", async () => {
+    const { createProjectFromTemplate } = await import("@/lib/mock")
+    await expect(createProjectFromTemplate("tidak-ada")).rejects.toThrow()
+  })
+})
+
+describe("mock share links (WS-D §2)", () => {
+  it("getShareLink returns {url: null} before any link is created", async () => {
+    const { getShareLink } = await import("@/lib/mock")
+    const result = await getShareLink("proj-share-test-1")
+    expect(result.url).toBeNull()
+  })
+
+  it("createShareLink is idempotent and getShareLink reflects it afterwards", async () => {
+    const { createShareLink, getShareLink } = await import("@/lib/mock")
+    const first = await createShareLink("proj-share-test-2")
+    const second = await createShareLink("proj-share-test-2")
+    expect(second.url).toBe(first.url)
+    expect((await getShareLink("proj-share-test-2")).url).toBe(first.url)
+  })
+
+  it("revokeShareLink clears the active link", async () => {
+    const { createShareLink, revokeShareLink, getShareLink } = await import("@/lib/mock")
+    await createShareLink("proj-share-test-3")
+    await revokeShareLink("proj-share-test-3")
+    expect((await getShareLink("proj-share-test-3")).url).toBeNull()
+  })
+})
+
 describe("mock component presets (Studio Komponen)", () => {
   it("listComponentPresets returns the seeded starter presets, newest first", async () => {
     const { listComponentPresets } = await import("@/lib/mock")

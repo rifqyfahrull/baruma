@@ -6,7 +6,8 @@ import { getBriefPayload } from "@/lib/server/repo/briefs"
 import { getLayoutPayload } from "@/lib/server/repo/layouts"
 import { spendCredits, refundCredits } from "@/lib/server/repo/credits"
 import { ok, err, errCode, handleError } from "@/lib/server/response"
-import { askAssistant } from "@/lib/server/llm"
+import { rateLimitGuard } from "@/lib/server/rate-limit"
+import { askAgentLab } from "@/lib/server/agent-lab"
 import { buildAssistantContextBlocks } from "@/lib/server/brief-assistant-context"
 import { auditDesign } from "@/lib/audit/design-audit"
 import { summarizeAuditForPrompt } from "@/lib/audit/audit-intent"
@@ -25,6 +26,7 @@ const bodySchema = z.object({
 })
 
 const FALLBACK = "Maaf, asisten AI sedang sibuk. Coba lagi sebentar ya."
+const AGENT_SLUG = "baruma-assistant"
 
 export async function POST(
   request: Request,
@@ -32,6 +34,17 @@ export async function POST(
 ): Promise<Response> {
   try {
     const { userId } = await requireUser(request)
+
+    // 10/menit/user — percakapan brief wajar (tanya-jawab beruntun), ketat
+    // terhadap spam pertanyaan yang tiap kalinya memotong kredit & memanggil LLM.
+    const limited = rateLimitGuard(request, {
+      scope: "brief-assistant",
+      limit: 10,
+      windowMs: 60_000,
+      keyExtra: userId,
+    })
+    if (limited) return limited
+
     const { id } = await ctx.params
     const project = await getOwnedProject(id, userId)
     if (!project) return err(404, "Project not found")
@@ -81,7 +94,7 @@ export async function POST(
     })
     let answer: string | null
     try {
-      answer = await askAssistant({
+      answer = await askAgentLab(AGENT_SLUG, {
         userId,
         text: parsed.data.question,
         contextBlocks,
@@ -91,9 +104,9 @@ export async function POST(
       throw e
     }
     if (answer === null) {
-      // The realistic LLM failure mode: askAssistant swallows HTTP/timeout/parse
-      // errors internally and resolves to null instead of throwing. Refund here
-      // too, without changing the graceful FALLBACK below.
+      // The realistic LLM failure mode: askAgentLab swallows HTTP/timeout/parse
+      // errors (and clarify/refuse) internally and resolves to null instead of
+      // throwing. Refund here too, without changing the graceful FALLBACK below.
       await refundCredits(userId, 1, "brief_assistant_refund", id)
     }
 

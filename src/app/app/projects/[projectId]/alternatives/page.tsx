@@ -96,7 +96,7 @@ export default function AlternativesPage() {
                 className={cn("size-4", gen.isPending && "animate-spin")}
                 aria-hidden
               />
-              {gen.isPending ? "Menyusun..." : "Regenerate"}
+              {gen.isPending ? "Menyusun..." : "Regenerate — 1 kredit"}
             </Button>
           </div>
         )}
