@@ -65,8 +65,8 @@ jobs:
         if: steps.range.outputs.has_new == 'true'
         run: |
           set -e
-          git clone --branch main "https://x-access-token:${{ secrets.EMERGENT_REPO_TOKEN }}@github.com/rifqyfahrull/baruma.git" /tmp/emergent
-          cd /tmp/emergent
+          git clone --branch main "https://x-access-token:${{ secrets.EMERGENT_REPO_TOKEN }}@github.com/rifqyfahrull/baruma.git" emergent-clone
+          cd emergent-clone
           git config user.name "baruma-sync-bot"
           git config user.email "actions@users.noreply.github.com"
           git remote add mainrepo "$GITHUB_WORKSPACE"
@@ -76,7 +76,7 @@ jobs:
         if: steps.range.outputs.has_new == 'true'
         run: |
           set -e
-          cd /tmp/emergent
+          cd emergent-clone
           git checkout -b sync-$(date +%s) main
           while read -r sha; do
             echo "=== cherry-picking $sha ==="
@@ -97,11 +97,11 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: /tmp/emergent/pnpm-lock.yaml
+          cache-dependency-path: emergent-clone/pnpm-lock.yaml
 
       - name: Verify — install, typecheck, unit tests, build
         if: steps.range.outputs.has_new == 'true'
-        working-directory: /tmp/emergent
+        working-directory: emergent-clone
         run: |
           set -e
           pnpm install --config.confirmModulesPurge=false
@@ -111,7 +111,7 @@ jobs:
 
       - name: Push to Emergent main
         if: steps.range.outputs.has_new == 'true'
-        working-directory: /tmp/emergent
+        working-directory: emergent-clone
         run: git push origin HEAD:main
 
       - name: Advance emergent-synced tag
