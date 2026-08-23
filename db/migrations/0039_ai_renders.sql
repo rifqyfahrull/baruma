@@ -1,4 +1,4 @@
--- 0038: AI Image Renderer (Fase 1) — job async utk render foto AI (mode Cepat/
+-- 0039: AI Image Renderer (Fase 1) — job async utk render foto AI (mode Cepat/
 -- Nano Banana & Presisi/FLUX Depth). Meniru pola asset_ingestion_jobs
 -- (0005_assets.sql): satu baris = satu job, status berjalan lewat state
 -- machine queued -> submitted/processing -> succeeded|failed, trigger

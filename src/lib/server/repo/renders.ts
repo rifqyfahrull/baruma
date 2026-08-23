@@ -6,7 +6,7 @@
  */
 import { query } from "@/lib/server/db"
 
-/** Baris tabel render_jobs, snake_case sesuai db/migrations/0038_ai_renders.sql. */
+/** Baris tabel render_jobs, snake_case sesuai db/migrations/0039_ai_renders.sql. */
 interface RenderJobRow {
   id: string
   owner_id: string

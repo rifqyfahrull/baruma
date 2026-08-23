@@ -102,8 +102,8 @@ export async function spendCredits(
 /**
  * Spend once for a retryable request. `refId` is a client-generated request id
  * protected by a partial unique ledger index — migration 0016 for
- * `project_agent`, migration 0038 for `ai_render` (setiap reason baru wajib
- * index parsialnya sendiri, lihat komentar di 0038_ai_renders.sql).
+ * `project_agent`, migration 0039 for `ai_render` (setiap reason baru wajib
+ * index parsialnya sendiri, lihat komentar di 0039_ai_renders.sql).
  */
 export async function spendCreditsOnce(
   profileId: string,

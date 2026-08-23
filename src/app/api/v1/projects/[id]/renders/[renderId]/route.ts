@@ -50,7 +50,7 @@ export async function GET(
       } else if (check === "failed") {
         await failRenderJob(job, "Render gagal di provider (rekonsiliasi)")
       } else if (check === "processing") {
-        // Trigger updated_at (0038_ai_renders.sql set_updated_at) menyentuh
+        // Trigger updated_at (0039_ai_renders.sql set_updated_at) menyentuh
         // kolom itu meski `status` diset ke nilai yang sama — cukup utk
         // "touch" tanpa kolom khusus, sekaligus melakukan transisi
         // submitted->processing pada polling pertama.

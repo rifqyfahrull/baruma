@@ -25,7 +25,7 @@ function lastParams(): unknown[] {
   return (query.mock.calls.at(-1)?.[1] ?? []) as unknown[]
 }
 
-/** Baris render_jobs mentah (snake_case) sesuai kolom di 0038_ai_renders.sql. */
+/** Baris render_jobs mentah (snake_case) sesuai kolom di 0039_ai_renders.sql. */
 function makeRow(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     id: "rnd-abc123",
