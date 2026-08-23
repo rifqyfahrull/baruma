@@ -73,6 +73,10 @@ jobs:
             STORAGE_ACCESS_KEY_ID=${{ secrets.STORAGE_ACCESS_KEY_ID }}
             STORAGE_SECRET_ACCESS_KEY=${{ secrets.STORAGE_SECRET_ACCESS_KEY }}
             STORAGE_BUCKET=${{ secrets.STORAGE_BUCKET }}
+            # AI Image Rendering (Nano Banana 2 / Gemini Mode Cepat & Fal Mode Presisi)
+            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+            FAL_KEY=${{ secrets.FAL_KEY }}
+            AI_RENDER_PROVIDER=${{ secrets.AI_RENDER_PROVIDER }}
             # Payment via the tampil.dev parent (Baruma → tampil.dev → Mayar).
             # Baruma no longer holds any Mayar credential. PARENT_BILLING_SECRET
             # must equal the parent's CHILD_BILLING_SECRET. Use the parent's
