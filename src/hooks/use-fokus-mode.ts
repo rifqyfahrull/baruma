@@ -30,12 +30,14 @@
 import * as React from "react"
 
 import { useUIStore } from "@/stores/ui-store"
-import { useSidebar } from "@/components/ui/sidebar"
+import { useOptionalSidebar } from "@/components/ui/sidebar"
 
 export function useFokusMode(): { fokusMode: boolean; toggle: () => void } {
   const fokusMode = useUIStore((s) => s.fokusMode)
   const setFokusMode = useUIStore((s) => s.setFokusMode)
-  const { setOpen: setSidebarOpen, isMobile: sidebarIsMobile } = useSidebar()
+  const sidebar = useOptionalSidebar()
+  const setSidebarOpen = sidebar?.setOpen
+  const sidebarIsMobile = sidebar?.isMobile ?? false
 
   const initRef = React.useRef(false)
   const setSidebarOpenRef = React.useRef(setSidebarOpen)
@@ -49,7 +51,9 @@ export function useFokusMode(): { fokusMode: boolean; toggle: () => void } {
       initRef.current = true
       if (!fokusMode) return
     }
-    if (!sidebarIsMobile) setSidebarOpenRef.current(!fokusMode)
+    if (!sidebarIsMobile && setSidebarOpenRef.current) {
+      setSidebarOpenRef.current(!fokusMode)
+    }
   }, [fokusMode, sidebarIsMobile])
 
   // Keluar halaman saat fokus aktif → pulihkan ProjectBar/sidebar.
@@ -57,7 +61,7 @@ export function useFokusMode(): { fokusMode: boolean; toggle: () => void } {
     () => () => {
       if (useUIStore.getState().fokusMode) {
         useUIStore.getState().setFokusMode(false)
-        setSidebarOpenRef.current(true)
+        setSidebarOpenRef.current?.(true)
       }
     },
     []

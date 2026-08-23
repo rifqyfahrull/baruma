@@ -21,7 +21,15 @@ function baseTextureFor(url: string): Texture {
   let base = baseCache.get(url)
   if (!base) {
     loader ??= new TextureLoader()
-    base = loader.load(url)
+    base = loader.load(url, (loadedTex) => {
+      // Trigger WebGL update on all variant clones once image data arrives
+      for (const [k, v] of variantCache.entries()) {
+        if (k.startsWith(`${url}@`) && v) {
+          v.image = loadedTex.image
+          v.needsUpdate = true
+        }
+      }
+    })
     base.wrapS = RepeatWrapping
     base.wrapT = RepeatWrapping
     base.anisotropy = 4
@@ -44,7 +52,9 @@ export function imageTextureFor(
   const base = baseTextureFor(url)
   const texture = base.clone()
   texture.repeat.set(repeat, ry)
-  texture.needsUpdate = true
+  if (texture.image) {
+    texture.needsUpdate = true
+  }
   variantCache.set(key, texture)
   return texture
 }
