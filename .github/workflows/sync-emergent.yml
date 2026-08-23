@@ -1,0 +1,122 @@
+name: Sync to baruma-emergent
+
+# Ports new main commits from this repo (rfq13/baruma) onto the Emergent
+# deployment's repo (rifqyfahrull/baruma) — a SEPARATE git history, not a
+# fork, so this cherry-picks by commit range rather than merging branches.
+#
+# Auto-merges with NO human review gate (explicit choice, 2026-08-23) — but
+# still refuses to push anything broken: cherry-pick conflicts and tsc/test/
+# build failures both fail this workflow loudly instead of force-pushing a
+# guess. When that happens, port the range manually (see docs/superpowers/
+# specs — same procedure as any manual cherry-pick) and move the
+# `emergent-synced` tag yourself once fixed; this workflow picks back up
+# from wherever that tag points next time it runs.
+#
+# Emergent has its own per-deployment customizations (domain fallbacks in
+# e.g. src/lib/supabase/sso.ts, src/components/project/project-bar.tsx,
+# ai-render's webhook base URL — anywhere `baruma.tampil.dev` appears as a
+# literal fallback, Emergent's copy must say proj-upgrade.emergent.host
+# instead). A real textual conflict on those exact lines will fail the
+# cherry-pick step below and stop this workflow before anything is pushed —
+# it will NOT silently pick one side.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: sync-emergent
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main Baruma (full history + tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine commit range since last sync
+        id: range
+        run: |
+          set -e
+          if ! git rev-parse emergent-synced >/dev/null 2>&1; then
+            echo "No emergent-synced tag found — nothing to do until it's created (see initial manual sync)."
+            echo "has_new=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          COUNT=$(git rev-list emergent-synced..HEAD --count)
+          echo "COUNT=$COUNT new commit(s) since last sync"
+          if [ "$COUNT" = "0" ]; then
+            echo "has_new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_new=true" >> "$GITHUB_OUTPUT"
+            git rev-list --reverse emergent-synced..HEAD > /tmp/commits.txt
+          fi
+
+      - name: Fetch and check out the Emergent repo
+        if: steps.range.outputs.has_new == 'true'
+        run: |
+          set -e
+          git clone --branch main "https://x-access-token:${{ secrets.EMERGENT_REPO_TOKEN }}@github.com/rifqyfahrull/baruma.git" /tmp/emergent
+          cd /tmp/emergent
+          git config user.name "baruma-sync-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git remote add mainrepo "$GITHUB_WORKSPACE"
+          git fetch mainrepo
+
+      - name: Cherry-pick new commits onto Emergent main
+        if: steps.range.outputs.has_new == 'true'
+        run: |
+          set -e
+          cd /tmp/emergent
+          git checkout -b sync-$(date +%s) main
+          while read -r sha; do
+            echo "=== cherry-picking $sha ==="
+            git cherry-pick "$sha" || {
+              echo "::error::Cherry-pick of $sha failed — real conflict with an Emergent-specific change. Port this range manually (see .github/workflows/sync-emergent.yml header) and move the emergent-synced tag yourself once fixed."
+              git cherry-pick --abort
+              exit 1
+            }
+          done < /tmp/commits.txt
+
+      - name: Install pnpm
+        if: steps.range.outputs.has_new == 'true'
+        run: corepack enable && corepack prepare pnpm@10.32.1 --activate
+
+      - name: Set up Node
+        if: steps.range.outputs.has_new == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: /tmp/emergent/pnpm-lock.yaml
+
+      - name: Verify — install, typecheck, unit tests, build
+        if: steps.range.outputs.has_new == 'true'
+        working-directory: /tmp/emergent
+        run: |
+          set -e
+          pnpm install --config.confirmModulesPurge=false
+          pnpm exec tsc --noEmit
+          pnpm exec vitest run
+          NODE_OPTIONS=--max-old-space-size=3072 pnpm exec next build
+
+      - name: Push to Emergent main
+        if: steps.range.outputs.has_new == 'true'
+        working-directory: /tmp/emergent
+        run: git push origin HEAD:main
+
+      - name: Advance emergent-synced tag
+        if: steps.range.outputs.has_new == 'true'
+        run: |
+          set -e
+          git tag -f emergent-synced HEAD
+          git push origin emergent-synced --force
