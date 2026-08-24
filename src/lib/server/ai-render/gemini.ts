@@ -52,6 +52,17 @@ interface GenerateContentResponse {
   }>
 }
 
+function normalizeImageMimeType(rawContentType: string | null): string {
+  if (!rawContentType) return "image/png"
+  const clean = rawContentType.split(";")[0].trim().toLowerCase()
+  if (clean === "image/jpeg" || clean === "image/jpg") return "image/jpeg"
+  if (clean === "image/webp") return "image/webp"
+  if (clean === "image/heic") return "image/heic"
+  if (clean === "image/heif") return "image/heif"
+  if (clean === "image/png") return "image/png"
+  return "image/png"
+}
+
 /** Unduh beautyUrl (signed GET URL) server-side, kembalikan base64 + mime. */
 async function fetchImageAsBase64(
   url: string,
@@ -63,7 +74,7 @@ async function fetchImageAsBase64(
       console.warn(`[ai-render/gemini] gagal unduh beauty image: HTTP ${res.status}`)
       return null
     }
-    const contentType = res.headers.get("content-type") ?? "image/png"
+    const contentType = normalizeImageMimeType(res.headers.get("content-type"))
     const buf = await res.arrayBuffer()
     return { data: Buffer.from(buf).toString("base64"), mimeType: contentType }
   } catch (e) {
@@ -133,7 +144,8 @@ async function submit(input: RenderProviderInput): Promise<SubmitResult> {
     )
 
     if (!res.ok) {
-      console.warn(`[ai-render/gemini] generateContent HTTP ${res.status}`)
+      const errText = await res.text().catch(() => "")
+      console.warn(`[ai-render/gemini] generateContent HTTP ${res.status}: ${errText}`)
       return null
     }
 
