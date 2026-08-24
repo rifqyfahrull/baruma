@@ -135,5 +135,5 @@ export function projectSeed(projectId: string): number {
     hash ^= projectId.charCodeAt(i)
     hash = Math.imul(hash, 0x01000193)
   }
-  return hash >>> 0
+  return (hash >>> 0) % 2147483647
 }
