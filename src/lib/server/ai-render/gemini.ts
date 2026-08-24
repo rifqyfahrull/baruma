@@ -21,7 +21,12 @@
  *   `inlineData.data` (camelCase pada respons JSON) — kode di bawah membaca
  *   kedua varian casing secara defensif.
  */
+import dns from "node:dns"
 import type { RenderProvider, RenderProviderInput, SubmitResult } from "./types"
+
+if (typeof dns?.setDefaultResultOrder === "function") {
+  dns.setDefaultResultOrder("ipv4first")
+}
 
 /** Model id di satu tempat — gampang diganti begitu Google merilis versi baru. */
 export const GEMINI_IMAGE_MODEL = "gemini-3.1-flash-image"

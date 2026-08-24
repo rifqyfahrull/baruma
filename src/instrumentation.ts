@@ -11,6 +11,7 @@
  *     (guard eksplisit di bawah, bukan mengandalkan default SDK), jadi dev
  *     lokal & CI tanpa akun Sentry tetap jalan normal.
  */
+import dns from "node:dns"
 import * as Sentry from "@sentry/nextjs"
 import { assertProductionEnv } from "@/lib/server/env-check"
 
@@ -20,6 +21,10 @@ function sentryDsn(): string | undefined {
 }
 
 export function register() {
+  if (typeof dns?.setDefaultResultOrder === "function") {
+    dns.setDefaultResultOrder("ipv4first")
+  }
+
   assertProductionEnv()
 
   const dsn = sentryDsn()
