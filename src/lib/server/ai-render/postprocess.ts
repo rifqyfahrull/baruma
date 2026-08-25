@@ -26,6 +26,23 @@ function watermarkText(): string {
 }
 
 /**
+ * Safe sharp loader. Returns sharp function or null if native binary is missing
+ * (e.g. serverless environments without libvips / cross-platform deployment).
+ */
+async function getSharp() {
+  try {
+    const mod = await import("sharp")
+    return mod.default || mod
+  } catch (e) {
+    console.warn(
+      "[ai-render/postprocess] sharp native module not available, falling back to passthrough:",
+      e instanceof Error ? e.message : String(e)
+    )
+    return null
+  }
+}
+
+/**
  * Composite watermark teks semi-transparan di sudut kanan-bawah, ukuran
  * relatif terhadap lebar gambar (supaya tetap proporsional di berbagai
  * resolusi output provider). Diimplementasikan sebagai overlay SVG
@@ -33,49 +50,63 @@ function watermarkText(): string {
  * bagian binary prebuilt-nya, tanpa dependensi font tambahan.
  */
 export async function applyWatermark(png: Uint8Array): Promise<Uint8Array> {
-  const sharp = (await import("sharp")).default
-  const image = sharp(Buffer.from(png))
-  const meta = await image.metadata()
-  const width = meta.width ?? 1024
-  const height = meta.height ?? 1024
+  const sharp = await getSharp()
+  if (!sharp) return png
 
-  // Skala teks ~2.2% lebar gambar — cukup terbaca tanpa mendominasi foto.
-  const fontSize = Math.max(12, Math.round(width * 0.022))
-  const label = escapeXml(watermarkText())
-  const paddingX = Math.round(fontSize * 0.8)
-  const paddingY = Math.round(fontSize * 1.4)
-  // Perkiraan lebar teks (monospace-ish) supaya kotak latar cukup lebar —
-  // sharp/librsvg tidak punya text-measurement API murah di sini.
-  const approxTextWidth = Math.round(label.length * fontSize * 0.56)
-  const boxWidth = approxTextWidth + paddingX * 2
-  const boxHeight = Math.round(fontSize * 2.2)
+  try {
+    const image = sharp(Buffer.from(png))
+    const meta = await image.metadata()
+    const width = meta.width ?? 1024
+    const height = meta.height ?? 1024
 
-  const svg = `
-    <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-      <rect
-        x="${Math.max(0, width - boxWidth)}"
-        y="${Math.max(0, height - boxHeight)}"
-        width="${boxWidth}" height="${boxHeight}"
-        fill="black" fill-opacity="0.38" />
-      <text
-        x="${width - paddingX}" y="${height - paddingY / 2}"
-        text-anchor="end" dominant-baseline="text-after-edge"
-        font-family="sans-serif" font-size="${fontSize}"
-        fill="white" fill-opacity="0.92">${label}</text>
-    </svg>`
+    // Skala teks ~2.2% lebar gambar — cukup terbaca tanpa mendominasi foto.
+    const fontSize = Math.max(12, Math.round(width * 0.022))
+    const label = escapeXml(watermarkText())
+    const paddingX = Math.round(fontSize * 0.8)
+    const paddingY = Math.round(fontSize * 1.4)
+    // Perkiraan lebar teks (monospace-ish) supaya kotak latar cukup lebar —
+    // sharp/librsvg tidak punya text-measurement API murah di sini.
+    const approxTextWidth = Math.round(label.length * fontSize * 0.56)
+    const boxWidth = approxTextWidth + paddingX * 2
+    const boxHeight = Math.round(fontSize * 2.2)
 
-  const out = await image
-    .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
-    .png()
-    .toBuffer()
-  return new Uint8Array(out)
+    const svg = `
+      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+        <rect
+          x="${Math.max(0, width - boxWidth)}"
+          y="${Math.max(0, height - boxHeight)}"
+          width="${boxWidth}" height="${boxHeight}"
+          fill="black" fill-opacity="0.38" />
+        <text
+          x="${width - paddingX}" y="${height - paddingY / 2}"
+          text-anchor="end" dominant-baseline="text-after-edge"
+          font-family="sans-serif" font-size="${fontSize}"
+          fill="white" fill-opacity="0.92">${label}</text>
+      </svg>`
+
+    const out = await image
+      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+      .png()
+      .toBuffer()
+    return new Uint8Array(out)
+  } catch (e) {
+    console.warn("[ai-render/postprocess] applyWatermark failed, using original bytes:", e)
+    return png
+  }
 }
 
 /** Konversi ke WebP (hemat storage & bandwidth tablet — target device). */
 export async function toWebp(bytes: Uint8Array, quality = 85): Promise<Uint8Array> {
-  const sharp = (await import("sharp")).default
-  const out = await sharp(Buffer.from(bytes)).webp({ quality }).toBuffer()
-  return new Uint8Array(out)
+  const sharp = await getSharp()
+  if (!sharp) return bytes
+
+  try {
+    const out = await sharp(Buffer.from(bytes)).webp({ quality }).toBuffer()
+    return new Uint8Array(out)
+  } catch (e) {
+    console.warn("[ai-render/postprocess] toWebp failed, using original bytes:", e)
+    return bytes
+  }
 }
 
 function escapeXml(s: string): string {

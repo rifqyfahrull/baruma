@@ -26,6 +26,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["sharp", "@node-rs/argon2"],
   experimental: {
     // radix-ui (barrel dengan puluhan subpath) tidak masuk daftar default
     // optimizePackageImports Next — tanpa ini seluruh barrel ikut di-resolve
