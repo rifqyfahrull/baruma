@@ -1,0 +1,12 @@
+Dockerfile
+.dockerignore
+node_modules
+.next
+.git
+*.tsbuildinfo
+test-results
+coverage
+.hallmark
+dev-server.log
+*-watch.console.log
+wall-dump-*.txt
