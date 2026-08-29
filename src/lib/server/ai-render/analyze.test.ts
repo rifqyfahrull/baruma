@@ -265,6 +265,72 @@ describe("analyzeScene", () => {
     expect(facts.vegetationPresent).toBe(true)
   })
 
+  it("oklusi: elemen di BELAKANG bangunan tereksklusi, elemen menempel fasad depan tetap masuk", () => {
+    const layout = baseLayout()
+    layout.exteriorElements = [
+      // Tree di halaman BELAKANG (utara footprint y<5) — segmen kamera depan
+      // (site 5,21.5) → titik wakil (5.5,2.5) menembus footprint [0..10]×
+      // [5..15]; secara sudut MASUK kerucut pandang, tapi tertutup bangunan.
+      {
+        id: "ext-tree-belakang",
+        kind: "tree",
+        structuralRole: "non_structural",
+        x: 5,
+        y: 2,
+        widthM: 1,
+        depthM: 1,
+        heightM: 3,
+      },
+      // Kanopi MENEMPEL fasad depan (selatan, y sedikit > 15) — inset 0.8 m
+      // pada rect oklusi menjaga elemen tempelan seperti ini tetap terlihat.
+      {
+        id: "ext-kanopi-depan",
+        kind: "canopy",
+        structuralRole: "non_structural",
+        x: 4,
+        y: 15.05,
+        widthM: 2,
+        depthM: 0.5,
+        heightM: 2.4,
+      },
+    ]
+
+    const facts = analyzeScene(layout, site, {
+      position: [0, 1.6, 14],
+      target: [0, 1.5, 0],
+      fov: 50,
+    })
+
+    expect(facts.exteriorInFrame).not.toContain("tree")
+    expect(facts.exteriorInFrame).toContain("canopy")
+  })
+
+  it("oklusi: kamera DI DALAM footprint tidak meng-occlude apa pun (fallback aman)", () => {
+    const layout = baseLayout()
+    // Kamera di tengah footprint (site 5,10 → world 0,2.5) memandang selatan;
+    // fence (14.5) & tree belakang keduanya dinilai murni sudut+jarak lama.
+    layout.exteriorElements = [
+      {
+        id: "ext-tree-belakang",
+        kind: "tree",
+        structuralRole: "non_structural",
+        x: 5,
+        y: 2,
+        widthM: 1,
+        depthM: 1,
+        heightM: 3,
+      },
+    ]
+    const facts = analyzeScene(layout, site, {
+      position: [0, 1.6, 2.5],
+      target: [0, 1.5, 10],
+      fov: 50,
+    })
+    // Tree di utara, kamera menghadap selatan → tetap tereksklusi oleh SUDUT
+    // (di belakang kamera), bukan crash/oklusi keliru.
+    expect(facts.exteriorInFrame).not.toContain("tree")
+  })
+
   it("tidak pernah throw & fallback footprint=site saat tak ada ruang", () => {
     const layout: DesignLayout = {
       id: "layout-empty",

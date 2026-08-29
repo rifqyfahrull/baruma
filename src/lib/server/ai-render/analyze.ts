@@ -276,13 +276,56 @@ function representativePoint(el: ExteriorElement): { x: number; y: number } | nu
   }
 }
 
+/** Inset rect oklusi (m): footprint dikecilkan tiap sisi supaya elemen yang
+ *  MENEMPEL fasad (kanopi, teras) tidak ikut dianggap tertutup bangunan. */
+const OCCLUSION_INSET_M = 0.8
+
+/**
+ * True bila segmen 2D (a→b, koordinat site) menembus interior rect —
+ * slab method baku: hitung rentang parameter t saat segmen berada di dalam
+ * rentang x dan y rect; beririsan di 0<t<1 = segmen melewati rect SEBELUM
+ * mencapai b. `a` (kamera) di dalam rect → false (fallback aman: kamera di
+ * dalam footprint tidak meng-occlude apa pun — lihat analyzeScene).
+ */
+function segmentCrossesRect(
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+  rect: { x0: number; y0: number; x1: number; y1: number }
+): boolean {
+  if (ax >= rect.x0 && ax <= rect.x1 && ay >= rect.y0 && ay <= rect.y1) return false
+  const dx = bx - ax
+  const dy = by - ay
+  let tMin = 0
+  let tMax = 1
+  for (const [d, a, lo, hi] of [
+    [dx, ax, rect.x0, rect.x1],
+    [dy, ay, rect.y0, rect.y1],
+  ] as const) {
+    if (d === 0) {
+      if (a < lo || a > hi) return false
+    } else {
+      let t0 = (lo - a) / d
+      let t1 = (hi - a) / d
+      if (t0 > t1) [t0, t1] = [t1, t0]
+      tMin = Math.max(tMin, t0)
+      tMax = Math.min(tMax, t1)
+      if (tMin > tMax) return false
+    }
+  }
+  // Irisan valid di dalam (0,1): segmen benar-benar melewati rect sebelum b.
+  return tMax > 0 && tMin < 1 && tMin > 0
+}
+
 function computeExteriorInFrame(
   layout: DesignLayout,
   site: Site,
   pos: [number, number, number],
   target: [number, number, number],
   fov: number,
-  diag: number
+  diag: number,
+  fp: { x: number; y: number; width: number; depth: number }
 ): string[] {
   const elements = layout.exteriorElements ?? []
   const viewDx = target[0] - pos[0]
@@ -290,6 +333,22 @@ function computeExteriorInFrame(
   const viewMag = Math.hypot(viewDx, viewDz)
   const threshold = Math.min(100, fov * 1.35) / 2 + 12
   const maxDist = 3 * diag
+
+  // Rect oklusi = footprint di-inset; inset dijepit supaya rect tetap valid
+  // pada bangunan mungil (< 2×inset per sumbu → oklusi dimatikan saja).
+  const inset = Math.min(OCCLUSION_INSET_M, fp.width / 4, fp.depth / 4)
+  const occlusionRect =
+    inset > 0
+      ? {
+          x0: fp.x + inset,
+          y0: fp.y + inset,
+          x1: fp.x + fp.width - inset,
+          y1: fp.y + fp.depth - inset,
+        }
+      : null
+  // Posisi kamera dalam koordinat site (inversi siteToWorld).
+  const camSiteX = pos[0] + site.widthM / 2
+  const camSiteY = pos[2] + site.depthM / 2
 
   const kinds = new Set<string>()
   for (const el of elements) {
@@ -307,7 +366,15 @@ function computeExteriorInFrame(
     }
     const cos = (viewDx * dx + viewDz * dz) / (viewMag * dist)
     const angle = (Math.acos(clamp(cos, -1, 1)) * 180) / Math.PI
-    if (angle <= threshold) kinds.add(el.kind)
+    if (angle > threshold) continue
+    // Oklusi 2D: garis pandang kamera→elemen menembus massa bangunan →
+    // elemen tertutup, jangan disebut "visible". Aproksimasi denah (tanpa
+    // tinggi): elemen tinggi di belakang rumah rendah tetap tereksklusi —
+    // keterbatasan v1 yang diterima (depth map tetap memandu provider).
+    if (occlusionRect && segmentCrossesRect(camSiteX, camSiteY, rp.x, rp.y, occlusionRect)) {
+      continue
+    }
+    kinds.add(el.kind)
   }
   return sortedUnique(kinds)
 }
@@ -353,7 +420,7 @@ export function analyzeScene(layout: DesignLayout, site: Site, pose: CameraPose)
   const hasRooftopDeck = layout.floors.some((f) => f.id === "floor-rooftop")
 
   const sides = visibleSides.map((side) => buildSideFacts(side, layout, fp))
-  const exteriorInFrame = computeExteriorInFrame(layout, site, pos, target, fov, diag)
+  const exteriorInFrame = computeExteriorInFrame(layout, site, pos, target, fov, diag, fp)
   const vegetationPresent = (layout.exteriorElements ?? []).some(
     (el) => !el.hidden && (el.kind === "tree" || el.kind === "plant" || el.kind === "garden_bed")
   )
