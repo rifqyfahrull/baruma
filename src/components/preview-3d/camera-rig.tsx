@@ -30,6 +30,7 @@ export function CameraRig({
   const viewNonce = usePreviewStore((s) => s.viewNonce)
   const viewPreset = usePreviewStore((s) => s.viewPreset)
   const focusNonce = usePreviewStore((s) => s.focusNonce)
+  const interiorViewNonce = usePreviewStore((s) => s.interiorViewNonce)
 
   const dist = Math.max(site.widthM, site.depthM) * 1.5 + height * 0.5 + 4
 
@@ -59,6 +60,31 @@ export function CameraRig({
     invalidate()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusNonce, controls])
+
+  // Interior AI-render placement (Fase B): puts the camera INSIDE the room,
+  // eye-level, looking at its center — unlike fly-to-room (frames it from a
+  // high angle looking IN), this shot is what a person standing inside the
+  // room would see.
+  React.useEffect(() => {
+    if (!controls) return
+    const { interiorViewRoomId, exploded } = usePreviewStore.getState()
+    const room = interiorViewRoomId ? layout.rooms.find((r) => r.id === interiorViewRoomId) : null
+    if (!room) return
+    const e = floorElevations(layout.floors).get(room.floorId)
+    const baseY = e ? e.baseY + e.index * (exploded ? EXPLODE_GAP : 0) : 0
+    const cx = room.x + room.width / 2 - site.widthM / 2
+    const cz = room.y + room.depth / 2 - site.depthM / 2
+    // Half-diagonal vector of the room's rectangle — camera sits near one
+    // corner (35% of the way from center) so it looks across the room
+    // instead of straight into a wall.
+    const dx = room.width / 2
+    const dz = room.depth / 2
+    camera.position.set(cx - dx * 0.35, baseY + SLAB_T + 1.5, cz - dz * 0.35)
+    controls.target.set(cx, baseY + SLAB_T + 1.3, cz)
+    controls.update()
+    invalidate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [interiorViewNonce, controls])
 
   return null
 }

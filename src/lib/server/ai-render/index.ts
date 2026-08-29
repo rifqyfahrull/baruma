@@ -12,12 +12,22 @@ import { mockRenderProvider } from "./mock"
 import type { RenderProvider } from "./types"
 
 export type { RenderProvider, RenderProviderInput, SubmitResult } from "./types"
-export { RENDER_PRESETS, compilePrompt, compilePromptV2, describeSceneFacts, projectSeed } from "./prompt"
+export {
+  RENDER_PRESETS,
+  compilePrompt,
+  compilePromptInterior,
+  compilePromptV2,
+  describeRoomFacts,
+  describeSceneFacts,
+  projectSeed,
+} from "./prompt"
 export type { RenderPreset, RenderSceneMeta } from "./prompt"
 export { RENDER_CREDIT_COST, renderCreditCost } from "./pricing"
 export type { RenderCreditMode } from "./pricing"
 export { analyzeScene } from "./analyze"
 export type { CameraPose, SceneFacts } from "./analyze"
+export { analyzeRoom } from "./analyze-room"
+export type { RoomFacts } from "./analyze-room"
 
 function getEnv(name: string): string | undefined {
   const value = process.env[name]

@@ -21,11 +21,13 @@ import {
   RENDER_PRESETS,
   compilePrompt,
   compilePromptV2,
+  compilePromptInterior,
   analyzeScene,
+  analyzeRoom,
   projectSeed,
   RENDER_CREDIT_COST,
 } from "@/lib/server/ai-render"
-import type { CameraPose } from "@/lib/server/ai-render"
+import type { CameraPose, RoomFacts } from "@/lib/server/ai-render"
 import type { DesignLayout } from "@/types"
 import { polishScene } from "@/lib/server/ai-render/polish"
 import { finalizeRenderJob, failRenderJob } from "@/lib/server/ai-render/finalize"
@@ -77,6 +79,12 @@ const bodySchema = z.object({
       landscape: z.string().optional(),
     })
     .optional(),
+  // Fase B (Task 3) — render interior per ruang. Absen = "exterior" (jalur
+  // Fase A tak berubah). `roomId` opsional: bila absen, ruang dideteksi dari
+  // `pose` (posisi kamera world → site → rect ruang mana yang memuatnya, lihat
+  // analyzeRoom di ./ai-render/analyze-room.ts).
+  target: z.enum(["exterior", "interior"]).optional(),
+  roomId: z.string().min(1).optional(),
 })
 
 const VALID_PRESET_IDS = new Set(RENDER_PRESETS.map((p) => p.id))
@@ -131,8 +139,17 @@ export async function POST(
     }
     const parsed = bodySchema.safeParse(raw)
     if (!parsed.success) return err(400, parsed.error.issues[0]?.message ?? "Invalid input")
-    const { mode, preset, shotId, clientRequestId, inputKeys, paramsHash, pose, sceneMeta } =
+    const { mode, preset, shotId, clientRequestId, inputKeys, paramsHash, pose, sceneMeta, target, roomId } =
       parsed.data
+    const isInterior = target === "interior"
+
+    // Interior WAJIB pose kamera (dipakai analyzeRoom utk deteksi ruang bila
+    // roomId absen, DAN utk cameraPose yang disimpan ke job) — dicek SEBELUM
+    // guard umum "pose atau sceneMeta" di bawah supaya pesannya spesifik,
+    // terlepas apakah sceneMeta ikut terkirim atau tidak.
+    if (isInterior && !pose) {
+      return err(400, "Render interior butuh pose kamera")
+    }
 
     if (!pose && !sceneMeta) return err(400, "Butuh pose atau sceneMeta")
 
@@ -200,6 +217,21 @@ export async function POST(
       }
     }
 
+    // Interior (Fase B): butuh layout TERLEPAS dari sceneMeta (tak ada
+    // fallback sceneMeta utk interior) — lalu resolve ruang (roomId
+    // eksplisit atau deteksi dari pose) SEBELUM potong kredit, sama disiplin
+    // dgn guard layout di atas (400 di sini tak pernah membuat job row).
+    let roomFacts: RoomFacts | null = null
+    if (isInterior) {
+      if (!layout) {
+        return err(400, "Layout proyek belum tersimpan")
+      }
+      roomFacts = analyzeRoom(layout, project.site, { roomId, pose })
+      if (!roomFacts) {
+        return err(400, "Ruangan tidak ditemukan")
+      }
+    }
+
     const jobId = jobIdFromClientRequestId(clientRequestId)
     const cost = RENDER_CREDIT_COST[mode]
 
@@ -232,7 +264,13 @@ export async function POST(
     // (fallback aman utk proyek lama / capture sebelum migrasi klien).
     let prompt: string
     let cameraPose: CameraPose | undefined
-    if (pose) {
+    if (isInterior) {
+      // Guard pra-spend di atas menjamin roomFacts non-null & pose ada di
+      // sini (isInterior hanya true setelah kedua hal itu tervalidasi).
+      const polished = await polishScene(roomFacts!)
+      prompt = compilePromptInterior(roomFacts!, preset, polished)
+      cameraPose = pose
+    } else if (pose) {
       if (layout) {
         const facts = analyzeScene(layout, project.site, pose)
         const polished = await polishScene(facts)
@@ -262,6 +300,9 @@ export async function POST(
       inputKeys,
       watermarked,
       cameraPose,
+      // Hanya diisi utk interior — eksterior tetap bergantung DEFAULT DB
+      // (lihat komentar opts.target di repo/renders.ts).
+      ...(isInterior ? { target: "interior", roomId: roomFacts!.roomId } : {}),
     })
 
     const provider = getRenderProvider(mode)

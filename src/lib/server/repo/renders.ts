@@ -115,34 +115,65 @@ export async function createRenderJob(
     // tanpa query entitlements ulang).
     watermarked?: boolean
     // Pose kamera hasil analisis Scene Intelligence Fase A (posisi/target/fov
-    // dsb, lihat spec 2026-08-23) — disimpan mentah sbg jsonb, opsional. TIDAK
-    // menyertakan `target` (exterior|interior): kolom itu diisi DB DEFAULT
-    // 'exterior', bukan lewat opts ini (Fase B interior baru mengisinya).
+    // dsb, lihat spec 2026-08-23) — disimpan mentah sbg jsonb, opsional.
     cameraPose?: unknown
+    // Fase B (Task 3) — target render (exterior|interior) & ruang terpilih.
+    // Kolom DINAMIS: HANYA disisipkan ke INSERT saat opts diberikan (route
+    // hanya mengisinya utk target:"interior"); absen -> kolom `target`/
+    // `room_id` TIDAK muncul sama sekali di daftar INSERT dan DB DEFAULT
+    // 'exterior' (target)/NULL (room_id) yang menangani — menjaga jalur
+    // eksterior Fase A bit-identik (lihat test "target TIDAK disisipkan
+    // eksplisit").
+    target?: string
+    roomId?: string
   }
 ): Promise<RenderJob> {
+  const cols = [
+    "id",
+    "owner_id",
+    "project_id",
+    "status",
+    "mode",
+    "preset",
+    "shot_id",
+    "seed",
+    "credits_spent",
+    "provider",
+    "params_hash",
+    "input_keys",
+    "watermarked",
+    "camera_pose",
+  ]
+  const vals: unknown[] = [
+    id,
+    ownerId,
+    opts.projectId,
+    opts.status ?? "queued",
+    opts.mode,
+    opts.preset,
+    opts.shotId,
+    opts.seed,
+    opts.creditsSpent,
+    opts.provider,
+    opts.paramsHash,
+    JSON.stringify(opts.inputKeys),
+    opts.watermarked ?? false,
+    opts.cameraPose === undefined ? null : JSON.stringify(opts.cameraPose),
+  ]
+  if (opts.target !== undefined) {
+    cols.push("target")
+    vals.push(opts.target)
+  }
+  if (opts.roomId !== undefined) {
+    cols.push("room_id")
+    vals.push(opts.roomId)
+  }
+  const placeholders = vals.map((_, i) => `$${i + 1}`).join(",")
+
   const res = await query<RenderJobRow>(
-    `INSERT INTO render_jobs (
-       id, owner_id, project_id, status, mode, preset, shot_id, seed,
-       credits_spent, provider, params_hash, input_keys, watermarked, camera_pose
-     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+    `INSERT INTO render_jobs (${cols.join(", ")}) VALUES (${placeholders})
      RETURNING ${COLS}`,
-    [
-      id,
-      ownerId,
-      opts.projectId,
-      opts.status ?? "queued",
-      opts.mode,
-      opts.preset,
-      opts.shotId,
-      opts.seed,
-      opts.creditsSpent,
-      opts.provider,
-      opts.paramsHash,
-      JSON.stringify(opts.inputKeys),
-      opts.watermarked ?? false,
-      opts.cameraPose === undefined ? null : JSON.stringify(opts.cameraPose),
-    ]
+    vals
   )
   return rowToRenderJob(res.rows[0])
 }

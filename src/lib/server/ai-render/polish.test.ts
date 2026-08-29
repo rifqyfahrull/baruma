@@ -7,6 +7,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { SceneFacts } from "./analyze"
+import type { RoomFacts } from "./analyze-room"
 
 const chatTextMock = vi.fn()
 const getPolishCacheMock = vi.fn()
@@ -141,6 +142,52 @@ describe("factsHash", () => {
   it("(f) is deterministic for identical facts objects", () => {
     const a = factsHash(baseFacts())
     const b = factsHash(baseFacts())
+    expect(a).toBe(b)
+    expect(a).toMatch(/^[0-9a-f]{8}$/)
+  })
+})
+
+/** Fixture Fase B Task 2 — `polishScene`/`factsHash` kini menerima
+ *  `SceneFacts | RoomFacts`; ini membuktikan RoomFacts diterima end-to-end
+ *  (bukan cuma type-checks) & hash tetap deterministik untuk bentuk baru. */
+function baseRoomFacts(): RoomFacts {
+  return {
+    roomId: "r1",
+    roomName: "Kamar Tidur Utama",
+    roomType: "kamar_tidur",
+    floorIndex: 0,
+    widthM: 4,
+    depthM: 5,
+    areaM2: 20,
+    ceilingHeightM: 2.8,
+    style: "japandi",
+    materials: [{ surface: "floor", name: "Parket kayu" }],
+    furniture: [],
+    windowSides: ["s"],
+    doorCount: 1,
+    hasCurtains: false,
+    skylightCount: 0,
+    lighting: { fixtureCount: 0, warmCount: 0 },
+  }
+}
+
+describe("polishScene — RoomFacts (Fase B)", () => {
+  it("(g) accepts RoomFacts end-to-end on cache miss + chatText success", async () => {
+    process.env.AI_RENDER_POLISH = "1"
+    getPolishCacheMock.mockResolvedValue(null)
+    chatTextMock.mockResolvedValue("  a fluent room paragraph.  ")
+    const facts = baseRoomFacts()
+    const result = await polishScene(facts)
+    expect(result).toBe("a fluent room paragraph.")
+    expect(chatTextMock).toHaveBeenCalledTimes(1)
+    const [hashArg, textArg] = setPolishCacheMock.mock.calls[0]
+    expect(hashArg).toBe(factsHash(facts))
+    expect(textArg).toBe("a fluent room paragraph.")
+  })
+
+  it("(h) factsHash is deterministic for identical RoomFacts objects", () => {
+    const a = factsHash(baseRoomFacts())
+    const b = factsHash(baseRoomFacts())
     expect(a).toBe(b)
     expect(a).toMatch(/^[0-9a-f]{8}$/)
   })

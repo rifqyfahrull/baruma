@@ -15,6 +15,10 @@ export interface RenderJobView {
   outputUrl: string | null
   errorMessage?: string
   createdAt: string
+  // Fase B (Task 3) — target render (exterior|interior) & ruang terpilih,
+  // lihat komentar `target`/`roomId` di RenderJob (repo/renders.ts).
+  target: string
+  roomId?: string
 }
 
 export function renderJobView(job: RenderJob): RenderJobView {
@@ -28,5 +32,7 @@ export function renderJobView(job: RenderJob): RenderJobView {
     outputUrl: job.outputKey ? assetPublicUrl(job.outputKey) : null,
     errorMessage: job.errorMessage,
     createdAt: job.createdAt,
+    target: job.target,
+    roomId: job.roomId,
   }
 }

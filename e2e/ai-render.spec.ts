@@ -165,4 +165,47 @@ test.describe("Render AI", () => {
     // Hasil mock sukses (sinyal yang sama dgn kasus "buat render" di atas).
     await expect(page.getByTestId("ai-render-result-image")).toBeVisible({ timeout: 30_000 })
   })
+
+  test("target Interior + ruang pertama — capture kamera di dalam ruangan (requestInteriorView), render sukses", async ({
+    page,
+  }) => {
+    // Bukti tak-langsung sama seperti kasus "Sudut saat ini" di atas: SATU-
+    // SATUNYA request jaringan nyata dalam alur ini adalah PUT ke storage —
+    // kalau `requestInteriorView` + capture gagal, `handleSubmit` memutus
+    // alur SEBELUM upload apa pun (lihat `if (!captured) { ...; return }`),
+    // jadi request PUT yang benar-benar terjadi membuktikan kamera WebGL
+    // nyata berhasil dipindah ke dalam ruangan & capture berhasil.
+    await page.route("https://mock-storage.example.com/**", (route) =>
+      route.fulfill({ status: 200, body: "" })
+    )
+
+    await openPreview(page)
+    await page.getByTestId("ai-render-open").click()
+    await expect(page.getByRole("heading", { name: "Render AI" })).toBeVisible()
+
+    // Segmented control: Eksterior (default) -> Interior. Munculkan <select>
+    // ruang grup-per-lantai lalu pilih opsi ruang pertama (index 0 adalah
+    // placeholder disabled "Pilih ruangan…").
+    const targetButton = page.getByTestId("ai-render-target-interior")
+    await targetButton.click()
+    await expect(targetButton).toHaveAttribute("aria-pressed", "true")
+
+    const roomSelect = page.getByTestId("ai-render-interior-room")
+    await expect(roomSelect).toBeVisible()
+    await roomSelect.selectOption({ index: 1 })
+    await expect(roomSelect).not.toHaveValue("")
+
+    const uploadRequest = page.waitForRequest(
+      (req) => req.method() === "PUT" && req.url().includes("-beauty.png"),
+      { timeout: 20_000 }
+    )
+    await page.getByTestId("ai-render-submit").click()
+    // Request PUT ke storage TERJADI — bukti capture interior nyata berhasil
+    // (bidikan default target Interior adalah "Siang", jadi nama file berupa
+    // `interior-siang-beauty.png`).
+    await uploadRequest
+
+    // Hasil mock sukses (sinyal yang sama dgn kasus-kasus di atas).
+    await expect(page.getByTestId("ai-render-result-image")).toBeVisible({ timeout: 30_000 })
+  })
 })

@@ -461,6 +461,112 @@ describe("POST /api/v1/projects/[id]/renders", () => {
       expect.objectContaining({ prompt: expect.stringContaining("POLISHED PARAGRAPH") })
     )
   })
+
+  // ---------------------------------------------------------------------
+  // target=interior (Fase B Task 3 — docs/superpowers/plans/
+  // 2026-08-29-ai-render-interior-fase-b.md). analyzeRoom/compilePromptInterior
+  // dipakai APA ADANYA (real, tak dimock) — konsisten pola analyzeScene/
+  // compilePromptV2 di atas; hanya polishScene yang dimock (default null).
+  // ---------------------------------------------------------------------
+
+  it("target interior + roomId valid + pose -> 201, prompt interior, createRenderJob dgn target+roomId", async () => {
+    const token = await signToken(USER_ID)
+    vi.mocked(layoutsRepo.getLayoutPayload).mockResolvedValueOnce(minimalLayout)
+    vi.mocked(creditsRepo.spendCreditsOnce).mockResolvedValueOnce("ok")
+    const job = makeJob({ target: "interior", roomId: "r1" })
+    vi.mocked(rendersRepo.createRenderJob).mockResolvedValueOnce(job)
+    mockProvider.submit.mockResolvedValueOnce({ kind: "done", imageBytes: new Uint8Array([1]) })
+    vi.mocked(finalizeLib.finalizeRenderJob).mockResolvedValueOnce(makeJob({ status: "succeeded" }))
+
+    const { sceneMeta: _sceneMeta, ...bodyWithoutSceneMeta } = validBody
+    const res = await POST(
+      await postReq(token, {
+        ...bodyWithoutSceneMeta,
+        pose: validPose,
+        target: "interior",
+        roomId: "r1",
+      }),
+      ctx
+    )
+    expect(res.status).toBe(201)
+    expect(mockProvider.submit).toHaveBeenCalledWith(
+      expect.objectContaining({ prompt: expect.stringContaining("interior") })
+    )
+    expect(vi.mocked(rendersRepo.createRenderJob)).toHaveBeenCalledWith(
+      expect.any(String),
+      USER_ID,
+      expect.objectContaining({ target: "interior", roomId: "r1" })
+    )
+  })
+
+  it("400 target interior + roomId tak ditemukan di layout — spendCreditsOnce TIDAK terpanggil", async () => {
+    const token = await signToken(USER_ID)
+    vi.mocked(layoutsRepo.getLayoutPayload).mockResolvedValueOnce(minimalLayout)
+    const { sceneMeta: _sceneMeta, ...bodyWithoutSceneMeta } = validBody
+    const res = await POST(
+      await postReq(token, {
+        ...bodyWithoutSceneMeta,
+        pose: validPose,
+        target: "interior",
+        roomId: "room-tak-ada",
+      }),
+      ctx
+    )
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toContain("Ruangan tidak ditemukan")
+    expect(vi.mocked(creditsRepo.spendCreditsOnce)).not.toHaveBeenCalled()
+  })
+
+  it("target interior TANPA roomId + pose di dalam ruang -> 201 (deteksi otomatis dari pose)", async () => {
+    const token = await signToken(USER_ID)
+    // minimalLayout: r1 mengisi seluruh site (x:[0,10], y:[0,15]); pose ini
+    // ber-siteX=5, siteY=7.5, py=1 -> di dalam r1 (berbeda dgn validPose yg
+    // sengaja DI LUAR site utk kasus di bawah).
+    const poseInsideRoom: CameraPose = { position: [0, 1, 0], target: [0, 0, 0], fov: 50 }
+    vi.mocked(layoutsRepo.getLayoutPayload).mockResolvedValueOnce(minimalLayout)
+    vi.mocked(creditsRepo.spendCreditsOnce).mockResolvedValueOnce("ok")
+    const job = makeJob({ target: "interior", roomId: "r1" })
+    vi.mocked(rendersRepo.createRenderJob).mockResolvedValueOnce(job)
+    mockProvider.submit.mockResolvedValueOnce({ kind: "done", imageBytes: new Uint8Array([1]) })
+    vi.mocked(finalizeLib.finalizeRenderJob).mockResolvedValueOnce(makeJob({ status: "succeeded" }))
+
+    const { sceneMeta: _sceneMeta, ...bodyWithoutSceneMeta } = validBody
+    const res = await POST(
+      await postReq(token, { ...bodyWithoutSceneMeta, pose: poseInsideRoom, target: "interior" }),
+      ctx
+    )
+    expect(res.status).toBe(201)
+    expect(vi.mocked(rendersRepo.createRenderJob)).toHaveBeenCalledWith(
+      expect.any(String),
+      USER_ID,
+      expect.objectContaining({ target: "interior", roomId: "r1" })
+    )
+  })
+
+  it("target interior TANPA roomId + pose di luar semua ruang -> 400 Ruangan tidak ditemukan", async () => {
+    const token = await signToken(USER_ID)
+    // validPose (siteX=15) berada di luar r1 (x:[0,10]) pada minimalLayout.
+    vi.mocked(layoutsRepo.getLayoutPayload).mockResolvedValueOnce(minimalLayout)
+    const { sceneMeta: _sceneMeta, ...bodyWithoutSceneMeta } = validBody
+    const res = await POST(
+      await postReq(token, { ...bodyWithoutSceneMeta, pose: validPose, target: "interior" }),
+      ctx
+    )
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toContain("Ruangan tidak ditemukan")
+    expect(vi.mocked(creditsRepo.spendCreditsOnce)).not.toHaveBeenCalled()
+  })
+
+  it("400 target interior tanpa pose (interior wajib pose kamera)", async () => {
+    const token = await signToken(USER_ID)
+    const res = await POST(await postReq(token, { ...validBody, target: "interior" }), ctx)
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toContain("pose")
+    expect(vi.mocked(creditsRepo.spendCreditsOnce)).not.toHaveBeenCalled()
+  })
 })
 
 describe("GET /api/v1/projects/[id]/renders", () => {

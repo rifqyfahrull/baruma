@@ -205,6 +205,34 @@ describe("createRenderJob", () => {
     const insertCols = lastSql().slice(0, lastSql().indexOf("VALUES"))
     expect(insertCols).not.toMatch(/\btarget\b/)
   })
+
+  it("target+roomId diberikan (Fase B interior) -> kolom target & room_id ikut INSERT via placeholder dinamis", async () => {
+    query.mockResolvedValueOnce({
+      rows: [makeRow({ target: "interior", room_id: "r1" })],
+    })
+
+    const job = await createRenderJob("rnd-abc123", "user-1", {
+      projectId: "proj-1",
+      mode: "cepat",
+      preset: "tropis-siang",
+      shotId: "iso-siang",
+      seed: 42,
+      creditsSpent: 1,
+      provider: "mock",
+      paramsHash: "hash-abc",
+      inputKeys: { beauty: "renders/user-1/proj-1/beauty.png" },
+      target: "interior",
+      roomId: "r1",
+    })
+
+    const insertCols = lastSql().slice(0, lastSql().indexOf("VALUES"))
+    expect(insertCols).toMatch(/\btarget\b/)
+    expect(insertCols).toMatch(/\broom_id\b/)
+    expect(lastParams()).toContain("interior")
+    expect(lastParams()).toContain("r1")
+    expect(job.target).toBe("interior")
+    expect(job.roomId).toBe("r1")
+  })
 })
 
 describe("getRenderJob — owner-scoped (anti-IDOR)", () => {

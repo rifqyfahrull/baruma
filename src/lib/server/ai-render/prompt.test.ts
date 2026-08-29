@@ -8,12 +8,16 @@ import { describe, expect, it } from "vitest"
 import {
   RENDER_PRESETS,
   compilePrompt,
+  compilePromptInterior,
   compilePromptV2,
+  describeRoomFacts,
   describeSceneFacts,
+  interiorLightClause,
   projectSeed,
 } from "./prompt"
 import type { RenderSceneMeta } from "./prompt"
 import type { SceneFacts } from "./analyze"
+import type { RoomFacts } from "./analyze-room"
 
 /** Substring persis dari `PROMPT_GEOMETRY_GUARD` (private di prompt.ts) —
  *  dipakai untuk assert semua output compilePromptV2 diakhiri klausa ini,
@@ -244,3 +248,144 @@ describe("compilePromptV2 — snapshot", () => {
   })
 })
 
+/**
+ * Fixtures Fase B Task 2 — kamar japandi lengkap (dari fixture Task 1
+ * analyze-room.test.ts) dan ruang minim (tanpa interiors plan, tipe ruang
+ * tak ada di peta EN → fallback ke tipe mentah, lantai kedua).
+ */
+const japandiBedroomFacts: RoomFacts = {
+  roomId: "r1",
+  roomName: "Kamar Tidur Utama",
+  roomType: "kamar_tidur",
+  floorIndex: 0,
+  widthM: 4,
+  depthM: 5,
+  areaM2: 20,
+  ceilingHeightM: 2.8,
+  style: "japandi",
+  colorPalette: ["#ff0000", "#dddddd", "#c0c0c0", "#ffffff", "#000000", "#a52a2a"],
+  materials: [{ surface: "floor", name: "Parket kayu" }],
+  furniture: [
+    { name: "Bed", category: "bed", placement: "against the north wall" },
+    { name: "Wardrobe", category: "storage", placement: "near the center" },
+  ],
+  windowSides: ["s", "e"],
+  doorCount: 1,
+  hasCurtains: true,
+  skylightCount: 1,
+  lighting: { fixtureCount: 4, warmCount: 4 },
+}
+
+const minimalWorkspaceFacts: RoomFacts = {
+  roomId: "r2",
+  roomName: "Ruang Kerja",
+  roomType: "workspace",
+  floorIndex: 1,
+  widthM: 3,
+  depthM: 3,
+  areaM2: 9,
+  ceilingHeightM: 2.8,
+  materials: [],
+  furniture: [],
+  windowSides: [],
+  doorCount: 1,
+  hasCurtains: false,
+  skylightCount: 0,
+  lighting: { fixtureCount: 0, warmCount: 0 },
+}
+
+describe("describeRoomFacts — determinism", () => {
+  it("same facts produce a byte-identical description (called twice)", () => {
+    expect(describeRoomFacts(japandiBedroomFacts)).toBe(describeRoomFacts(japandiBedroomFacts))
+  })
+})
+
+describe("compilePromptInterior — snapshot", () => {
+  it("full japandi bedroom (style, palette, materials, furniture, windows+curtains, skylight), preset skandinavia-siang", () => {
+    expect(compilePromptInterior(japandiBedroomFacts, "skandinavia-siang")).toMatchSnapshot()
+  })
+
+  it("minimal room without an interiors plan (no style/materials/furniture/windows), preset tropis-siang", () => {
+    expect(compilePromptInterior(minimalWorkspaceFacts, "tropis-siang")).toMatchSnapshot()
+  })
+
+  it("every output ends with the fixed geometry-guard clause", () => {
+    for (const [facts, presetId] of [
+      [japandiBedroomFacts, "skandinavia-siang"],
+      [minimalWorkspaceFacts, "malam"],
+      [japandiBedroomFacts, "tropis-senja"],
+    ] as const) {
+      const prompt = compilePromptInterior(facts, presetId)
+      expect(prompt.endsWith(`${GEOMETRY_GUARD_TEXT}.`)).toBe(true)
+    }
+  })
+
+  it("uses the interior photography base (contains \"interior\"), distinct from the exterior base", () => {
+    const prompt = compilePromptInterior(japandiBedroomFacts, "tropis-siang")
+    expect(prompt).toContain("photorealistic interior architectural photography")
+    expect(prompt.startsWith("photorealistic architectural photography of a residential house")).toBe(
+      false
+    )
+  })
+
+  it("interior light clause present only for preset malam with lighting.fixtureCount > 0", () => {
+    const malam = compilePromptInterior(japandiBedroomFacts, "malam")
+    const nonMalam = compilePromptInterior(japandiBedroomFacts, "tropis-siang")
+    expect(malam).toContain("4 interior light fixtures on (4 warm)")
+    expect(nonMalam).not.toContain("interior light fixtures")
+  })
+
+  it("preset malam with lighting.fixtureCount 0 has no light clause", () => {
+    const prompt = compilePromptInterior(minimalWorkspaceFacts, "malam")
+    expect(prompt).not.toContain("interior light fixtures")
+  })
+
+  it("polished description override replaces the deterministic description entirely", () => {
+    const deterministic = describeRoomFacts(japandiBedroomFacts)
+    const polished = compilePromptInterior(
+      japandiBedroomFacts,
+      "x-unknown-preset",
+      "  POLISHED room description  "
+    )
+    expect(polished).toContain("POLISHED room description")
+    expect(polished).not.toContain(deterministic)
+  })
+
+  it("interior light clause survives the polished-description override (preset malam)", () => {
+    const polished = compilePromptInterior(japandiBedroomFacts, "malam", "POLISHED TEXT")
+    expect(polished).toContain("POLISHED TEXT")
+    expect(polished).toContain("4 interior light fixtures on (4 warm)")
+  })
+
+  it("falls back to the first preset for an unknown preset id (never throws)", () => {
+    const known = compilePromptInterior(japandiBedroomFacts, "tropis-siang")
+    const unknown = compilePromptInterior(japandiBedroomFacts, "does-not-exist")
+    expect(unknown).toBe(known)
+  })
+})
+
+describe("interiorLightClause", () => {
+  it("null for non-malam presets regardless of fixtureCount", () => {
+    expect(interiorLightClause(japandiBedroomFacts, "tropis-siang")).toBeNull()
+  })
+
+  it("null for preset malam when fixtureCount is 0", () => {
+    expect(interiorLightClause(minimalWorkspaceFacts, "malam")).toBeNull()
+  })
+
+  it("returns the fixture clause for preset malam with fixtureCount > 0", () => {
+    expect(interiorLightClause(japandiBedroomFacts, "malam")).toBe(
+      "4 interior light fixtures on (4 warm)"
+    )
+  })
+})
+
+
+describe("describeRoomFacts — fallback tipe ruang tak terpetakan", () => {
+  it("menghumanisasi snake_case (rooftop_lounge -> 'rooftop lounge'), tanpa underscore bocor", () => {
+    const facts = { ...minimalWorkspaceFacts, roomType: "rooftop_lounge" }
+    const out = describeRoomFacts(facts)
+    expect(out).toContain("rooftop lounge")
+    expect(out).not.toContain("rooftop_lounge")
+  })
+})

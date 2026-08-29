@@ -69,10 +69,20 @@ function extractServerMessage(error: unknown): string | null {
  */
 const CURRENT_ANGLE_SHOT_ID = "sudut-ini"
 type ShotOption = { id: string; label: string; view?: ViewPreset; lighting?: PhotoLighting }
-const SHOT_OPTIONS: ShotOption[] = [
-  ...PHOTO_SHOTS,
-  { id: CURRENT_ANGLE_SHOT_ID, label: "Sudut saat ini" },
+const CURRENT_ANGLE_SHOT: ShotOption = { id: CURRENT_ANGLE_SHOT_ID, label: "Sudut saat ini" }
+const EXTERIOR_SHOT_OPTIONS: ShotOption[] = [...PHOTO_SHOTS, CURRENT_ANGLE_SHOT]
+/**
+ * Bidikan untuk target Interior — kamera SELALU dipindah lewat
+ * `requestInteriorView` (bukan `shot.view`, yang absen di sini sengaja),
+ * jadi hanya suasana (lighting) yang relevan. Memakai label bidikan
+ * eksterior (mis. "Tampak Depan — Siang") di sini menyesatkan karena
+ * penempatan kamera diabaikan — lihat `handleSubmit`.
+ */
+const INTERIOR_SHOTS: ShotOption[] = [
+  { id: "interior-siang", label: "Siang", lighting: "siang" },
+  { id: "interior-senja", label: "Senja", lighting: "senja" },
 ]
+const INTERIOR_SHOT_OPTIONS: ShotOption[] = [...INTERIOR_SHOTS, CURRENT_ANGLE_SHOT]
 
 async function downloadRenderOutput(url: string): Promise<void> {
   try {
@@ -107,11 +117,11 @@ async function downloadRenderOutput(url: string): Promise<void> {
  */
 export function AiRenderDialog({
   project,
+  layout,
 }: {
   project: Project
-  /** Tak lagi dibaca di sini sejak pose kamera menggantikan sceneMeta
-   *  turunan — dipertahankan di kontrak prop demi kompatibilitas pemanggil
-   *  (mis. `view-toolbar.tsx`), yang tetap boleh mengirimnya. */
+  /** Sumber daftar ruangan untuk target render "Interior" (grup per lantai
+   *  di `<select>`) — dipakai lagi sejak Fase B. */
   layout: DesignLayout
 }) {
   const capabilities = useProjectCapabilities(project.id)
@@ -121,7 +131,9 @@ export function AiRenderDialog({
   const [tab, setTab] = React.useState<"buat" | "riwayat">("buat")
   const [mode, setMode] = React.useState<AiRenderModeId>("cepat")
   const [preset, setPreset] = React.useState<string>(RENDER_PRESETS[0].id)
-  const [shotId, setShotId] = React.useState<string>(SHOT_OPTIONS[0].id)
+  const [shotId, setShotId] = React.useState<string>(EXTERIOR_SHOT_OPTIONS[0].id)
+  const [target, setTarget] = React.useState<"exterior" | "interior">("exterior")
+  const [roomId, setRoomId] = React.useState<string | null>(null)
   const [phase, setPhase] = React.useState<Phase>("pilih")
   const [renderId, setRenderId] = React.useState<string | null>(null)
   const [cachedHit, setCachedHit] = React.useState(false)
@@ -153,21 +165,48 @@ export function AiRenderDialog({
     setCachedHit(false)
     setSubmitError(null)
     setHistoryPreview(null)
+    setTarget("exterior")
+    setRoomId(null)
+    setShotId(EXTERIOR_SHOT_OPTIONS[0].id)
   }
 
   if (!capabilities.ai_render_v1) return null
 
+  // Daftar chip bidikan berbeda per target — Interior tak pernah memakai
+  // `shot.view` (kamera dipindah via `requestInteriorView`), jadi label
+  // sudut eksterior ("Tampak Depan", dst.) di sana menyesatkan.
+  const shotOptions = target === "interior" ? INTERIOR_SHOT_OPTIONS : EXTERIOR_SHOT_OPTIONS
+
+  function handleTargetChange(next: "exterior" | "interior") {
+    setTarget(next)
+    const nextOptions = next === "interior" ? INTERIOR_SHOT_OPTIONS : EXTERIOR_SHOT_OPTIONS
+    setShotId((prev) => (nextOptions.some((o) => o.id === prev) ? prev : nextOptions[0].id))
+  }
+
+  const isCurrentAngleShot = shotId === CURRENT_ANGLE_SHOT_ID
+  // Ruang yang bisa jadi target render interior — semua tipe ruangan KECUALI
+  // yang bukan "ruang" dalam pengertian interior (taman/kolam ada di luar,
+  // void bukan ruang sama sekali).
+  const interiorRooms = layout.rooms.filter(
+    (r) => r.type !== "taman" && r.type !== "kolam" && r.type !== "void"
+  )
+  const interiorRoomMissing = target === "interior" && !isCurrentAngleShot && !roomId
+
   async function handleSubmit() {
     setSubmitError(null)
     if (mode === "presisi" && presisiLocked) return // submit sudah disabled; jaga-jaga
+    if (interiorRoomMissing) return // submit sudah disabled; jaga-jaga
 
     const store = usePreviewStore.getState()
     if (!store.captureRenderInputs) {
       toast.error("Preview 3D belum siap — coba lagi sebentar.")
       return
     }
-    const shot = SHOT_OPTIONS.find((s) => s.id === shotId) ?? SHOT_OPTIONS[0]
+    const shot = shotOptions.find((s) => s.id === shotId) ?? shotOptions[0]
     const isCurrentAngle = shot.id === CURRENT_ANGLE_SHOT_ID
+    // Target interior lewat bidikan preset (bukan "Sudut saat ini") butuh
+    // ruang terpilih — server mendeteksi sendiri utk "Sudut saat ini".
+    const targetRoomId = target === "interior" && !isCurrentAngle ? roomId : null
 
     setPhase("capturing")
     // Orkestrasi identik photo-package.tsx: simpan state, terapkan sudut/
@@ -182,8 +221,18 @@ export function AiRenderDialog({
       realistic: store.realistic,
       nightMode: store.nightMode,
       sunStudyEnabled: store.sunStudy.enabled,
+      showFurniture: store.showFurniture,
+      exploded: store.exploded,
     }
     if (saved.sunStudyEnabled) store.setSunStudyEnabled(false)
+    // Exploded menggeser world-y tiap lantai di KLIEN saja (EXPLODE_GAP);
+    // server (floorElevations) tak tahu explode, jadi pose dari mode exploded
+    // membuat deteksi ruang "Sudut saat ini" interior salah lantai. Matikan
+    // selama capture (juga merapikan hasil eksterior), pulihkan di finally.
+    if (saved.exploded) store.setExploded(false)
+    // Interior tanpa furnitur terlihat kosong/tidak meyakinkan — paksa
+    // tampil selama capture interior, pulihkan nilai lama di finally.
+    if (targetRoomId) store.setShowFurniture(true)
 
     let captured: { beauty: string; depth: string; pose: CapturedPose } | null = null
     try {
@@ -195,7 +244,11 @@ export function AiRenderDialog({
           s.setNightMode(false)
           s.setRealistic(true)
         }
-        s.requestView(shot.view as ViewPreset)
+        if (targetRoomId) {
+          s.requestInteriorView(targetRoomId)
+        } else {
+          s.requestView(shot.view as ViewPreset)
+        }
       }
       await nextFrame()
       await nextFrame()
@@ -210,13 +263,18 @@ export function AiRenderDialog({
       // di atas — memulihkannya di sini jadi tak perlu (nilainya sudah sama
       // dgn `saved`) DAN tak diinginkan (requestView membumkan viewNonce,
       // memicu CameraRig "terbang" ke sudut yang sama — noop visual tapi
-      // bukan noop di sisi state/efek).
+      // bukan noop di sisi state/efek). Ini berlaku juga utk interior:
+      // penempatan interior MEMINDAHKAN kamera (beda dari "Sudut saat ini"),
+      // jadi requestView(saved.viewPreset) di sini justru BENAR — mengembalikan
+      // kamera ke sudut eksterior semula setelah dipakai untuk capture interior.
       if (!isCurrentAngle) {
         s.setNightMode(saved.nightMode)
         s.setRealistic(saved.realistic)
         s.requestView(saved.viewPreset)
       }
+      if (targetRoomId) s.setShowFurniture(saved.showFurniture)
       if (saved.sunStudyEnabled) s.setSunStudyEnabled(true)
+      if (saved.exploded) s.setExploded(true)
     }
 
     if (!captured) {
@@ -256,9 +314,20 @@ export function AiRenderDialog({
     // poseKey (kuantisasi 0.1 m/0.5°) supaya cache params_hash tetap hit
     // walau kamera bergeser di bawah ambang jitter, dan lighting dicap
     // "apa-adanya" (bukan "siang"/"senja" — TIDAK diubah saat capture).
+    // Render interior butuh `view` yang membedakan RUANG (bukan cuma sudut
+    // eksterior) di params_hash — dua ruang berbeda dgn shotId/preset sama
+    // TIDAK boleh saling bertabrakan di cache. Selected-room: kunci ke
+    // roomId. "Sudut saat ini" interior: kunci ke poseKey (server mendeteksi
+    // ruang dari pose, jadi pose-nya sendiri yang membedakan ruang/sudut).
+    const view =
+      target === "interior"
+        ? `interior:${isCurrentAngle ? poseKey(captured.pose) : targetRoomId}`
+        : isCurrentAngle
+          ? poseKey(captured.pose)
+          : (shot.view as string)
     const paramsHash = renderParamsHash({
       layoutRevision,
-      view: isCurrentAngle ? poseKey(captured.pose) : (shot.view as string),
+      view,
       lighting: isCurrentAngle ? "apa-adanya" : (shot.lighting as string),
       preset,
       seed,
@@ -275,6 +344,8 @@ export function AiRenderDialog({
         inputKeys: depthKey ? { beauty: beautyKey, depth: depthKey } : { beauty: beautyKey },
         paramsHash,
         pose: captured.pose,
+        target,
+        ...(targetRoomId ? { roomId: targetRoomId } : {}),
       },
       {
         onSuccess: (result) => {
@@ -378,6 +449,51 @@ export function AiRenderDialog({
                 </div>
 
                 <div className="space-y-1.5">
+                  <p className="text-xs font-semibold">Target render</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <TargetCard
+                      label="Eksterior"
+                      description="Tampak luar rumah dari sudut pilihan."
+                      active={target === "exterior"}
+                      onClick={() => handleTargetChange("exterior")}
+                      testId="ai-render-target-eksterior"
+                    />
+                    <TargetCard
+                      label="Interior"
+                      description="Tampak dalam satu ruangan, kamera di dalamnya."
+                      active={target === "interior"}
+                      onClick={() => handleTargetChange("interior")}
+                      testId="ai-render-target-interior"
+                    />
+                  </div>
+                  {target === "interior" && (
+                    <select
+                      data-testid="ai-render-interior-room"
+                      value={roomId ?? ""}
+                      onChange={(e) => setRoomId(e.target.value || null)}
+                      className="w-full rounded-md border bg-background px-2 py-1.5 text-xs"
+                    >
+                      <option value="" disabled>
+                        Pilih ruangan…
+                      </option>
+                      {layout.floors.map((floor) => {
+                        const rooms = interiorRooms.filter((r) => r.floorId === floor.id)
+                        if (rooms.length === 0) return null
+                        return (
+                          <optgroup key={floor.id} label={floor.name}>
+                            {rooms.map((r) => (
+                              <option key={r.id} value={r.id}>
+                                {r.name} — {floor.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )
+                      })}
+                    </select>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
                   <p className="text-xs font-semibold">Suasana</p>
                   <RadioGroup
                     value={preset}
@@ -393,7 +509,7 @@ export function AiRenderDialog({
                 <div className="space-y-1.5">
                   <p className="text-xs font-semibold">Sudut pandang</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {SHOT_OPTIONS.map((shot) => (
+                    {shotOptions.map((shot) => (
                       <button
                         key={shot.id}
                         type="button"
@@ -430,7 +546,7 @@ export function AiRenderDialog({
                   </p>
                   <Button
                     onClick={handleSubmit}
-                    disabled={busy || (mode === "presisi" && presisiLocked)}
+                    disabled={busy || (mode === "presisi" && presisiLocked) || interiorRoomMissing}
                     data-testid="ai-render-submit"
                   >
                     {busy ? (
@@ -512,6 +628,37 @@ function ModeCard({
           <Badge variant="outline">{cost} kredit</Badge>
         )}
       </div>
+      <p className="mt-1 text-[11px] text-muted-foreground">{description}</p>
+    </button>
+  )
+}
+
+/** Segmented control Eksterior|Interior — mirror `ModeCard` (tanpa
+ *  cost/lock, yang tak relevan di sini). */
+function TargetCard({
+  label,
+  description,
+  active,
+  onClick,
+  testId,
+}: {
+  label: string
+  description: string
+  active: boolean
+  onClick: () => void
+  testId: string
+}) {
+  return (
+    <button
+      type="button"
+      data-testid={testId}
+      aria-pressed={active}
+      onClick={onClick}
+      className={`rounded-lg border p-3 text-left text-sm transition-colors ${
+        active ? "border-primary bg-primary/10" : "hover:bg-muted"
+      }`}
+    >
+      <span className="font-medium">{label}</span>
       <p className="mt-1 text-[11px] text-muted-foreground">{description}</p>
     </button>
   )

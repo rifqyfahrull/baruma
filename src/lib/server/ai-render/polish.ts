@@ -10,8 +10,9 @@
  */
 import { chatText } from "@/lib/server/llm"
 import { getPolishCache, setPolishCache } from "@/lib/server/repo/render-polish-cache"
-import { describeSceneFacts } from "./prompt"
+import { describeRoomFacts, describeSceneFacts } from "./prompt"
 import type { SceneFacts } from "./analyze"
+import type { RoomFacts } from "./analyze-room"
 
 const POLISH_TIMEOUT_MS = 5000
 
@@ -19,8 +20,17 @@ export function polishEnabled(): boolean {
   return process.env.AI_RENDER_POLISH === "1"
 }
 
-/** FNV-1a 32-bit atas JSON facts — idiom sama projectSeed/renderParamsHash. */
-export function factsHash(facts: SceneFacts): string {
+/** `RoomFacts` (Fase B) selalu punya `roomId`; `SceneFacts` (Fase A) tidak —
+ *  dipakai untuk memilih deskripsi deterministik yang benar tanpa parameter
+ *  tambahan di signature publik (caller cukup lempar facts apa adanya). */
+function isRoomFacts(facts: SceneFacts | RoomFacts): facts is RoomFacts {
+  return "roomId" in facts
+}
+
+/** FNV-1a 32-bit atas JSON facts — idiom sama projectSeed/renderParamsHash.
+ *  Tipe dilebarkan ke `SceneFacts | RoomFacts` (Fase B) — implementasi tak
+ *  berubah (JSON.stringify agnostik terhadap bentuk objek). */
+export function factsHash(facts: SceneFacts | RoomFacts): string {
   const key = JSON.stringify(facts)
   let hash = 0x811c9dc5
   for (let i = 0; i < key.length; i++) {
@@ -30,13 +40,13 @@ export function factsHash(facts: SceneFacts): string {
   return (hash >>> 0).toString(16).padStart(8, "0")
 }
 
-export async function polishScene(facts: SceneFacts): Promise<string | null> {
+export async function polishScene(facts: SceneFacts | RoomFacts): Promise<string | null> {
   if (!polishEnabled()) return null
   try {
     const hash = factsHash(facts)
     const cached = await getPolishCache(hash)
     if (cached) return cached
-    const base = describeSceneFacts(facts)
+    const base = isRoomFacts(facts) ? describeRoomFacts(facts) : describeSceneFacts(facts)
     // Timer di-clear saat chatText menang race — proses pm2 long-lived tidak
     // terganggu timer nganggur, tapi tetap rapi di bawah beban konkuren.
     let timeoutId: ReturnType<typeof setTimeout> | undefined

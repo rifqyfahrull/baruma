@@ -265,6 +265,131 @@ describe("AiRenderDialog — alur submit happy path", () => {
   })
 })
 
+describe("AiRenderDialog — target interior per ruang (Fase B)", () => {
+  it("interior + ruangan terpilih: menaruh kamera di dalam ruang & mengirim target+roomId", async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    const job: AiRenderJob = {
+      id: "rnd-int-1",
+      status: "succeeded",
+      mode: "cepat",
+      preset: "tropis-siang",
+      shotId: "iso-siang",
+      watermarked: false,
+      outputUrl: "/api/v1/assets/file/renders/rnd-int-1.png",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    }
+    createRenderMock.mockResolvedValue({ job, cached: false })
+    getRenderMock.mockResolvedValue(job)
+
+    // spyOn on a property that's ALREADY a spy (unrestored from an earlier
+    // test in this file, e.g. "sudut saat ini") returns the SAME spy object
+    // with its accumulated call history — mockClear() right after grabbing
+    // it isolates THIS test's assertions from that cross-test pollution.
+    const requestInteriorViewSpy = vi.spyOn(usePreviewStore.getState(), "requestInteriorView")
+    requestInteriorViewSpy.mockClear()
+    const requestViewSpy = vi.spyOn(usePreviewStore.getState(), "requestView")
+    requestViewSpy.mockClear()
+
+    renderDialog()
+    openDialog()
+
+    fireEvent.click(screen.getByTestId("ai-render-target-interior"))
+    fireEvent.change(screen.getByTestId("ai-render-interior-room"), { target: { value: "r1" } })
+    // Chip bidikan interior ("Siang"/"Senja") tak punya `view` sama sekali —
+    // penempatan kamera SELALU lewat requestInteriorView, tak pernah lewat
+    // shot.view (lihat AiRenderDialog interior shot list).
+    fireEvent.click(screen.getByTestId("ai-render-shot-interior-senja"))
+    fireEvent.click(screen.getByTestId("ai-render-submit"))
+
+    await waitFor(() => {
+      expect(createRenderMock).toHaveBeenCalledTimes(1)
+    })
+
+    expect(requestInteriorViewSpy).toHaveBeenCalledWith("r1")
+    // Penempatan kamera interior TIDAK lewat requestView — satu-satunya
+    // panggilan requestView yang boleh terjadi adalah pemulihan viewPreset
+    // eksterior semula di `finally`.
+    expect(requestViewSpy).toHaveBeenCalledWith("iso")
+
+    const [, bodyArg] = createRenderMock.mock.calls[0]
+    expect(bodyArg).toMatchObject({ target: "interior", roomId: "r1" })
+  })
+
+  it('interior + "Sudut saat ini": TANPA requestInteriorView, roomId TIDAK dikirim', async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    const job: AiRenderJob = {
+      id: "rnd-int-2",
+      status: "succeeded",
+      mode: "cepat",
+      preset: "tropis-siang",
+      shotId: "sudut-ini",
+      watermarked: false,
+      outputUrl: "/api/v1/assets/file/renders/rnd-int-2.png",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    }
+    createRenderMock.mockResolvedValue({ job, cached: false })
+    getRenderMock.mockResolvedValue(job)
+
+    const requestInteriorViewSpy = vi.spyOn(usePreviewStore.getState(), "requestInteriorView")
+    requestInteriorViewSpy.mockClear()
+
+    renderDialog()
+    openDialog()
+
+    fireEvent.click(screen.getByTestId("ai-render-target-interior"))
+    fireEvent.click(screen.getByTestId("ai-render-shot-sudut-ini"))
+    fireEvent.click(screen.getByTestId("ai-render-submit"))
+
+    await waitFor(() => {
+      expect(createRenderMock).toHaveBeenCalledTimes(1)
+    })
+
+    expect(requestInteriorViewSpy).not.toHaveBeenCalled()
+    const [, bodyArg] = createRenderMock.mock.calls[0]
+    expect(bodyArg).toMatchObject({ target: "interior", shotId: "sudut-ini" })
+    expect(bodyArg.roomId).toBeUndefined()
+  })
+})
+
+describe("AiRenderDialog — chip bidikan mode Interior", () => {
+  it('interior mode shows "Siang"/"Senja" chips, not exterior view labels', async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    renderDialog()
+    openDialog()
+
+    fireEvent.click(screen.getByTestId("ai-render-target-interior"))
+
+    expect(screen.getByTestId("ai-render-shot-interior-siang")).toBeTruthy()
+    expect(screen.getByTestId("ai-render-shot-interior-senja")).toBeTruthy()
+    expect(screen.getByTestId("ai-render-shot-sudut-ini")).toBeTruthy()
+    expect(screen.queryByTestId("ai-render-shot-depan-siang")).toBeNull()
+    expect(screen.queryByTestId("ai-render-shot-iso-siang")).toBeNull()
+    expect(screen.queryByTestId("ai-render-shot-iso-senja")).toBeNull()
+    expect(screen.queryByTestId("ai-render-shot-atas-siang")).toBeNull()
+    expect(screen.queryByText("Tampak Depan — Siang")).toBeNull()
+    expect(screen.queryByText("Denah 3D (Atas) — Siang")).toBeNull()
+    expect(screen.queryByText("Perspektif — Senja")).toBeNull()
+  })
+
+  it("switching back to Eksterior restores the exterior view-preset chips", async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    renderDialog()
+    openDialog()
+
+    fireEvent.click(screen.getByTestId("ai-render-target-interior"))
+    expect(screen.getByTestId("ai-render-shot-interior-siang")).toBeTruthy()
+
+    fireEvent.click(screen.getByTestId("ai-render-target-eksterior"))
+
+    expect(screen.getByTestId("ai-render-shot-iso-siang")).toBeTruthy()
+    expect(screen.getByTestId("ai-render-shot-depan-siang")).toBeTruthy()
+    expect(screen.getByTestId("ai-render-shot-iso-senja")).toBeTruthy()
+    expect(screen.getByTestId("ai-render-shot-atas-siang")).toBeTruthy()
+    expect(screen.queryByTestId("ai-render-shot-interior-siang")).toBeNull()
+    expect(screen.queryByTestId("ai-render-shot-interior-senja")).toBeNull()
+  })
+})
+
 describe("AiRenderDialog — error 402 insufficient_credits", () => {
   it("routes through handlePlanError (upgrade toast) instead of a generic error", async () => {
     getCurrentUserMock.mockResolvedValue(proUser)

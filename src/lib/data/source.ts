@@ -258,6 +258,13 @@ export interface DataSource {
        *  ulang di `render-capture.ts` (`CapturedPose`) — bukan diimpor dari
        *  modul server. */
       pose: { position: [number, number, number]; target: [number, number, number]; fov: number }
+      /** Target render (Fase B — interior per ruang). Absen = "exterior"
+       *  (paritas kontrak lama, server juga men-default demikian). */
+      target?: "exterior" | "interior"
+      /** Ruang terpilih eksplisit — hanya dikirim utk render interior lewat
+       *  bidikan preset (bukan "Sudut saat ini", yang membiarkan server
+       *  mendeteksi ruang dari pose kamera). */
+      roomId?: string
     }
   ): Promise<{ job: AiRenderJob; cached: boolean }>
 

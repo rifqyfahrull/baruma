@@ -10,6 +10,7 @@
  * yang sudah dikunci oleh capture beauty/depth pass.
  */
 import type { FacadeSideId, SceneFacts } from "./analyze"
+import type { RoomFacts } from "./analyze-room"
 
 /** Metadata scene serializable — dikirim dari klien, bukan objek three.js. */
 export interface RenderSceneMeta {
@@ -269,6 +270,153 @@ export function compilePromptV2(
 
   return [
     `${PROMPT_BASE}.`,
+    `${description}.`,
+    `${preset.promptFragment}.`,
+    `${PROMPT_GEOMETRY_GUARD}.`,
+  ].join(" ")
+}
+
+// ---------------------------------------------------------------------------
+// Prompt interior (Fase B Task 2 — docs/superpowers/plans/
+// 2026-08-29-ai-render-interior-fase-b.md). Dibangun dari `RoomFacts`
+// (Task 1, ./analyze-room.ts) — fakta terukur per ruang, bukan scene
+// eksterior. Mengikuti persis pola v2 di atas (base foto tetap → deskripsi
+// deterministik/polished → fragmen preset → geometry guard tetap); jalur
+// eksterior (`compilePrompt`/`compilePromptV2`) TIDAK diubah.
+// ---------------------------------------------------------------------------
+
+/** Basis fotografi interior tetap — analog `PROMPT_BASE` eksterior, tapi
+ *  mengarahkan provider ke foto interior (bukan fasad). */
+const INTERIOR_PROMPT_BASE =
+  "photorealistic interior architectural photography of a residential room, " +
+  "professional interior design magazine photography, natural light from the windows, " +
+  "sharp focus, high dynamic range, shot on a 16-24mm wide-angle lens at eye level"
+
+/** Label sisi ruang untuk klausa cahaya alami — berbeda dari `SIDE_LABELS`
+ *  fasad (yang menyertakan "front"/"rear"): dari dalam ruang cukup mata
+ *  angin polos ("daylight from the south and east windows"). */
+const ROOM_SIDE_LABELS: Record<FacadeSideId, string> = {
+  s: "south",
+  e: "east",
+  n: "north",
+  w: "west",
+}
+
+/** Peta `RoomType` (mentah, lihat @/types) → label Inggris ringkas untuk
+ *  kalimat identitas ruang. `kamar_tidur` = nilai `RoomType` sesungguhnya;
+ *  `kamar` disertakan sebagai alias sesuai spec brief. Tipe tak dikenal →
+ *  fallback ke nilai mentah (tidak pernah throw/kosong). */
+const ROOM_TYPE_LABELS: Record<string, string> = {
+  kamar: "bedroom",
+  kamar_tidur: "bedroom",
+  dapur: "kitchen",
+  kamar_mandi: "bathroom",
+  ruang_keluarga: "family room",
+  ruang_tamu: "living room",
+  ruang_makan: "dining room",
+  tangga: "stairwell",
+}
+
+/** `floorIndex` 0 → "the ground floor" (Indonesia: lantai dasar), n → "floor
+ *  {n+1}" (penomoran manusia, 1-based) — analog istilah real-estate Inggris. */
+function floorLabel(floorIndex: number): string {
+  return floorIndex === 0 ? "the ground floor" : `floor ${floorIndex + 1}`
+}
+
+/**
+ * Rangkai `RoomFacts` jadi klausa deterministik (urutan tetap, join `"; "`),
+ * analog `describeSceneFacts` tapi untuk satu ruang interior. TIDAK
+ * menyertakan klausa lampu malam — itu tanggung jawab `interiorLightClause`
+ * terpisah (dipanggil oleh `compilePromptInterior` setelah polish, persis
+ * pola `nightLampClause` Fase A) supaya fakta jumlah lampu tidak hilang
+ * hanya karena jalur polish LLM dipakai.
+ */
+export function describeRoomFacts(facts: RoomFacts): string {
+  const parts: string[] = []
+
+  // 1. Identitas ruang: tipe, nama, lantai, dimensi, tinggi plafon.
+  // Fallback tipe tak terpetakan tetap dihumanisasi (rooftop_lounge →
+  // "rooftop lounge") — pola snakeToSpaces yang sama dgn exteriorInFrame.
+  const typeLabel = ROOM_TYPE_LABELS[facts.roomType] ?? snakeToSpaces(facts.roomType)
+  parts.push(
+    `${typeLabel} "${facts.roomName}" on ${floorLabel(facts.floorIndex)}, ` +
+      `${facts.widthM} x ${facts.depthM} meters (${facts.areaM2} m2), ` +
+      `${facts.ceilingHeightM} meter ceiling`
+  )
+
+  // 2. Gaya interior + palet warna (palet hanya muncul menempel klausa gaya).
+  if (facts.style) {
+    let styleClause = `${facts.style} interior style`
+    if (facts.colorPalette && facts.colorPalette.length > 0) {
+      styleClause += `, color palette: ${facts.colorPalette.join(", ")}`
+    }
+    parts.push(styleClause)
+  }
+
+  // 3. Material per permukaan.
+  if (facts.materials.length > 0) {
+    parts.push(`materials: ${facts.materials.map((m) => `${m.surface}: ${m.name}`).join(", ")}`)
+  }
+
+  // 4. Furnitur + posisi relatif.
+  if (facts.furniture.length > 0) {
+    parts.push(`furniture: ${facts.furniture.map((f) => `${f.name} ${f.placement}`).join(", ")}`)
+  }
+
+  // 5. Cahaya alami — jendela per sisi (+ gorden), lalu skylight (klausa
+  // terpisah, bisa hadir sendiri-sendiri).
+  if (facts.windowSides.length > 0) {
+    const sides = facts.windowSides.map((s) => ROOM_SIDE_LABELS[s]).join(" and ")
+    let windowClause = `daylight from the ${sides} window(s)`
+    if (facts.hasCurtains) windowClause += ", sheer curtains"
+    parts.push(windowClause)
+  }
+  if (facts.skylightCount > 0) {
+    parts.push(`${facts.skylightCount} skylight(s) overhead`)
+  }
+
+  return parts.join("; ")
+}
+
+/**
+ * Klausa lampu interior (#6) — HANYA muncul untuk preset "malam" DAN ada
+ * fixture lampu di ruang (`lighting.fixtureCount > 0`). Diekstrak jadi
+ * fungsi terpisah (persis pola `nightLampClause` Fase A) supaya
+ * `compilePromptInterior` bisa menambahkannya kembali SETELAH
+ * `polishedDescription` (LLM opsional) menggantikan deskripsi
+ * deterministik. `null` = tidak ada klausa (bukan string kosong).
+ */
+export function interiorLightClause(facts: RoomFacts, presetId: string): string | null {
+  if (presetId === "malam" && facts.lighting.fixtureCount > 0) {
+    return `${facts.lighting.fixtureCount} interior light fixtures on (${facts.lighting.warmCount} warm)`
+  }
+  return null
+}
+
+/**
+ * Compile prompt interior dari `RoomFacts` + id preset. Merangkai persis
+ * pola `compilePromptV2` (base foto interior tetap → deskripsi → fragmen
+ * preset → geometry guard tetap), deskripsi dari fakta terukur ruang atau
+ * dari `polishedDescription` (LLM opsional) bila tersedia & tak kosong
+ * setelah trim. Preset id tak dikenal → fallback ke preset pertama.
+ *
+ * Klausa lampu interior (#6) HARUS bertahan meski `polishedDescription`
+ * dipakai — sama alasan `compilePromptV2`.
+ */
+export function compilePromptInterior(
+  facts: RoomFacts,
+  presetId: string,
+  polishedDescription?: string | null
+): string {
+  const preset = RENDER_PRESET_MAP.get(presetId) ?? RENDER_PRESETS[0]
+  const trimmedPolished = polishedDescription?.trim()
+  const lightClause = interiorLightClause(facts, preset.id)
+  const description = trimmedPolished
+    ? trimmedPolished + (lightClause ? `; ${lightClause}` : "")
+    : describeRoomFacts(facts) + (lightClause ? `; ${lightClause}` : "")
+
+  return [
+    `${INTERIOR_PROMPT_BASE}.`,
     `${description}.`,
     `${preset.promptFragment}.`,
     `${PROMPT_GEOMETRY_GUARD}.`,

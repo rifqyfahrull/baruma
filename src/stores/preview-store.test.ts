@@ -132,6 +132,15 @@ describe("preview store — fokus ruang & visibilitas lantai", () => {
     expect(s.focusNonce).toBe(before + 1)
   })
 
+  it("requestInteriorView selects the room and bumps the interior nonce (Fase B — render AI interior per ruang)", () => {
+    const before = usePreviewStore.getState().interiorViewNonce
+    usePreviewStore.getState().requestInteriorView("room-1")
+    const s = usePreviewStore.getState()
+    expect(s.selectedRoomId).toBe("room-1")
+    expect(s.interiorViewRoomId).toBe("room-1")
+    expect(s.interiorViewNonce).toBe(before + 1)
+  })
+
   it("setFloorVisible sets visibility per floor id explicitly", () => {
     usePreviewStore.getState().initFloors(["f1", "f2"])
     usePreviewStore.getState().setFloorVisible("f2", false)

@@ -85,6 +85,16 @@ type PreviewState = {
   focusRoomId: string | null
   focusNonce: number
 
+  /**
+   * Interior AI-render placement (Fase B): CameraRig places the camera
+   * INSIDE this room (eye-level, looking at its center) when the nonce
+   * bumps — dipakai `requestInteriorView` dari `ai-render-dialog.tsx` saat
+   * render interior per ruang dipilih. Beda dari `focusRoomId` (fly-to-room
+   * dari luar/atas): ini menaruh kamera DI DALAM ruang.
+   */
+  interiorViewRoomId: string | null
+  interiorViewNonce: number
+
   canvasEl: HTMLCanvasElement | null
   setCanvas: (el: HTMLCanvasElement | null) => void
 
@@ -173,6 +183,9 @@ type PreviewState = {
   requestView: (preset: ViewPreset) => void
   /** Selects the room AND asks the camera to frame it (room-list click). */
   requestFocusRoom: (roomId: string) => void
+  /** Selects the room AND asks the camera to place itself INSIDE it, at eye
+   *  level — render AI interior per ruang (Fase B). */
+  requestInteriorView: (roomId: string) => void
 }
 
 export const usePreviewStore = create<PreviewState>((set) => ({
@@ -212,6 +225,8 @@ export const usePreviewStore = create<PreviewState>((set) => ({
   viewNonce: 0,
   focusRoomId: null,
   focusNonce: 0,
+  interiorViewRoomId: null,
+  interiorViewNonce: 0,
   canvasEl: null,
   compassEl: null,
   captureFrame: null,
@@ -310,6 +325,13 @@ export const usePreviewStore = create<PreviewState>((set) => ({
     set((s) => ({
       focusRoomId: roomId,
       focusNonce: s.focusNonce + 1,
+    }))
+  },
+  requestInteriorView: (roomId) => {
+    delegateSelect({ kind: "room", id: roomId }, "room")
+    set((s) => ({
+      interiorViewRoomId: roomId,
+      interiorViewNonce: s.interiorViewNonce + 1,
     }))
   },
 }))
