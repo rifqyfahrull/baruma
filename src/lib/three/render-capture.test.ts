@@ -4,6 +4,7 @@ import {
   depthPixelsToGrayscale,
   invertDepthMidas,
   linearizeDepth,
+  poseKey,
   renderParamsHash,
   unpackRGBADepth,
   type RenderParamsInput,
@@ -142,5 +143,15 @@ describe("renderParamsHash", () => {
     expect(renderParamsHash({ ...base, layoutRevision: 7 })).toBe(
       renderParamsHash({ ...base, layoutRevision: "7" })
     )
+  })
+})
+
+describe("poseKey", () => {
+  it("poseKey mengkuantisasi 0.1 m/0.5° — jitter kecil tidak mengubah kunci", () => {
+    const a = poseKey({ position: [1.234, 5.678, -3.21], target: [0, 1.5, 0], fov: 50 })
+    const b = poseKey({ position: [1.26, 5.66, -3.24], target: [0.04, 1.5, 0], fov: 50.2 })
+    expect(a).toBe(b)
+    const c = poseKey({ position: [2.4, 5.7, -3.2], target: [0, 1.5, 0], fov: 50 })
+    expect(a).not.toBe(c)
   })
 })

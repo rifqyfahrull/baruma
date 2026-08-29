@@ -30,6 +30,44 @@ export type RenderParamsInput = {
   mode: string
 }
 
+/**
+ * Pose kamera three.js hasil capture (`house-scene.tsx` ScreenshotBridge) —
+ * bentuk klien dari `CameraPose` server (`src/lib/server/ai-render/analyze.ts`),
+ * didefinisikan ULANG di sini (bukan diimpor) supaya modul server tidak ikut
+ * masuk bundle klien.
+ */
+export type CapturedPose = {
+  position: [number, number, number]
+  target: [number, number, number]
+  fov: number
+}
+
+/**
+ * Kunci hash kuantisasi pose kamera — dipakai sbg komponen `view` di
+ * `renderParamsHash` untuk bidikan bebas "Sudut saat ini" (params_hash cache
+ * harus tetap hit walau kamera bergeser sedikit karena jitter OrbitControls/
+ * damping, bukan gerakan sungguhan). Posisi & target di-bucket ke grid 0.1 m,
+ * fov ke grid 0.5° — cukup rapat utk dianggap "sudut sama" secara visual,
+ * cukup longgar utk menyerap floating-point jitter.
+ *
+ * Bucketing pakai `Math.floor` (bukan `Math.round`) — grid-snap standar ke
+ * BATAS BAWAH sel: dua nilai dlm sel grid yang sama (mis. 1.234 & 1.26, sama-
+ * sama di sel `[1.2, 1.3)`) SELALU dapat kunci sama, sedangkan `Math.round`
+ * (bucket ke titik TENGAH terdekat) membelah nilai yang berdekatan tapi
+ * berada di sisi berlawanan dari titik tengah sel (mis. 1.234→1.2 vs 1.26→
+ * 1.3) ke kunci BERBEDA — kontraproduktif utk tujuan cache-hit di sini.
+ */
+export function poseKey(p: CapturedPose): string {
+  const q = (v: number) => (Math.floor(v / 0.1) * 0.1).toFixed(1)
+  const qFov = (Math.floor(p.fov / 0.5) * 0.5).toFixed(1)
+  return [
+    "pose",
+    ...p.position.map(q),
+    ...p.target.map(q),
+    qFov,
+  ].join(":")
+}
+
 function clamp01(v: number): number {
   if (Number.isNaN(v)) return 0
   return Math.min(1, Math.max(0, v))

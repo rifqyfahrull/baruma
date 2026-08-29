@@ -252,12 +252,12 @@ export interface DataSource {
       clientRequestId: string
       inputKeys: { beauty: string; depth?: string }
       paramsHash: string
-      sceneMeta: {
-        facadeMaterials: string[]
-        roofType: string
-        floors: number
-        landscape?: string
-      }
+      /** Pose kamera three.js saat capture (Fase A Scene Intelligence) —
+       *  dipakai server utk analyzeScene (jarak/sudut nyata ke rumah, lihat
+       *  `src/lib/server/ai-render/analyze.ts`). Bentuk klien didefinisikan
+       *  ulang di `render-capture.ts` (`CapturedPose`) — bukan diimpor dari
+       *  modul server. */
+      pose: { position: [number, number, number]; target: [number, number, number]; fov: number }
     }
   ): Promise<{ job: AiRenderJob; cached: boolean }>
 

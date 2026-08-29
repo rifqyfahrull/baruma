@@ -92,6 +92,8 @@ function openDialog() {
   fireEvent.click(screen.getByTestId("ai-render-open"))
 }
 
+const POSE_FIXTURE = { position: [0, 1.6, 14], target: [0, 1.5, 0], fov: 50 } as const
+
 beforeEach(() => {
   listRendersMock.mockResolvedValue([])
   usePreviewStore.setState({
@@ -100,6 +102,7 @@ beforeEach(() => {
       depth: "data:image/png;base64,BBBB",
       width: 10,
       height: 10,
+      pose: POSE_FIXTURE,
     })),
   })
 })
@@ -203,13 +206,48 @@ describe("AiRenderDialog — alur submit happy path", () => {
       preset: "tropis-siang",
       shotId: "iso-siang",
       inputKeys: { beauty: expect.stringContaining("beauty") },
+      pose: POSE_FIXTURE,
     })
     expect(bodyArg.inputKeys.depth).toBeUndefined()
+    expect(bodyArg.sceneMeta).toBeUndefined()
     expect(typeof bodyArg.clientRequestId).toBe("string")
     expect(bodyArg.clientRequestId.length).toBeGreaterThan(0)
 
     // Label kejujuran selalu tampil di hasil.
     expect(screen.getByText("Visualisasi konsep — bukan gambar kerja")).toBeTruthy()
+  })
+
+  it('selecting "Sudut saat ini" skips requestView during capture and sends pose', async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    const job: AiRenderJob = {
+      id: "rnd-2",
+      status: "succeeded",
+      mode: "cepat",
+      preset: "tropis-siang",
+      shotId: "sudut-ini",
+      watermarked: false,
+      outputUrl: "/api/v1/assets/file/renders/rnd-2.png",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    }
+    createRenderMock.mockResolvedValue({ job, cached: false })
+    getRenderMock.mockResolvedValue(job)
+
+    const requestViewSpy = vi.spyOn(usePreviewStore.getState(), "requestView")
+
+    renderDialog()
+    openDialog()
+
+    fireEvent.click(screen.getByTestId("ai-render-shot-sudut-ini"))
+    fireEvent.click(screen.getByTestId("ai-render-submit"))
+
+    await waitFor(() => {
+      expect(createRenderMock).toHaveBeenCalledTimes(1)
+    })
+
+    expect(requestViewSpy).not.toHaveBeenCalled()
+    const [, bodyArg] = createRenderMock.mock.calls[0]
+    expect(bodyArg).toMatchObject({ shotId: "sudut-ini", pose: POSE_FIXTURE })
+    expect(bodyArg.sceneMeta).toBeUndefined()
   })
 
   it("does not call createRender when captureRenderInputs fails (no credit spent)", async () => {

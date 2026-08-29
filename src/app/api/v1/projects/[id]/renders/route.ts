@@ -3,6 +3,7 @@ import { z } from "zod"
 
 import { requireUser, requireAdmin } from "@/lib/server/auth-server"
 import { getOwnedProject } from "@/lib/server/repo/projects"
+import { getLayoutPayload } from "@/lib/server/repo/layouts"
 import {
   createRenderJob,
   getRenderJob,
@@ -19,9 +20,14 @@ import {
   usesMockOverride,
   RENDER_PRESETS,
   compilePrompt,
+  compilePromptV2,
+  analyzeScene,
   projectSeed,
   RENDER_CREDIT_COST,
 } from "@/lib/server/ai-render"
+import type { CameraPose } from "@/lib/server/ai-render"
+import type { DesignLayout } from "@/types"
+import { polishScene } from "@/lib/server/ai-render/polish"
 import { finalizeRenderJob, failRenderJob } from "@/lib/server/ai-render/finalize"
 import { renderJobView } from "@/lib/server/ai-render/view"
 import { ok, err, errCode, handleError } from "@/lib/server/response"
@@ -37,6 +43,15 @@ import {
 // pekerjaan LLM/eksternal).
 export const maxDuration = 120
 
+// Pose kamera three.js dikirim klien bersama capture (Fase A Scene
+// Intelligence — lihat CameraPose di ai-render/analyze.ts). Opsional: jika
+// absen, route jatuh ke jalur legacy (sceneMeta -> compilePrompt).
+const poseSchema = z.object({
+  position: z.tuple([z.number().finite(), z.number().finite(), z.number().finite()]),
+  target: z.tuple([z.number().finite(), z.number().finite(), z.number().finite()]),
+  fov: z.number().min(10).max(120),
+})
+
 const bodySchema = z.object({
   mode: z.enum(["cepat", "presisi"]),
   preset: z.string().min(1),
@@ -50,12 +65,18 @@ const bodySchema = z.object({
     depth: z.string().min(1).optional(),
   }),
   paramsHash: z.string().min(1),
-  sceneMeta: z.object({
-    facadeMaterials: z.array(z.string()),
-    roofType: z.string().min(1),
-    floors: z.number().int().positive(),
-    landscape: z.string().optional(),
-  }),
+  pose: poseSchema.optional(),
+  // Opsional sejak Fase A: bila `pose` ada & layout proyek tersimpan, prompt
+  // v2 (analyzeScene+compilePromptV2) dipakai TANPA butuh sceneMeta. Tetap
+  // dipertahankan sbg fallback (pose absen, atau layout belum tersimpan).
+  sceneMeta: z
+    .object({
+      facadeMaterials: z.array(z.string()),
+      roofType: z.string().min(1),
+      floors: z.number().int().positive(),
+      landscape: z.string().optional(),
+    })
+    .optional(),
 })
 
 const VALID_PRESET_IDS = new Set(RENDER_PRESETS.map((p) => p.id))
@@ -110,8 +131,10 @@ export async function POST(
     }
     const parsed = bodySchema.safeParse(raw)
     if (!parsed.success) return err(400, parsed.error.issues[0]?.message ?? "Invalid input")
-    const { mode, preset, shotId, clientRequestId, inputKeys, paramsHash, sceneMeta } =
+    const { mode, preset, shotId, clientRequestId, inputKeys, paramsHash, pose, sceneMeta } =
       parsed.data
+
+    if (!pose && !sceneMeta) return err(400, "Butuh pose atau sceneMeta")
 
     if (!VALID_PRESET_IDS.has(preset)) return err(400, "Preset tidak dikenal")
 
@@ -165,6 +188,18 @@ export async function POST(
       return ok({ job: renderJobView(cached), cached: true }, 200)
     }
 
+    // Muat layout SEBELUM potong kredit: kalau layout absen & tak ada
+    // sceneMeta, 400-nya harus terjadi sebelum spendCreditsOnce supaya tak
+    // ada kredit yatim (400 ini tak pernah membuat job row, jadi tak ada yg
+    // bisa dipakai retry utk refund via getRenderJob).
+    let layout: DesignLayout | null = null
+    if (pose) {
+      layout = await getLayoutPayload(projectId)
+      if (!layout && !sceneMeta) {
+        return err(400, "Layout proyek belum tersimpan")
+      }
+    }
+
     const jobId = jobIdFromClientRequestId(clientRequestId)
     const cost = RENDER_CREDIT_COST[mode]
 
@@ -190,7 +225,28 @@ export async function POST(
 
     const ent = await getEntitlements(userId)
     const watermarked = !ent.aiRenderHd
-    const prompt = compilePrompt(sceneMeta, preset)
+
+    // Jalur prompt: pose (Fase A Scene Intelligence) -> analyzeScene ->
+    // polishScene (LLM opsional, never-throw) -> compilePromptV2; jatuh ke
+    // compilePrompt lama bila pose absen ATAU layout proyek belum tersimpan
+    // (fallback aman utk proyek lama / capture sebelum migrasi klien).
+    let prompt: string
+    let cameraPose: CameraPose | undefined
+    if (pose) {
+      if (layout) {
+        const facts = analyzeScene(layout, project.site, pose)
+        const polished = await polishScene(facts)
+        prompt = compilePromptV2(facts, preset, polished)
+        cameraPose = pose
+      } else {
+        // Guard di atas (sebelum spendCreditsOnce) menjamin sceneMeta ada
+        // di sini kalau layout null.
+        prompt = compilePrompt(sceneMeta!, preset) // layout belum tersimpan — fallback lama
+      }
+    } else {
+      prompt = compilePrompt(sceneMeta!, preset) // guard di atas menjamin ada
+    }
+
     const seed = projectSeed(projectId)
     const providerName = usesMockOverride() ? "mock" : mode === "cepat" ? "gemini" : "fal"
 
@@ -205,6 +261,7 @@ export async function POST(
       paramsHash,
       inputKeys,
       watermarked,
+      cameraPose,
     })
 
     const provider = getRenderProvider(mode)

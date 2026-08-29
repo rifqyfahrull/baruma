@@ -9,6 +9,7 @@
  * menyebut geometri, supaya provider tidak "mengarang ulang" bentuk bangunan
  * yang sudah dikunci oleh capture beauty/depth pass.
  */
+import type { FacadeSideId, SceneFacts } from "./analyze"
 
 /** Metadata scene serializable — dikirim dari klien, bukan objek three.js. */
 export interface RenderSceneMeta {
@@ -118,6 +119,157 @@ export function compilePrompt(
   return [
     `${PROMPT_BASE}.`,
     `${sceneDescription}.`,
+    `${preset.promptFragment}.`,
+    `${PROMPT_GEOMETRY_GUARD}.`,
+  ].join(" ")
+}
+
+// ---------------------------------------------------------------------------
+// Prompt v2 (Fase A Task 3 — docs/superpowers/plans/
+// 2026-08-23-ai-render-scene-intelligence-fase-a.md). Dibangun dari
+// `SceneFacts` (Task 2, ./analyze.ts) — fakta terukur dari pose kamera +
+// layout DB, bukan metadata scene yang dipilih user (`RenderSceneMeta`
+// lama). Sama-sama deterministik & murni: input sama → output byte-identik.
+// `compilePrompt`/`describeScene` di atas TIDAK diubah (jalur legacy tetap
+// aktif sampai caller dipindah ke v2).
+// ---------------------------------------------------------------------------
+
+/** Label sisi fasad untuk kalimat Inggris — s/n mengikuti orientasi rumah
+ *  Indonesia (depan menghadap jalan = selatan pada konvensi compass.ts). */
+const SIDE_LABELS: Record<FacadeSideId, string> = {
+  s: "front (south)",
+  n: "rear (north)",
+  e: "east side",
+  w: "west side",
+}
+
+/** `garden_bed` → `garden bed` — kind di ExteriorElement pakai snake_case,
+ *  klausa "visible site elements" perlu kalimat Inggris biasa. */
+function snakeToSpaces(kind: string): string {
+  return kind.replace(/_/g, " ")
+}
+
+/**
+ * Klausa fasad per sisi terlihat: `"{label}: {claddings} cladding, {n}
+ * window(s), ..."`. Setiap sub-bagian (cladding/window/door/garasi/elemen
+ * fasad/balkon) di-skip bila kosong; sisi yang sama sekali tak punya fakta
+ * (semua sub-bagian kosong) dilewati seluruhnya — tidak menghasilkan
+ * `"label: "` tanpa isi.
+ */
+function describeSide(side: SceneFacts["sides"][number]): string | null {
+  const bits: string[] = []
+  if (side.claddings.length > 0) bits.push(`${side.claddings.join(", ")} cladding`)
+  if (side.windowCount > 0) bits.push(`${side.windowCount} window(s)`)
+  if (side.doorCount > 0) bits.push(`${side.doorCount} door(s)`)
+  if (side.garageDoorCount > 0) bits.push(`${side.garageDoorCount} garage door(s)`)
+  if (side.facadeElements.length > 0)
+    bits.push(side.facadeElements.map(snakeToSpaces).join(", "))
+  if (side.balconyCount > 0) bits.push(`${side.balconyCount} balcony(ies)`)
+  if (bits.length === 0) return null
+  return `${SIDE_LABELS[side.side]}: ${bits.join(", ")}`
+}
+
+/**
+ * Klausa lampu malam (#6 di brief) — HANYA muncul untuk preset "malam" DAN
+ * ada lampu eksterior. Diekstrak jadi helper terpisah (bukan inline di
+ * `describeSceneFacts`) supaya `compilePromptV2` bisa menambahkannya
+ * kembali SETELAH `polishedDescription` (LLM, Task 4) menggantikan
+ * deskripsi deterministik — fakta jumlah lampu tidak boleh hilang hanya
+ * karena jalur polish dipakai. `null` (bukan string kosong) dipakai sebagai
+ * penanda "tidak ada klausa" supaya pemanggil bisa cek falsy tanpa ambigu
+ * dengan string kosong.
+ */
+function nightLampClause(facts: SceneFacts, presetId?: string): string | null {
+  if (presetId === "malam" && facts.lighting.exteriorLampCount > 0) {
+    return `${facts.lighting.exteriorLampCount} warm exterior lamps glowing`
+  }
+  return null
+}
+
+/**
+ * Rangkai `SceneFacts` jadi klausa deterministik (urutan tetap, join `"; "`),
+ * analog `describeScene` legacy tapi sumbernya fakta terukur dari analyzer
+ * (Task 2), bukan metadata pilihan user. `presetId` opsional HANYA
+ * dikonsumsi untuk klausa lampu malam (#6) — dipanggil oleh `compilePromptV2`
+ * dengan preset yang sudah di-resolve (termasuk fallback preset tak
+ * dikenal); dipanggil tanpa argumen kedua di test/di jalur lain berarti
+ * "tidak ada preset" → klausa lampu malam otomatis absen.
+ */
+export function describeSceneFacts(facts: SceneFacts, presetId?: string): string {
+  const parts: string[] = []
+
+  // 1. Sudut pandang kamera.
+  const sideLabels = facts.camera.visibleSides.map((s) => SIDE_LABELS[s])
+  parts.push(
+    `${facts.camera.heightClass} camera view of the ${sideLabels.join(" and ")} facade, ` +
+      `${facts.camera.distanceClass} distance, ${facts.camera.lensMm}mm architectural lens`
+  )
+
+  // 2. Massing bangunan.
+  const m = facts.massing
+  let massingClause =
+    `${m.floors}-storey house, footprint ${m.footprintWidthM} x ${m.footprintDepthM} meters ` +
+    `on a ${m.siteWidthM} x ${m.siteDepthM} meter lot, approximate height ${m.approxHeightM} meters`
+  if (m.hasRooftopDeck) {
+    massingClause += `, rooftop deck with ${m.rooftopRailing} railing`
+  }
+  parts.push(massingClause)
+
+  // 3. Fasad per sisi terlihat (urutan = visibleSides / facts.sides).
+  for (const side of facts.sides) {
+    const clause = describeSide(side)
+    if (clause) parts.push(clause)
+  }
+
+  // 4. Elemen tapak yang masuk frame.
+  if (facts.exteriorInFrame.length > 0) {
+    parts.push(`visible site elements: ${facts.exteriorInFrame.map(snakeToSpaces).join(", ")}`)
+  }
+
+  // 5. Atap.
+  const roofBase =
+    facts.roof.zoneTypes.length > 0 ? facts.roof.zoneTypes.join(", ") : facts.roof.globalType
+  let roofClause = `roof: ${roofBase}`
+  if (facts.roof.skylightCount > 0) {
+    roofClause += ` with ${facts.roof.skylightCount} skylight(s)`
+  }
+  parts.push(roofClause)
+
+  // 6. Lampu malam — HANYA preset "malam" & ada lampu.
+  const lampClause = nightLampClause(facts, presetId)
+  if (lampClause) parts.push(lampClause)
+
+  return parts.join("; ")
+}
+
+/**
+ * Compile prompt v2 dari `SceneFacts` + id preset. Merangkai persis pola
+ * `compilePrompt` legacy (base foto tetap → deskripsi → fragmen preset →
+ * geometry guard tetap), tapi deskripsi berasal dari fakta terukur analyzer
+ * (Task 2) — atau dari `polishedDescription` (LLM opsional, Task 4) bila
+ * tersedia & tidak kosong setelah trim. Preset id tak dikenal → fallback ke
+ * preset pertama (sama seperti legacy) daripada throw di jalur kritis.
+ *
+ * Klausa lampu malam (#6) HARUS bertahan meski `polishedDescription`
+ * dipakai — LLM polish tidak tahu fakta jumlah lampu, jadi ditambahkan
+ * kembali secara eksplisit setelah teks polished (bukan diserahkan ke LLM
+ * untuk "mengarang" jumlahnya).
+ */
+export function compilePromptV2(
+  facts: SceneFacts,
+  presetId: string,
+  polishedDescription?: string | null
+): string {
+  const preset = RENDER_PRESET_MAP.get(presetId) ?? RENDER_PRESETS[0]
+  const trimmedPolished = polishedDescription?.trim()
+  const lampClause = nightLampClause(facts, preset.id)
+  const description = trimmedPolished
+    ? trimmedPolished + (lampClause ? `; ${lampClause}` : "")
+    : describeSceneFacts(facts, preset.id)
+
+  return [
+    `${PROMPT_BASE}.`,
+    `${description}.`,
     `${preset.promptFragment}.`,
     `${PROMPT_GEOMETRY_GUARD}.`,
   ].join(" ")

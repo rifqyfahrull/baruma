@@ -21,11 +21,11 @@ import {
 import { queryKeys } from "@/lib/api/keys"
 import { handlePlanError } from "@/lib/api/plan-error"
 import { ApiError } from "@/lib/data/http"
-import { PHOTO_SHOTS } from "@/lib/three/photo-package"
-import { renderParamsHash } from "@/lib/three/render-capture"
+import { PHOTO_SHOTS, type PhotoLighting } from "@/lib/three/photo-package"
+import { poseKey, renderParamsHash, type CapturedPose } from "@/lib/three/render-capture"
 import { RENDER_PRESETS, projectSeed, type RenderPreset } from "@/lib/server/ai-render/prompt"
 import { RENDER_CREDIT_COST } from "@/lib/server/ai-render/pricing"
-import { facadeCladdingById } from "@/lib/three/facade-claddings"
+import type { ViewPreset } from "@/stores/preview-store"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -61,27 +61,18 @@ function extractServerMessage(error: unknown): string | null {
 }
 
 /**
- * Turunkan `sceneMeta` (Fase 3 prompt compiler) dari state klien yang
- * tersedia — TIDAK ada endpoint server terpisah untuk ini:
- * - `facadeMaterials`: label unik dari `layout.facade` (cladding per dinding,
- *   lihat `FACADE_CLADDINGS`); absent/kosong → array kosong (fallback aman,
- *   `compilePrompt` menangani daftar kosong).
- * - `roofType`: `layout.roof?.type`; layout lama/atap default → "pelana"
- *   (jenis atap paling umum di katalog, bukan "datar" yang justru kurang
- *   representatif utk rumah tinggal biasa).
- * - `floors`: `project.floors` (jumlah lantai proyek) — bukan
- *   `layout.floors.length` (itu termasuk lantai non-hunian seperti rooftop
- *   deck yang bisa mengaburkan hitungan "lantai" yang dimaksud user).
+ * Bidikan bebas "Sudut saat ini" — capture apa adanya (view/lighting TIDAK
+ * diubah), berdampingan dengan `PHOTO_SHOTS` (bidikan preset). `view`/
+ * `lighting` sengaja absen di sini: nilainya diturunkan saat capture dari
+ * pose kamera aktual (`poseKey`), bukan preset tetap — lihat pemakaian di
+ * `handleSubmit`.
  */
-function deriveSceneMeta(project: Project, layout: DesignLayout) {
-  const claddingIds = Array.from(new Set(Object.values(layout.facade ?? {})))
-  const facadeMaterials = claddingIds.map((id) => facadeCladdingById(id)?.label ?? id)
-  return {
-    facadeMaterials,
-    roofType: layout.roof?.type ?? "pelana",
-    floors: project.floors > 0 ? project.floors : 1,
-  }
-}
+const CURRENT_ANGLE_SHOT_ID = "sudut-ini"
+type ShotOption = { id: string; label: string; view?: ViewPreset; lighting?: PhotoLighting }
+const SHOT_OPTIONS: ShotOption[] = [
+  ...PHOTO_SHOTS,
+  { id: CURRENT_ANGLE_SHOT_ID, label: "Sudut saat ini" },
+]
 
 async function downloadRenderOutput(url: string): Promise<void> {
   try {
@@ -116,9 +107,11 @@ async function downloadRenderOutput(url: string): Promise<void> {
  */
 export function AiRenderDialog({
   project,
-  layout,
 }: {
   project: Project
+  /** Tak lagi dibaca di sini sejak pose kamera menggantikan sceneMeta
+   *  turunan — dipertahankan di kontrak prop demi kompatibilitas pemanggil
+   *  (mis. `view-toolbar.tsx`), yang tetap boleh mengirimnya. */
   layout: DesignLayout
 }) {
   const capabilities = useProjectCapabilities(project.id)
@@ -128,7 +121,7 @@ export function AiRenderDialog({
   const [tab, setTab] = React.useState<"buat" | "riwayat">("buat")
   const [mode, setMode] = React.useState<AiRenderModeId>("cepat")
   const [preset, setPreset] = React.useState<string>(RENDER_PRESETS[0].id)
-  const [shotId, setShotId] = React.useState<string>(PHOTO_SHOTS[0].id)
+  const [shotId, setShotId] = React.useState<string>(SHOT_OPTIONS[0].id)
   const [phase, setPhase] = React.useState<Phase>("pilih")
   const [renderId, setRenderId] = React.useState<string | null>(null)
   const [cachedHit, setCachedHit] = React.useState(false)
@@ -173,12 +166,17 @@ export function AiRenderDialog({
       toast.error("Preview 3D belum siap — coba lagi sebentar.")
       return
     }
-    const shot = PHOTO_SHOTS.find((s) => s.id === shotId) ?? PHOTO_SHOTS[0]
+    const shot = SHOT_OPTIONS.find((s) => s.id === shotId) ?? SHOT_OPTIONS[0]
+    const isCurrentAngle = shot.id === CURRENT_ANGLE_SHOT_ID
 
     setPhase("capturing")
     // Orkestrasi identik photo-package.tsx: simpan state, terapkan sudut/
     // suasana bidikan, settle 2×rAF + 400ms, capture, PULIHKAN di finally
-    // (harus tetap jalan meski captureRenderInputs throw).
+    // (harus tetap jalan meski captureRenderInputs throw). "Sudut saat ini"
+    // TIDAK menerapkan sudut/suasana apa pun — capture apa adanya — tapi
+    // TETAP mematikan sunStudy (bayangan studi matahari bergerak antar
+    // frame, mengganggu capture) & memulihkannya di finally seperti bidikan
+    // lain.
     const saved = {
       viewPreset: store.viewPreset,
       realistic: store.realistic,
@@ -187,16 +185,18 @@ export function AiRenderDialog({
     }
     if (saved.sunStudyEnabled) store.setSunStudyEnabled(false)
 
-    let captured: { beauty: string; depth: string } | null = null
+    let captured: { beauty: string; depth: string; pose: CapturedPose } | null = null
     try {
       const s = usePreviewStore.getState()
-      if (shot.lighting === "senja") {
-        s.setNightMode(true)
-      } else {
-        s.setNightMode(false)
-        s.setRealistic(true)
+      if (!isCurrentAngle) {
+        if (shot.lighting === "senja") {
+          s.setNightMode(true)
+        } else {
+          s.setNightMode(false)
+          s.setRealistic(true)
+        }
+        s.requestView(shot.view as ViewPreset)
       }
-      s.requestView(shot.view)
       await nextFrame()
       await nextFrame()
       await sleep(400)
@@ -206,10 +206,17 @@ export function AiRenderDialog({
       captured = null
     } finally {
       const s = usePreviewStore.getState()
-      s.setNightMode(saved.nightMode)
-      s.setRealistic(saved.realistic)
+      // "Sudut saat ini" tak pernah menyentuh nightMode/realistic/viewPreset
+      // di atas — memulihkannya di sini jadi tak perlu (nilainya sudah sama
+      // dgn `saved`) DAN tak diinginkan (requestView membumkan viewNonce,
+      // memicu CameraRig "terbang" ke sudut yang sama — noop visual tapi
+      // bukan noop di sisi state/efek).
+      if (!isCurrentAngle) {
+        s.setNightMode(saved.nightMode)
+        s.setRealistic(saved.realistic)
+        s.requestView(saved.viewPreset)
+      }
       if (saved.sunStudyEnabled) s.setSunStudyEnabled(true)
-      s.requestView(saved.viewPreset)
     }
 
     if (!captured) {
@@ -245,15 +252,18 @@ export function AiRenderDialog({
     // presisi (lihat label kejujuran di hasil).
     const layoutRevision = useEditorStore.getState().layoutRevision ?? 0
     const seed = projectSeed(project.id)
+    // "Sudut saat ini": tak ada view preset tetap utk dihash — pakai
+    // poseKey (kuantisasi 0.1 m/0.5°) supaya cache params_hash tetap hit
+    // walau kamera bergeser di bawah ambang jitter, dan lighting dicap
+    // "apa-adanya" (bukan "siang"/"senja" — TIDAK diubah saat capture).
     const paramsHash = renderParamsHash({
       layoutRevision,
-      view: shot.view,
-      lighting: shot.lighting,
+      view: isCurrentAngle ? poseKey(captured.pose) : (shot.view as string),
+      lighting: isCurrentAngle ? "apa-adanya" : (shot.lighting as string),
       preset,
       seed,
       mode,
     })
-    const sceneMeta = deriveSceneMeta(project, layout)
 
     setPhase("proses")
     createRender.mutate(
@@ -264,7 +274,7 @@ export function AiRenderDialog({
         clientRequestId: nanoid(),
         inputKeys: depthKey ? { beauty: beautyKey, depth: depthKey } : { beauty: beautyKey },
         paramsHash,
-        sceneMeta,
+        pose: captured.pose,
       },
       {
         onSuccess: (result) => {
@@ -383,7 +393,7 @@ export function AiRenderDialog({
                 <div className="space-y-1.5">
                   <p className="text-xs font-semibold">Sudut pandang</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {PHOTO_SHOTS.map((shot) => (
+                    {SHOT_OPTIONS.map((shot) => (
                       <button
                         key={shot.id}
                         type="button"

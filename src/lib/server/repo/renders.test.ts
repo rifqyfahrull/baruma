@@ -25,7 +25,8 @@ function lastParams(): unknown[] {
   return (query.mock.calls.at(-1)?.[1] ?? []) as unknown[]
 }
 
-/** Baris render_jobs mentah (snake_case) sesuai kolom di 0039_ai_renders.sql. */
+/** Baris render_jobs mentah (snake_case) sesuai kolom di 0039_ai_renders.sql +
+ *  0043_ai_render_scene_intel.sql (target/room_id/camera_pose). */
 function makeRow(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     id: "rnd-abc123",
@@ -46,6 +47,9 @@ function makeRow(overrides: Partial<Record<string, unknown>> = {}) {
     error_message: null,
     created_at: "2026-08-22T00:00:00.000Z",
     updated_at: "2026-08-22T00:00:00.000Z",
+    target: "exterior",
+    room_id: null,
+    camera_pose: null,
     ...overrides,
   }
 }
@@ -94,6 +98,9 @@ describe("createRenderJob", () => {
       errorMessage: undefined,
       createdAt: "2026-08-22T00:00:00.000Z",
       updatedAt: "2026-08-22T00:00:00.000Z",
+      target: "exterior",
+      roomId: undefined,
+      cameraPose: undefined,
     })
   })
 
@@ -131,7 +138,72 @@ describe("createRenderJob", () => {
       inputKeys: { beauty: "renders/user-1/proj-1/beauty.png" },
     })
 
-    expect(lastParams().at(-1)).toBe(false)
+    // watermarked bukan param terakhir lagi sejak camera_pose ditambahkan
+    // (0043) di ujung daftar INSERT — cek posisi eksplisitnya.
+    expect(lastParams().at(-2)).toBe(false)
+  })
+
+  it("cameraPose diberikan -> kolom camera_pose ikut INSERT sbg JSON.stringify", async () => {
+    const cameraPose = { position: [1, 2, 3], target: [0, 0, 0], fov: 50 }
+    query.mockResolvedValueOnce({
+      rows: [makeRow({ camera_pose: cameraPose })],
+    })
+
+    await createRenderJob("rnd-abc123", "user-1", {
+      projectId: "proj-1",
+      mode: "cepat",
+      preset: "tropis-siang",
+      shotId: "iso-siang",
+      seed: 42,
+      creditsSpent: 1,
+      provider: "mock",
+      paramsHash: "hash-abc",
+      inputKeys: { beauty: "renders/user-1/proj-1/beauty.png" },
+      cameraPose,
+    })
+
+    expect(lastSql()).toMatch(/camera_pose/)
+    expect(lastParams()).toContain(JSON.stringify(cameraPose))
+  })
+
+  it("cameraPose tak diberikan -> kolom camera_pose null", async () => {
+    query.mockResolvedValueOnce({ rows: [makeRow()] })
+
+    await createRenderJob("rnd-abc123", "user-1", {
+      projectId: "proj-1",
+      mode: "cepat",
+      preset: "tropis-siang",
+      shotId: "iso-siang",
+      seed: 42,
+      creditsSpent: 1,
+      provider: "mock",
+      paramsHash: "hash-abc",
+      inputKeys: { beauty: "renders/user-1/proj-1/beauty.png" },
+    })
+
+    expect(lastSql()).toMatch(/camera_pose/)
+    expect(lastParams()).toContain(null)
+  })
+
+  it("target TIDAK disisipkan eksplisit (DEFAULT 'exterior' di DB yang menangani)", async () => {
+    query.mockResolvedValueOnce({ rows: [makeRow()] })
+
+    await createRenderJob("rnd-abc123", "user-1", {
+      projectId: "proj-1",
+      mode: "cepat",
+      preset: "tropis-siang",
+      shotId: "iso-siang",
+      seed: 42,
+      creditsSpent: 1,
+      provider: "mock",
+      paramsHash: "hash-abc",
+      inputKeys: { beauty: "renders/user-1/proj-1/beauty.png" },
+    })
+
+    // Hanya periksa daftar kolom INSERT (sebelum VALUES) — RETURNING boleh
+    // (dan memang) berisi `target` lewat COLS, itu bukan yang diperiksa di sini.
+    const insertCols = lastSql().slice(0, lastSql().indexOf("VALUES"))
+    expect(insertCols).not.toMatch(/\btarget\b/)
   })
 })
 
@@ -150,6 +222,25 @@ describe("getRenderJob — owner-scoped (anti-IDOR)", () => {
     const job = await getRenderJob("rnd-abc123", "user-lain")
     expect(job).toBeNull()
     expect(lastParams()).toEqual(["rnd-abc123", "user-lain"])
+  })
+
+  it("memetakan target/room_id/camera_pose (0043) ke camelCase", async () => {
+    const cameraPose = { position: [1, 2, 3] }
+    query.mockResolvedValueOnce({
+      rows: [makeRow({ target: "interior", room_id: "room-1", camera_pose: cameraPose })],
+    })
+    const job = await getRenderJob("rnd-abc123", "user-1")
+    expect(job?.target).toBe("interior")
+    expect(job?.roomId).toBe("room-1")
+    expect(job?.cameraPose).toEqual(cameraPose)
+  })
+
+  it("room_id/camera_pose null -> roomId/cameraPose undefined; target default 'exterior'", async () => {
+    query.mockResolvedValueOnce({ rows: [makeRow()] })
+    const job = await getRenderJob("rnd-abc123", "user-1")
+    expect(job?.target).toBe("exterior")
+    expect(job?.roomId).toBeUndefined()
+    expect(job?.cameraPose).toBeUndefined()
   })
 })
 

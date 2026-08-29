@@ -6,7 +6,8 @@
  */
 import { query } from "@/lib/server/db"
 
-/** Baris tabel render_jobs, snake_case sesuai db/migrations/0039_ai_renders.sql. */
+/** Baris tabel render_jobs, snake_case sesuai db/migrations/0039_ai_renders.sql
+ *  + 0043_ai_render_scene_intel.sql (target/room_id/camera_pose). */
 interface RenderJobRow {
   id: string
   owner_id: string
@@ -26,6 +27,9 @@ interface RenderJobRow {
   error_message: string | null
   created_at: string
   updated_at: string
+  target: string
+  room_id: string | null
+  camera_pose: unknown
 }
 
 export type RenderJobStatus = "queued" | "submitted" | "processing" | "succeeded" | "failed"
@@ -51,6 +55,11 @@ export interface RenderJob {
   errorMessage?: string
   createdAt: string
   updatedAt: string
+  // 0043_ai_render_scene_intel.sql — target render (exterior|interior, DEFAULT
+  // 'exterior' di DB) + room_id/camera_pose utk Fase B interior & pose kamera.
+  target: string
+  roomId?: string
+  cameraPose?: unknown
 }
 
 // Kolom eksplisit (gaya assets.ts/projects.ts) — hindari `SELECT *` biar kolom
@@ -58,7 +67,7 @@ export interface RenderJob {
 const COLS =
   "id, owner_id, project_id, status, mode, preset, shot_id, seed, credits_spent, " +
   "provider, provider_request_id, params_hash, input_keys, output_key, watermarked, " +
-  "error_message, created_at, updated_at"
+  "error_message, created_at, updated_at, target, room_id, camera_pose"
 
 function rowToRenderJob(row: RenderJobRow): RenderJob {
   return {
@@ -80,6 +89,9 @@ function rowToRenderJob(row: RenderJobRow): RenderJob {
     errorMessage: row.error_message ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    target: row.target,
+    roomId: row.room_id ?? undefined,
+    cameraPose: row.camera_pose ?? undefined,
   }
 }
 
@@ -102,13 +114,18 @@ export async function createRenderJob(
     // SEBELUM insert, supaya finalizeRenderJob tinggal baca job.watermarked
     // tanpa query entitlements ulang).
     watermarked?: boolean
+    // Pose kamera hasil analisis Scene Intelligence Fase A (posisi/target/fov
+    // dsb, lihat spec 2026-08-23) — disimpan mentah sbg jsonb, opsional. TIDAK
+    // menyertakan `target` (exterior|interior): kolom itu diisi DB DEFAULT
+    // 'exterior', bukan lewat opts ini (Fase B interior baru mengisinya).
+    cameraPose?: unknown
   }
 ): Promise<RenderJob> {
   const res = await query<RenderJobRow>(
     `INSERT INTO render_jobs (
        id, owner_id, project_id, status, mode, preset, shot_id, seed,
-       credits_spent, provider, params_hash, input_keys, watermarked
-     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       credits_spent, provider, params_hash, input_keys, watermarked, camera_pose
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
      RETURNING ${COLS}`,
     [
       id,
@@ -124,6 +141,7 @@ export async function createRenderJob(
       opts.paramsHash,
       JSON.stringify(opts.inputKeys),
       opts.watermarked ?? false,
+      opts.cameraPose === undefined ? null : JSON.stringify(opts.cameraPose),
     ]
   )
   return rowToRenderJob(res.rows[0])

@@ -106,18 +106,34 @@ type PreviewState = {
   setCaptureFrame: (fn: (() => string) | null) => void
 
   /**
-   * Capture pasangan input render AI (beauty + depth), didaftarkan dari
-   * DALAM Canvas oleh ScreenshotBridge (lihat komentar di sana untuk detail
-   * presisi depth). Async karena render depth memakai WebGLRenderTarget +
-   * readback yang lebih berat dari toDataURL biasa. Null saat canvas
-   * belum/sudah unmount — sama seperti captureFrame.
+   * Capture pasangan input render AI (beauty + depth) + pose kamera,
+   * didaftarkan dari DALAM Canvas oleh ScreenshotBridge (lihat komentar di
+   * sana untuk detail presisi depth & pose). Async karena render depth
+   * memakai WebGLRenderTarget + readback yang lebih berat dari toDataURL
+   * biasa. Null saat canvas belum/sudah unmount — sama seperti captureFrame.
    */
   captureRenderInputs:
-    | (() => Promise<{ beauty: string; depth: string; width: number; height: number }>)
+    | (() => Promise<{
+        beauty: string
+        depth: string
+        width: number
+        height: number
+        pose: { position: [number, number, number]; target: [number, number, number]; fov: number }
+      }>)
     | null
   setCaptureRenderInputs: (
     fn:
-      | (() => Promise<{ beauty: string; depth: string; width: number; height: number }>)
+      | (() => Promise<{
+          beauty: string
+          depth: string
+          width: number
+          height: number
+          pose: {
+            position: [number, number, number]
+            target: [number, number, number]
+            fov: number
+          }
+        }>)
       | null
   ) => void
 

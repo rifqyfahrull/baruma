@@ -71,6 +71,14 @@ vi.mock("@/lib/server/ai-render/finalize", () => ({
   failRenderJob: vi.fn(),
 }))
 
+vi.mock("@/lib/server/repo/layouts", () => ({
+  getLayoutPayload: vi.fn(),
+}))
+
+vi.mock("@/lib/server/ai-render/polish", () => ({
+  polishScene: vi.fn(),
+}))
+
 import { POST, GET } from "./route"
 import * as projectsRepo from "@/lib/server/repo/projects"
 import * as profilesRepo from "@/lib/server/repo/profiles"
@@ -80,17 +88,46 @@ import * as entitlementsLib from "@/lib/server/entitlements"
 import * as storageLib from "@/lib/server/storage"
 import * as aiRenderLib from "@/lib/server/ai-render"
 import * as finalizeLib from "@/lib/server/ai-render/finalize"
+import * as layoutsRepo from "@/lib/server/repo/layouts"
+import * as polishLib from "@/lib/server/ai-render/polish"
 import { signToken } from "@/lib/server/auth-server"
 import { __resetRateLimitStore } from "@/lib/server/rate-limit"
-import type { Project } from "@/types"
+import type { Project, Site, DesignLayout } from "@/types"
 import type { RenderJob } from "@/lib/server/repo/renders"
+import type { CameraPose } from "@/lib/server/ai-render"
 
 const PROJECT_ID = "proj-xyz"
 const USER_ID = "user-1"
 
 const ctx = { params: Promise.resolve({ id: PROJECT_ID }) }
 
-const ownedProject = { id: PROJECT_ID, name: "Test" } as Project
+const site: Site = { widthM: 10, depthM: 15, areaM2: 150 }
+
+const ownedProject = { id: PROJECT_ID, name: "Test", site } as Project
+
+const minimalLayout: DesignLayout = {
+  id: "layout-1",
+  projectId: PROJECT_ID,
+  versionId: "v1",
+  floors: [{ id: "lantai-1", level: 0, name: "Lantai 1", heightM: 3.2 }],
+  rooms: [
+    {
+      id: "r1",
+      floorId: "lantai-1",
+      name: "Kamar",
+      type: "kamar_tidur",
+      x: 0,
+      y: 0,
+      width: 10,
+      depth: 15,
+      areaM2: 150,
+    },
+  ],
+  walls: [],
+  openings: [],
+}
+
+const validPose: CameraPose = { position: [10, 5, 20], target: [0, 0, 0], fov: 50 }
 
 function makeJob(overrides: Partial<RenderJob> = {}): RenderJob {
   return {
@@ -171,6 +208,8 @@ beforeEach(() => {
   vi.mocked(storageLib.createSignedGetUrl)
     .mockReset()
     .mockResolvedValue("https://signed.example/beauty")
+  vi.mocked(layoutsRepo.getLayoutPayload).mockReset().mockResolvedValue(null)
+  vi.mocked(polishLib.polishScene).mockReset().mockResolvedValue(null)
 })
 
 describe("POST /api/v1/projects/[id]/renders", () => {
@@ -333,6 +372,94 @@ describe("POST /api/v1/projects/[id]/renders", () => {
 
     await Promise.all(afterJobs)
     expect(vi.mocked(finalizeLib.finalizeRenderJob)).toHaveBeenCalledTimes(1)
+  })
+
+  it("400 tanpa pose DAN tanpa sceneMeta", async () => {
+    const token = await signToken(USER_ID)
+    const { sceneMeta: _sceneMeta, ...bodyWithoutSceneMeta } = validBody
+    const res = await POST(await postReq(token, bodyWithoutSceneMeta), ctx)
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toContain("pose atau sceneMeta")
+  })
+
+  it("400 pose.fov di luar rentang 10-120", async () => {
+    const token = await signToken(USER_ID)
+    const { sceneMeta: _sceneMeta, ...bodyWithoutSceneMeta } = validBody
+    const res = await POST(
+      await postReq(token, { ...bodyWithoutSceneMeta, pose: { ...validPose, fov: 500 } }),
+      ctx
+    )
+    expect(res.status).toBe(400)
+  })
+
+  it("201 pose valid TANPA sceneMeta -> prompt v2 (analyzeScene+compilePromptV2), cameraPose diteruskan ke createRenderJob", async () => {
+    const token = await signToken(USER_ID)
+    vi.mocked(layoutsRepo.getLayoutPayload).mockResolvedValueOnce(minimalLayout)
+    vi.mocked(creditsRepo.spendCreditsOnce).mockResolvedValueOnce("ok")
+    const job = makeJob()
+    vi.mocked(rendersRepo.createRenderJob).mockResolvedValueOnce(job)
+    mockProvider.submit.mockResolvedValueOnce({ kind: "done", imageBytes: new Uint8Array([1]) })
+    vi.mocked(finalizeLib.finalizeRenderJob).mockResolvedValueOnce(makeJob({ status: "succeeded" }))
+
+    const { sceneMeta: _sceneMeta, ...bodyWithoutSceneMeta } = validBody
+    const res = await POST(await postReq(token, { ...bodyWithoutSceneMeta, pose: validPose }), ctx)
+    expect(res.status).toBe(201)
+
+    expect(vi.mocked(layoutsRepo.getLayoutPayload)).toHaveBeenCalledWith(PROJECT_ID)
+    expect(mockProvider.submit).toHaveBeenCalledWith(
+      expect.objectContaining({ prompt: expect.stringContaining("facade") })
+    )
+    expect(vi.mocked(rendersRepo.createRenderJob)).toHaveBeenCalledWith(
+      expect.any(String),
+      USER_ID,
+      expect.objectContaining({ cameraPose: validPose })
+    )
+  })
+
+  it("pose ada tapi layout belum tersimpan DAN sceneMeta ada -> fallback ke compilePrompt lama", async () => {
+    const token = await signToken(USER_ID)
+    vi.mocked(layoutsRepo.getLayoutPayload).mockResolvedValueOnce(null)
+    vi.mocked(creditsRepo.spendCreditsOnce).mockResolvedValueOnce("ok")
+    const job = makeJob()
+    vi.mocked(rendersRepo.createRenderJob).mockResolvedValueOnce(job)
+    mockProvider.submit.mockResolvedValueOnce({ kind: "done", imageBytes: new Uint8Array([1]) })
+    vi.mocked(finalizeLib.finalizeRenderJob).mockResolvedValueOnce(makeJob({ status: "succeeded" }))
+
+    const res = await POST(await postReq(token, { ...validBody, pose: validPose }), ctx)
+    expect(res.status).toBe(201)
+    expect(mockProvider.submit).toHaveBeenCalledWith(
+      expect.objectContaining({ prompt: expect.stringContaining("roof type:") })
+    )
+  })
+
+  it("400 pose ada, layout belum tersimpan, sceneMeta juga tak ada — TANPA potong kredit (cegah spend yatim)", async () => {
+    const token = await signToken(USER_ID)
+    vi.mocked(layoutsRepo.getLayoutPayload).mockResolvedValueOnce(null)
+    const { sceneMeta: _sceneMeta, ...bodyWithoutSceneMeta } = validBody
+    const res = await POST(await postReq(token, { ...bodyWithoutSceneMeta, pose: validPose }), ctx)
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toContain("Layout")
+    expect(vi.mocked(creditsRepo.spendCreditsOnce)).not.toHaveBeenCalled()
+  })
+
+  it("pose+layout ada, polishScene mengembalikan paragraf -> prompt memuat teks polished", async () => {
+    const token = await signToken(USER_ID)
+    vi.mocked(layoutsRepo.getLayoutPayload).mockResolvedValueOnce(minimalLayout)
+    vi.mocked(polishLib.polishScene).mockResolvedValueOnce("POLISHED PARAGRAPH")
+    vi.mocked(creditsRepo.spendCreditsOnce).mockResolvedValueOnce("ok")
+    const job = makeJob()
+    vi.mocked(rendersRepo.createRenderJob).mockResolvedValueOnce(job)
+    mockProvider.submit.mockResolvedValueOnce({ kind: "done", imageBytes: new Uint8Array([1]) })
+    vi.mocked(finalizeLib.finalizeRenderJob).mockResolvedValueOnce(makeJob({ status: "succeeded" }))
+
+    const { sceneMeta: _sceneMeta, ...bodyWithoutSceneMeta } = validBody
+    const res = await POST(await postReq(token, { ...bodyWithoutSceneMeta, pose: validPose }), ctx)
+    expect(res.status).toBe(201)
+    expect(mockProvider.submit).toHaveBeenCalledWith(
+      expect.objectContaining({ prompt: expect.stringContaining("POLISHED PARAGRAPH") })
+    )
   })
 })
 

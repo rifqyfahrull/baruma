@@ -157,7 +157,26 @@ function ScreenshotBridge() {
         target.dispose()
       }
 
-      return { beauty, depth, width, height }
+      // Pose kamera (Fase A Scene Intelligence) — dikirim bersama capture agar
+      // server bisa analyzeScene (jarak/sudut nyata ke rumah) tanpa klien
+      // mengirim sceneMeta turunan tebakan. target diproyeksikan 10 m di
+      // depan kamera sepanjang worldDirection (bukan target OrbitControls
+      // sebenarnya) — cukup utk merepresentasikan arah pandang tanpa
+      // menembus store OrbitControls dari sini.
+      const persp = camera as THREE.PerspectiveCamera
+      const dir = new THREE.Vector3()
+      persp.getWorldDirection(dir)
+      const pose = {
+        position: persp.position.toArray() as [number, number, number],
+        target: persp.position.clone().addScaledVector(dir, 10).toArray() as [
+          number,
+          number,
+          number,
+        ],
+        fov: persp.fov,
+      }
+
+      return { beauty, depth, width, height, pose }
     })
     return () => setCaptureRenderInputs(null)
   }, [gl, scene, camera, setCaptureRenderInputs])

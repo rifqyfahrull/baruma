@@ -75,4 +75,3 @@ public/textures/*.jpg
 src/components/faucet-check/tokens.txt
 scripts/asset-harvest/out-answer-eval.jsonl
 scripts/test-prod-agent.mjs
-.pnpm-store/

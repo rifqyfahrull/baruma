@@ -112,4 +112,57 @@ test.describe("Render AI", () => {
     )
     expect(real, real.join("\n")).toEqual([])
   })
+
+  test('bidikan "Sudut saat ini" — capture kamera aktual (bukan requestView), render sukses', async ({
+    page,
+  }) => {
+    // NOTE arsitektur (lihat doc-comment atas file): di mode e2e ini
+    // `data.createRender` adalah panggilan JS in-memory (mock-source.ts →
+    // src/lib/mock/index.ts), BUKAN `fetch`/XHR — jadi tak ada request
+    // jaringan nyata bernama "POST .../renders" utk diintersep di sini
+    // (diverifikasi empiris: `page.on("request", …)` selama alur submit
+    // penuh hanya menangkap chunk Next.js + GLB + SATU PUT ke
+    // mock-storage.example.com untuk upload beauty PNG — tidak ada request
+    // lain). Bentuk JSON body (`pose.position` array 3 angka, `sceneMeta`
+    // absen) SUDAH dites presisi di level unit pada
+    // `ai-render-dialog.test.tsx` (test 'selecting "Sudut saat ini" skips
+    // requestView during capture and sends pose'), yang me-mock `data`
+    // sepenuhnya via `vi.mock("@/lib/data")` dan membaca argumen mutate
+    // langsung. Di sini fokusnya melengkapi: SATU-SATUNYA hal yang unit test
+    // (jsdom) tidak bisa buktikan — bahwa `captureRenderInputs()` sungguhan
+    // (kamera WebGL nyata di browser) berhasil membaca pose SAAT INI tanpa
+    // `requestView` (beda dari bidikan preset lain yang terbang ke sudut
+    // tetap) — dibuktikan via bukti tak-langsung yang kuat: request upload
+    // PNG hanya terjadi kalau `captured` tak null (lihat `handleSubmit`:
+    // `if (!captured) { setPhase("pilih"); return }` — memutus alur SEBELUM
+    // upload apa pun kalau capture/pose gagal), dan nama file upload memuat
+    // id bidikan `sudut-ini` (bukti bidikan yang dipilih benar yang dipakai).
+    await page.route("https://mock-storage.example.com/**", (route) =>
+      route.fulfill({ status: 200, body: "" })
+    )
+
+    await openPreview(page)
+    await page.getByTestId("ai-render-open").click()
+    await expect(page.getByRole("heading", { name: "Render AI" })).toBeVisible()
+
+    const shotButton = page.getByTestId("ai-render-shot-sudut-ini")
+    await expect(shotButton).toBeVisible()
+    await expect(shotButton).toHaveAttribute("aria-pressed", "false")
+    await shotButton.click()
+    await expect(shotButton).toHaveAttribute("aria-pressed", "true")
+
+    const uploadRequest = page.waitForRequest(
+      (req) => req.method() === "PUT" && req.url().includes("sudut-ini-beauty.png"),
+      { timeout: 20_000 }
+    )
+    await page.getByTestId("ai-render-submit").click()
+    // Request PUT ke storage TERJADI dan NAMA FILE-nya memuat id bidikan
+    // "sudut-ini" — bukti kuat capture kamera aktual berhasil & bidikan yang
+    // benar dipakai (predicate page.waitForRequest sudah menyaring keduanya;
+    // gagal capture berarti promise ini timeout, bukan resolve palsu).
+    await uploadRequest
+
+    // Hasil mock sukses (sinyal yang sama dgn kasus "buat render" di atas).
+    await expect(page.getByTestId("ai-render-result-image")).toBeVisible({ timeout: 30_000 })
+  })
 })

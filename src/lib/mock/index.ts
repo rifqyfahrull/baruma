@@ -1360,12 +1360,9 @@ export async function createRender(
     clientRequestId: string
     inputKeys: { beauty: string; depth?: string }
     paramsHash: string
-    sceneMeta: {
-      facadeMaterials: string[]
-      roofType: string
-      floors: number
-      landscape?: string
-    }
+    // Pose kamera — mode mock mengabaikannya (tidak ada analyzeScene di
+    // sini), tetap diterima utk paritas kontrak DataSource.
+    pose: { position: [number, number, number]; target: [number, number, number]; fov: number }
   }
 ): Promise<{ job: AiRenderJob; cached: boolean }> {
   await delay(600)
