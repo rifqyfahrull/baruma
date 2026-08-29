@@ -465,6 +465,47 @@ describe("AiRenderDialog — Riwayat Render (galeri)", () => {
     expect(screen.getByText("Gagal")).toBeTruthy()
   })
 
+  it("labels interior renders with the room name in the gallery", async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    listRendersMock.mockResolvedValue([
+      {
+        id: "rnd-int",
+        status: "succeeded",
+        mode: "cepat",
+        preset: "tropis-siang",
+        shotId: "interior-siang",
+        target: "interior",
+        roomId: "r1", // "Ruang tamu" di makeLayout()
+        watermarked: true,
+        outputUrl: "/api/v1/assets/file/renders/int.png",
+        createdAt: "2026-01-04T00:00:00.000Z",
+      },
+      {
+        id: "rnd-ext",
+        status: "succeeded",
+        mode: "cepat",
+        preset: "tropis-siang",
+        shotId: "iso-siang",
+        target: "exterior",
+        watermarked: true,
+        outputUrl: "/api/v1/assets/file/renders/ext.png",
+        createdAt: "2026-01-05T00:00:00.000Z",
+      },
+    ] satisfies AiRenderJob[])
+
+    renderDialog()
+    openDialog()
+    fireEvent.mouseDown(screen.getByTestId("ai-render-tab-riwayat"), { button: 0 })
+
+    await waitFor(() => {
+      expect(screen.getByTestId("ai-render-gallery")).toBeTruthy()
+    })
+    // Badge interior menyebut nama ruangan; item eksterior TIDAK berbadge
+    // target (galeri tetap bersih, cukup status).
+    expect(screen.getByText("Interior · Ruang tamu")).toBeTruthy()
+    expect(screen.queryByText(/Eksterior/)).toBeNull()
+  })
+
   it("shows an empty state when there is no render yet", async () => {
     getCurrentUserMock.mockResolvedValue(proUser)
     listRendersMock.mockResolvedValue([])

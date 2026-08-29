@@ -191,6 +191,10 @@ export function AiRenderDialog({
     (r) => r.type !== "taman" && r.type !== "kolam" && r.type !== "void"
   )
   const interiorRoomMissing = target === "interior" && !isCurrentAngleShot && !roomId
+  // Label galeri: job interior menyimpan roomId hasil resolusi server —
+  // nama ruangannya di-join dari layout klien (SEMUA rooms, bukan cuma
+  // interiorRooms: ruangan bisa berganti tipe setelah render dibuat).
+  const roomNameById = new Map(layout.rooms.map((r) => [r.id, r.name]))
 
   async function handleSubmit() {
     setSubmitError(null)
@@ -583,6 +587,7 @@ export function AiRenderDialog({
               loading={rendersQuery.isLoading}
               selected={historyPreview}
               onSelect={setHistoryPreview}
+              roomNameById={roomNameById}
             />
           </TabsContent>
         </Tabs>
@@ -762,16 +767,30 @@ function RenderProgress({
   )
 }
 
+/** Label badge target utk satu job galeri — hanya render interior yang
+ *  diberi badge ("Interior · {nama ruangan}"); eksterior dibiarkan polos
+ *  supaya galeri tak riuh (status badge saja sudah ada). */
+function interiorLabel(
+  job: AiRenderJob,
+  roomNameById: Map<string, string>
+): string | null {
+  if (job.target !== "interior") return null
+  const roomName = job.roomId ? roomNameById.get(job.roomId) : undefined
+  return roomName ? `Interior · ${roomName}` : "Interior"
+}
+
 function RenderGallery({
   jobs,
   loading,
   selected,
   onSelect,
+  roomNameById,
 }: {
   jobs: AiRenderJob[]
   loading: boolean
   selected: AiRenderJob | null
   onSelect: (job: AiRenderJob | null) => void
+  roomNameById: Map<string, string>
 }) {
   if (loading) {
     return <p className="py-6 text-center text-xs text-muted-foreground">Memuat riwayat…</p>
@@ -803,6 +822,13 @@ function RenderGallery({
               <div className="flex aspect-video w-full items-center justify-center bg-muted">
                 <ImageIcon className="size-4 text-muted-foreground" />
               </div>
+            )}
+            {interiorLabel(j, roomNameById) && (
+              <span className="absolute top-1 left-1">
+                <Badge variant="outline" className="bg-background/80 text-[10px]">
+                  {interiorLabel(j, roomNameById)}
+                </Badge>
+              </span>
             )}
             <span className="absolute right-1 bottom-1">
               <Badge

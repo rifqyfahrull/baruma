@@ -128,6 +128,12 @@ export type AiRenderJob = {
   mode: AiRenderModeId;
   preset: string;
   shotId: string;
+  /** "exterior" | "interior" — opsional (job lama dari server pra-Fase B /
+   *  cache klien lama tidak membawanya; absen dibaca sbg eksterior). */
+  target?: "exterior" | "interior";
+  /** Hanya render interior per ruang: id ruangan yang dirender (hasil
+   *  resolusi server — utk label galeri, di-join ke layout.rooms klien). */
+  roomId?: string;
   watermarked: boolean;
   outputUrl: string | null;
   errorMessage?: string;

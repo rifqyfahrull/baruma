@@ -1363,6 +1363,8 @@ export async function createRender(
     // Pose kamera — mode mock mengabaikannya (tidak ada analyzeScene di
     // sini), tetap diterima utk paritas kontrak DataSource.
     pose: { position: [number, number, number]; target: [number, number, number]; fov: number }
+    target?: "exterior" | "interior"
+    roomId?: string
   }
 ): Promise<{ job: AiRenderJob; cached: boolean }> {
   await delay(600)
@@ -1382,6 +1384,10 @@ export async function createRender(
     mode: input.mode,
     preset: input.preset,
     shotId: input.shotId,
+    // Paritas server (renderJobView): target default eksterior, roomId hanya
+    // ikut utk render interior per ruang — dipakai badge galeri riwayat.
+    target: input.target ?? "exterior",
+    ...(input.roomId ? { roomId: input.roomId } : {}),
     watermarked: db.user.plan === "free",
     outputUrl: MOCK_RENDER_PLACEHOLDER,
     createdAt: nowISO(),
