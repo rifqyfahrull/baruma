@@ -197,6 +197,69 @@ describe("analyzeRoom", () => {
     expect(analyzeRoom(layout, site, { roomId: "nope" })).toBeNull()
   })
 
+  it("placement koridor sempit: dua tepi berlawanan sama-sama dekat → tepi TERDEKAT menang (bukan 'near the center')", () => {
+    const layout = baseLayout()
+    // Koridor 1.4 m (sumbu x): lemari 0.6 m di x0.1 → distWest 0.1,
+    // distEast 1.4−0.7 = 0.7 — keduanya ≤0.7 tapi satu sumbu (bukan corner).
+    layout.rooms = [
+      ...layout.rooms,
+      {
+        id: "r-koridor",
+        floorId: "lantai-1",
+        name: "Koridor",
+        type: "koridor",
+        x: 0,
+        y: 0,
+        width: 1.4,
+        depth: 5,
+        areaM2: 7,
+      },
+    ]
+    layout.interiors = [
+      ...(layout.interiors ?? []),
+      {
+        roomId: "r-koridor",
+        roomName: "Koridor",
+        roomType: "koridor",
+        floorId: "lantai-1",
+        style: "japandi",
+        furniture: [
+          {
+            id: "f-lemari",
+            furnitureId: "wardrobe-1",
+            roomId: "r-koridor",
+            name: "Lemari",
+            category: "storage",
+            x: 0.1,
+            y: 2,
+            rotationDeg: 0,
+            widthM: 0.6,
+            depthM: 0.5,
+            heightM: 2,
+            locked: false,
+            priceRange: { min: 0, max: 0 },
+          },
+        ],
+        materials: [],
+        lighting: [],
+        colorPalette: baseLayout().interiors![0].colorPalette,
+        warnings: [],
+        budgetEstimate: { min: 0, max: 0 },
+        score: {
+          clearance: 1,
+          usability: 1,
+          styleMatch: 1,
+          cost: 1,
+          naturalLight: 1,
+          circulation: 1,
+        },
+      },
+    ]
+
+    const facts = analyzeRoom(layout, site, { roomId: "r-koridor" })
+    expect(facts?.furniture[0].placement).toBe("against the west wall")
+  })
+
   it("deteksi pose: kamera di dalam r1 lantai dasar → RoomFacts r1", () => {
     const layout = baseLayout()
     // site (3, 8.5) → world x = 3 - 10/2 = -2; world z = 8.5 - 15/2 = 1.

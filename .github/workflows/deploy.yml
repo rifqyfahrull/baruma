@@ -77,6 +77,11 @@ jobs:
             GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
             FAL_KEY=${{ secrets.FAL_KEY }}
             AI_RENDER_PROVIDER=${{ secrets.AI_RENDER_PROVIDER }}
+            # Polish LLM deskripsi scene (ai-render/polish.ts): memakai Agent
+            # Lab slug baruma-assistant (AGENT_LAB_KEY di atas). Never-throw +
+            # cache per hash(facts) + timeout 5 dtk — gagal apa pun jatuh ke
+            # deskripsi deterministik. Matikan cukup dgn menghapus baris ini.
+            AI_RENDER_POLISH=1
             # Payment via the tampil.dev parent (Baruma → tampil.dev → Mayar).
             # Baruma no longer holds any Mayar credential. PARENT_BILLING_SECRET
             # must equal the parent's CHILD_BILLING_SECRET. Use the parent's

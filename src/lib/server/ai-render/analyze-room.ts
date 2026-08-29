@@ -138,17 +138,22 @@ function placementOf(item: PlacedFurniture, room: Room): string {
     { ew: "west", dist: distWest },
   ]
   const close = edges.filter((e) => e.dist <= THRESH)
+  if (close.length === 0) return "near the center"
 
-  if (close.length >= 2) {
-    const ns = close.find((e) => e.ns)?.ns
-    const ew = close.find((e) => e.ew)?.ew
-    if (ns && ew) return `in the ${ns}-${ew} corner`
+  // Corner: ada tepi dekat di KEDUA sumbu → pakai yang TERDEKAT per sumbu
+  // (bukan urutan array — item dekat selatan+utara+barat harus "south-west",
+  // bukan "north-west" hanya karena north lebih dulu di daftar).
+  const nearest = (list: typeof close) =>
+    list.reduce((a, b) => (b.dist < a.dist ? b : a))
+  const nsClose = close.filter((e) => e.ns)
+  const ewClose = close.filter((e) => e.ew)
+  if (nsClose.length > 0 && ewClose.length > 0) {
+    return `in the ${nearest(nsClose).ns}-${nearest(ewClose).ew} corner`
   }
-  if (close.length === 1) {
-    const side = close[0].ns ?? close[0].ew
-    return `against the ${side} wall`
-  }
-  return "near the center"
+  // Satu sumbu saja (termasuk koridor sempit: dua tepi BERLAWANAN sama-sama
+  // ≤ THRESH) → tepi terdekat menang, bukan "near the center".
+  const win = nearest(close)
+  return `against the ${win.ns ?? win.ew} wall`
 }
 
 /**
