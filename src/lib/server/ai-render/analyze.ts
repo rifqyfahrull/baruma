@@ -13,6 +13,7 @@
 import type { DesignLayout, Room, Site } from "@/types"
 import type { ExteriorElement } from "@/types/exterior"
 import { facadeCladdingById } from "@/lib/three/facade-claddings"
+import { isMezzanineFloor, isRooftopFloor } from "@/lib/editor/floors"
 
 /** Pose kamera three.js dikirim klien bersama capture (world coords). */
 export type CameraPose = {
@@ -51,6 +52,10 @@ export interface SceneFacts {
     approxHeightM: number
     hasRooftopDeck: boolean
     rooftopRailing?: string
+    /** True bila layout punya lantai kind:"mezzanine" — bukan lantai penuh
+     *  (tidak dihitung di `floors`), tapi tetap fakta massing relevan untuk
+     *  provider render eksterior (spec 2026-08-29). */
+    hasMezzanine: boolean
   }
   sides: SideFacts[] // hanya sisi terlihat, urutan = visibleSides
   exteriorInFrame: string[] // kind unik urut abjad, hanya yang masuk frustum
@@ -89,7 +94,7 @@ function splitWallId(wallId: string): [string, string] {
 /** Bbox rooms lantai PERTAMA non-rooftop; fallback ke seluruh tapak bila
  *  lantai pertama tak punya ruang (footprint kosong — jalur never-throw). */
 function computeFootprint(layout: DesignLayout, site: Site): Rect {
-  const firstFloor = layout.floors.find((f) => f.id !== "floor-rooftop")
+  const firstFloor = layout.floors.find((f) => !isRooftopFloor(f))
   const rooms = firstFloor ? layout.rooms.filter((r) => r.floorId === firstFloor.id) : []
   if (rooms.length === 0) {
     return { x: 0, y: 0, width: site.widthM, depth: site.depthM }
@@ -415,9 +420,13 @@ export function analyzeScene(layout: DesignLayout, site: Site, pose: CameraPose)
   const roofTypesUnion = new Set([...roof.zoneTypes, roof.globalType])
   const hasNonDatarRoof = [...roofTypesUnion].some((t) => t !== "datar")
 
-  const floors = layout.floors.filter((f) => f.id !== "floor-rooftop").length || 1
+  // Mezzanine BUKAN lantai penuh (ruang parsial di dalam lantai induknya) —
+  // dikecualikan dari hitungan lantai, sama seperti rooftop. spec 2026-08-29.
+  const floors =
+    layout.floors.filter((f) => !isMezzanineFloor(f) && !isRooftopFloor(f)).length || 1
   const approxHeightM = round1(floors * 3.2 + (hasNonDatarRoof ? 1.8 : 0.3))
-  const hasRooftopDeck = layout.floors.some((f) => f.id === "floor-rooftop")
+  const hasRooftopDeck = layout.floors.some(isRooftopFloor)
+  const hasMezzanine = layout.floors.some(isMezzanineFloor)
 
   const sides = visibleSides.map((side) => buildSideFacts(side, layout, fp))
   const exteriorInFrame = computeExteriorInFrame(layout, site, pos, target, fov, diag, fp)
@@ -441,6 +450,7 @@ export function analyzeScene(layout: DesignLayout, site: Site, pose: CameraPose)
       approxHeightM,
       hasRooftopDeck,
       rooftopRailing: hasRooftopDeck ? (layout.rooftopRailingStyle ?? "kaca") : undefined,
+      hasMezzanine,
     },
     sides,
     exteriorInFrame,

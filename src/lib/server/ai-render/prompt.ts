@@ -214,6 +214,9 @@ export function describeSceneFacts(facts: SceneFacts, presetId?: string): string
   if (m.hasRooftopDeck) {
     massingClause += `, rooftop deck with ${m.rooftopRailing} railing`
   }
+  if (m.hasMezzanine) {
+    massingClause += `, with a mezzanine level`
+  }
   parts.push(massingClause)
 
   // 3. Fasad per sisi terlihat (urutan = visibleSides / facts.sides).
@@ -318,9 +321,17 @@ const ROOM_TYPE_LABELS: Record<string, string> = {
 }
 
 /** `floorIndex` 0 → "the ground floor" (Indonesia: lantai dasar), n → "floor
- *  {n+1}" (penomoran manusia, 1-based) — analog istilah real-estate Inggris. */
-function floorLabel(floorIndex: number): string {
-  return floorIndex === 0 ? "the ground floor" : `floor ${floorIndex + 1}`
+ *  {n+1}" (penomoran manusia, 1-based) — analog istilah real-estate Inggris.
+ *  `floorKind:"mezzanine"` mengganti label sepenuhnya menjadi "the mezzanine
+ *  level" (+ ", overlooking the {mezzanineOverlooking}" bila ada overlap
+ *  denah dgn ruang induk) — TIDAK memakai floorIndex sama sekali, karena
+ *  index mezzanine berbagi index lantai induknya (lihat analyze-room.ts). */
+function floorLabel(facts: RoomFacts): string {
+  if (facts.floorKind === "mezzanine") {
+    const base = "the mezzanine level"
+    return facts.mezzanineOverlooking ? `${base}, overlooking the ${facts.mezzanineOverlooking}` : base
+  }
+  return facts.floorIndex === 0 ? "the ground floor" : `floor ${facts.floorIndex + 1}`
 }
 
 /**
@@ -334,15 +345,25 @@ function floorLabel(floorIndex: number): string {
 export function describeRoomFacts(facts: RoomFacts): string {
   const parts: string[] = []
 
-  // 1. Identitas ruang: tipe, nama, lantai, dimensi, tinggi plafon.
+  // 1. Identitas ruang: tipe, nama, lantai, dimensi, tinggi plafon (+
+  // "double-height ceiling" bila ruang tembus ke void lantai berikutnya).
   // Fallback tipe tak terpetakan tetap dihumanisasi (rooftop_lounge →
   // "rooftop lounge") — pola snakeToSpaces yang sama dgn exteriorInFrame.
   const typeLabel = ROOM_TYPE_LABELS[facts.roomType] ?? snakeToSpaces(facts.roomType)
-  parts.push(
-    `${typeLabel} "${facts.roomName}" on ${floorLabel(facts.floorIndex)}, ` +
-      `${facts.widthM} x ${facts.depthM} meters (${facts.areaM2} m2), ` +
-      `${facts.ceilingHeightM} meter ceiling`
-  )
+  let identityClause =
+    `${typeLabel} "${facts.roomName}" on ${floorLabel(facts)}, ` +
+    `${facts.widthM} x ${facts.depthM} meters (${facts.areaM2} m2), ` +
+    `${facts.ceilingHeightM} meter ceiling`
+  if (facts.doubleHeight) identityClause += ", double-height ceiling"
+  parts.push(identityClause)
+
+  // 1b. Split-level — HANYA bila `Room.levelOffsetM` ≠ 0 (analyze-room.ts
+  // sudah menyaring 0/absen jadi `undefined`). Nilai sudah round1 & dipakai
+  // apa adanya (absolute value); arah dari tanda aslinya.
+  if (facts.levelOffsetM !== undefined && facts.levelOffsetM !== 0) {
+    const direction = facts.levelOffsetM > 0 ? "raised" : "lowered"
+    parts.push(`split-level, ${direction} ${Math.abs(facts.levelOffsetM)} m`)
+  }
 
   // 2. Gaya interior + palet warna (palet hanya muncul menempel klausa gaya).
   if (facts.style) {

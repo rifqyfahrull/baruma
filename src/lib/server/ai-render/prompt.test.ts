@@ -129,6 +129,7 @@ const eyeLevelFacts: SceneFacts = {
     floors: 2,
     approxHeightM: 6.4,
     hasRooftopDeck: false,
+    hasMezzanine: false,
   },
   sides: [
     {
@@ -163,6 +164,7 @@ const aerialTwoSideFacts: SceneFacts = {
     approxHeightM: 8.2,
     hasRooftopDeck: true,
     rooftopRailing: "kaca",
+    hasMezzanine: false,
   },
   sides: [
     {
@@ -193,6 +195,22 @@ const aerialTwoSideFacts: SceneFacts = {
 describe("describeSceneFacts — determinism", () => {
   it("same facts produce a byte-identical description (called twice)", () => {
     expect(describeSceneFacts(eyeLevelFacts)).toBe(describeSceneFacts(eyeLevelFacts))
+  })
+})
+
+describe("describeSceneFacts — massing mezzanine (spec 2026-08-29)", () => {
+  it("hasMezzanine true appends the mezzanine-level clause to the massing clause", () => {
+    const facts: SceneFacts = {
+      ...eyeLevelFacts,
+      massing: { ...eyeLevelFacts.massing, hasMezzanine: true },
+    }
+    const out = describeSceneFacts(facts)
+    expect(out).toContain("with a mezzanine level")
+  })
+
+  it("hasMezzanine false omits the mezzanine-level clause (fixture unchanged, byte-identical)", () => {
+    const out = describeSceneFacts(eyeLevelFacts)
+    expect(out).not.toContain("mezzanine")
   })
 })
 
@@ -258,10 +276,12 @@ const japandiBedroomFacts: RoomFacts = {
   roomName: "Kamar Tidur Utama",
   roomType: "kamar_tidur",
   floorIndex: 0,
+  floorKind: "regular",
   widthM: 4,
   depthM: 5,
   areaM2: 20,
   ceilingHeightM: 2.8,
+  doubleHeight: false,
   style: "japandi",
   colorPalette: ["#ff0000", "#dddddd", "#c0c0c0", "#ffffff", "#000000", "#a52a2a"],
   materials: [{ surface: "floor", name: "Parket kayu" }],
@@ -281,10 +301,12 @@ const minimalWorkspaceFacts: RoomFacts = {
   roomName: "Ruang Kerja",
   roomType: "workspace",
   floorIndex: 1,
+  floorKind: "regular",
   widthM: 3,
   depthM: 3,
   areaM2: 9,
   ceilingHeightM: 2.8,
+  doubleHeight: false,
   materials: [],
   furniture: [],
   windowSides: [],
@@ -294,9 +316,93 @@ const minimalWorkspaceFacts: RoomFacts = {
   lighting: { fixtureCount: 0, warmCount: 0 },
 }
 
+/**
+ * Fixtures baru — spec 2026-08-29 (split-level/mezzanine). Ruang mezzanine
+ * (overlooking + plafon rendah 2.1 m khas mezzanine), ruang double-height
+ * (void tembus lantai berikutnya), dan dua varian split-level (naik/turun).
+ */
+const mezzanineFacts: RoomFacts = {
+  ...minimalWorkspaceFacts,
+  roomId: "r3",
+  roomName: "Ruang Baca Mezzanine",
+  roomType: "workspace",
+  floorIndex: 0, // index STACKING mezzanine = index lantai induk (kompat lama)
+  floorKind: "mezzanine",
+  ceilingHeightM: 2.1,
+  mezzanineOverlooking: "Ruang Keluarga",
+}
+
+const doubleHeightFacts: RoomFacts = {
+  ...minimalWorkspaceFacts,
+  roomId: "r4",
+  roomName: "Ruang Keluarga",
+  roomType: "ruang_keluarga",
+  ceilingHeightM: 5.6,
+  doubleHeight: true,
+}
+
+const splitLevelRaisedFacts: RoomFacts = {
+  ...minimalWorkspaceFacts,
+  roomId: "r5",
+  roomName: "Ruang Santai",
+  levelOffsetM: 1.2,
+}
+
+const splitLevelLoweredFacts: RoomFacts = {
+  ...minimalWorkspaceFacts,
+  roomId: "r6",
+  roomName: "Ruang Rendah",
+  levelOffsetM: -0.6,
+}
+
 describe("describeRoomFacts — determinism", () => {
   it("same facts produce a byte-identical description (called twice)", () => {
     expect(describeRoomFacts(japandiBedroomFacts)).toBe(describeRoomFacts(japandiBedroomFacts))
+  })
+})
+
+describe("describeRoomFacts — mezzanine/double-height/split-level (spec 2026-08-29)", () => {
+  it("mezzanine room: floor label switches to mezzanine + overlooking clause, snapshot", () => {
+    const out = describeRoomFacts(mezzanineFacts)
+    expect(out).toContain('on the mezzanine level, overlooking the Ruang Keluarga')
+    expect(out).toContain("2.1 meter ceiling")
+    expect(out).not.toContain("the ground floor")
+    expect(out).toMatchSnapshot()
+  })
+
+  it("mezzanine room without an overlooking match omits the overlooking clause", () => {
+    const facts = { ...mezzanineFacts, mezzanineOverlooking: undefined }
+    const out = describeRoomFacts(facts)
+    expect(out).toContain("on the mezzanine level,")
+    expect(out).not.toContain("overlooking")
+  })
+
+  it("double-height room: dimensions clause gains the double-height suffix, snapshot", () => {
+    const out = describeRoomFacts(doubleHeightFacts)
+    expect(out).toContain("double-height ceiling")
+    expect(out).toMatchSnapshot()
+  })
+
+  it("split-level raised: new clause with the exact offset value", () => {
+    const out = describeRoomFacts(splitLevelRaisedFacts)
+    expect(out).toContain("split-level, raised 1.2 m")
+  })
+
+  it("split-level lowered: new clause uses the absolute value with 'lowered'", () => {
+    const out = describeRoomFacts(splitLevelLoweredFacts)
+    expect(out).toContain("split-level, lowered 0.6 m")
+    expect(out).not.toContain("raised")
+  })
+
+  it("regular room output is IDENTICAL whether new optional facts are absent or explicitly false-y", () => {
+    const withoutOptionals = describeRoomFacts(minimalWorkspaceFacts)
+    const withExplicitFalsy: RoomFacts = {
+      ...minimalWorkspaceFacts,
+      doubleHeight: false,
+      mezzanineOverlooking: undefined,
+      levelOffsetM: undefined,
+    }
+    expect(describeRoomFacts(withExplicitFalsy)).toBe(withoutOptionals)
   })
 })
 

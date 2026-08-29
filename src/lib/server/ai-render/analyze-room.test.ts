@@ -168,7 +168,15 @@ describe("analyzeRoom", () => {
     expect(facts?.widthM).toBe(4)
     expect(facts?.depthM).toBe(5)
     expect(facts?.areaM2).toBe(20)
-    expect(facts?.ceilingHeightM).toBe(2.8)
+    // Fixture pakai heightM 3.2 (floor-to-floor) utk lantai-1 — BUKAN nilai
+    // default 2.95 (WALL_H+SLAB_T). Resolver v2 memakai wallHM PER-LANTAI
+    // (round2(3.2-0.15)=3.05 → round1=3.1), bukan lagi konstanta global
+    // WALL_H=2.8 — perubahan spec disengaja (lihat task-1-brief.md).
+    expect(facts?.ceilingHeightM).toBe(3.1)
+    expect(facts?.floorKind).toBe("regular")
+    expect(facts?.doubleHeight).toBe(false)
+    expect(facts?.mezzanineOverlooking).toBeUndefined()
+    expect(facts?.levelOffsetM).toBeUndefined()
     expect(facts?.style).toBe("japandi")
     expect(facts?.colorPalette).toEqual([
       "#ff0000", // accent
@@ -315,5 +323,205 @@ describe("analyzeRoom", () => {
     const layout = baseLayout()
     expect(() => analyzeRoom(layout, site, {})).not.toThrow()
     expect(analyzeRoom(layout, site, {})).toBeNull()
+  })
+})
+
+/**
+ * Fixture mezzanine/split-level/double-height: lantai-1 (reguler, heightM
+ * 5.9 — floor-to-floor cukup tinggi utk menampung mezzanine DI DALAMNYA) +
+ * lantai-mezz (kind:"mezzanine", baseOffsetM 2.8, heightM 2.2 → band
+ * [2.8, 5.0), tumpang-tindih dgn band lantai-1 [0, 5.9)) + lantai-2 (reguler,
+ * heightM 3.2, baseY 5.9 — TIDAK terpengaruh mezzanine, konsisten dgn
+ * floorElevations). Ruang:
+ * - r-bawah: lantai-1, rect 6×6 (x:[0,6] y:[0,6]) — menaungi r-mezz & r-split.
+ * - r-mezz: lantai-mezz, rect 3×3 di sudut utara r-bawah (x:[0,3] y:[0,3]) —
+ *   sepenuhnya di dalam r-bawah (utk mezzanineOverlooking), SENGAJA tak
+ *   overlap r-void (rect selatan) supaya doubleHeight r-mezz tetap false —
+ *   isolasi kasus uji.
+ * - r-split: lantai-1, rect 1.5×1.5 di sudut r-bawah (x:[4.5,6] y:[4.5,6]),
+ *   `levelOffsetM: 1.2` — tak overlap r-mezz, utk uji pergeseran band murni.
+ * - r-void: lantai-2, type "void", rect parametrik di selatan r-bawah
+ *   (default x:[0,6] y:[3,6], 6×3=18 → overlap 18/36 = 50% ≥50% r-bawah →
+ *   double-height; parameter dipakai utk kasus overlap <50%).
+ */
+function mezzFixtureLayout(voidRect = { x: 0, y: 3, width: 6, depth: 3 }): DesignLayout {
+  return {
+    id: "layout-mezz",
+    projectId: "project-mezz",
+    versionId: "version-mezz",
+    floors: [
+      { id: "lantai-1", level: 0, name: "Lantai 1", heightM: 5.9 },
+      {
+        id: "lantai-mezz",
+        level: 0,
+        name: "Mezzanine",
+        heightM: 2.2,
+        kind: "mezzanine",
+        baseOffsetM: 2.8,
+      },
+      { id: "lantai-2", level: 1, name: "Lantai 2", heightM: 3.2 },
+    ],
+    rooms: [
+      {
+        id: "r-bawah",
+        floorId: "lantai-1",
+        name: "Ruang Keluarga",
+        type: "ruang_keluarga",
+        x: 0,
+        y: 0,
+        width: 6,
+        depth: 6,
+        areaM2: 36,
+      },
+      {
+        id: "r-mezz",
+        floorId: "lantai-mezz",
+        name: "Mezzanine Baca",
+        type: "workspace",
+        x: 0,
+        y: 0,
+        width: 3,
+        depth: 3,
+        areaM2: 9,
+      },
+      {
+        id: "r-split",
+        floorId: "lantai-1",
+        name: "Sudut Split",
+        type: "workspace",
+        x: 4.5,
+        y: 4.5,
+        width: 1.5,
+        depth: 1.5,
+        areaM2: 2.25,
+        levelOffsetM: 1.2,
+      },
+      {
+        id: "r-void",
+        floorId: "lantai-2",
+        name: "Void Atas",
+        type: "void",
+        x: voidRect.x,
+        y: voidRect.y,
+        width: voidRect.width,
+        depth: voidRect.depth,
+        areaM2: voidRect.width * voidRect.depth,
+      },
+    ],
+    walls: [],
+    openings: [],
+    validation: { passed: true, issues: [] },
+  } as DesignLayout
+}
+
+describe("analyzeRoom — resolver v2 (platform tertinggi) & RoomFacts mezzanine/split-level/double-height", () => {
+  // site sama dgn fixture dasar (10×15) — cukup besar utk rect 6×6 fixture mezz.
+  it("kamera di plan overlap r-bawah∩r-mezz, y = baseY mezz + 1.5 → resolve r-mezz (platform tertinggi)", () => {
+    const layout = mezzFixtureLayout()
+    // site (2, 2) → world x = 2 - 10/2 = -3; world z = 2 - 15/2 = -5.5.
+    const facts = analyzeRoom(layout, site, {
+      pose: { position: [-3, 4.3, -5.5], target: [-3, 4.2, -5], fov: 60 },
+    })
+    expect(facts?.roomId).toBe("r-mezz")
+  })
+
+  it("kamera di plan overlap r-bawah∩r-mezz, y = 1.5 (di bawah band mezz [2.8,5.0)) → resolve r-bawah", () => {
+    const layout = mezzFixtureLayout()
+    const facts = analyzeRoom(layout, site, {
+      pose: { position: [-3, 1.5, -5.5], target: [-3, 1.4, -5], fov: 60 },
+    })
+    expect(facts?.roomId).toBe("r-bawah")
+  })
+
+  it("levelOffsetM menggeser band: y di bawah band tergeser r-split → resolve r-bawah (ruang lain)", () => {
+    const layout = mezzFixtureLayout()
+    // site (5, 5) → world x = 5 - 10/2 = 0; world z = 5 - 15/2 = -2.5. Rect
+    // ini hanya milik r-split (di dalam r-bawah, di luar r-mezz).
+    // Band r-split tergeser levelOffsetM 1.2: base = 0+1.2 = 1.2. y=1.1 < 1.2
+    // → r-split BUKAN kandidat; band r-bawah [0,5.9) masih memuat 1.1.
+    const facts = analyzeRoom(layout, site, {
+      pose: { position: [0, 1.1, -2.5], target: [0, 1.0, -2], fov: 60 },
+    })
+    expect(facts?.roomId).toBe("r-bawah")
+  })
+
+  it("levelOffsetM menggeser band: y di dalam band tergeser → resolve r-split (base lebih tinggi menang)", () => {
+    const layout = mezzFixtureLayout()
+    // y=2.0: kedua band ([1.2,7.1) r-split & [0,5.9) r-bawah) memuatnya →
+    // base tertinggi (r-split, 1.2 > 0) menang.
+    const facts = analyzeRoom(layout, site, {
+      pose: { position: [0, 2.0, -2.5], target: [0, 1.9, -2], fov: 60 },
+    })
+    expect(facts?.roomId).toBe("r-split")
+  })
+
+  it("kamera di atas semua band → null", () => {
+    const layout = mezzFixtureLayout()
+    const facts = analyzeRoom(layout, site, {
+      pose: { position: [-3, 999, -5.5], target: [-3, 998, -5], fov: 60 },
+    })
+    expect(facts).toBeNull()
+  })
+
+  it("facts r-mezz: floorKind mezzanine, ceilingHeightM per-lantai mezzanine, mezzanineOverlooking = ruang induk terbesar", () => {
+    const layout = mezzFixtureLayout()
+    const facts = analyzeRoom(layout, site, { roomId: "r-mezz" })
+
+    expect(facts?.floorKind).toBe("mezzanine")
+    // wallHM lantai-mezz = round2(2.2 - SLAB_T 0.15) = 2.05 → round1 = 2.1.
+    expect(facts?.ceilingHeightM).toBe(2.1)
+    expect(facts?.mezzanineOverlooking).toBe("Ruang Keluarga")
+    expect(facts?.doubleHeight).toBe(false)
+    expect(facts?.levelOffsetM).toBeUndefined()
+  })
+
+  it("facts r-bawah: doubleHeight true (void ≥50% overlap), ceilingHeightM = wallHM + f2f lantai void", () => {
+    const layout = mezzFixtureLayout()
+    const facts = analyzeRoom(layout, site, { roomId: "r-bawah" })
+
+    expect(facts?.floorKind).toBe("regular")
+    expect(facts?.doubleHeight).toBe(true)
+    // wallHM lantai-1 = round2(5.9-0.15) = 5.75; + f2f lantai-2 (3.2) = 8.95
+    // → round1 = 9.
+    expect(facts?.ceilingHeightM).toBe(9)
+    expect(facts?.mezzanineOverlooking).toBeUndefined()
+  })
+
+  it("facts r-bawah: overlap void <50% → doubleHeight false, ceilingHeightM = hanya wallHM lantai ini", () => {
+    // r-void 6×1=6 → 6/36 = 16,7% < 50%.
+    const layout = mezzFixtureLayout({ x: 0, y: 3, width: 6, depth: 1 })
+    const facts = analyzeRoom(layout, site, { roomId: "r-bawah" })
+
+    expect(facts?.doubleHeight).toBe(false)
+    expect(facts?.ceilingHeightM).toBe(5.8) // round1(5.75)
+  })
+
+  it("facts r-split: levelOffsetM ≠0 diteruskan (round1)", () => {
+    const layout = mezzFixtureLayout()
+    const facts = analyzeRoom(layout, site, { roomId: "r-split" })
+
+    expect(facts?.floorKind).toBe("regular")
+    expect(facts?.levelOffsetM).toBe(1.2)
+  })
+
+  it("ruang di lantai rooftop (wallHM 0) → ceilingHeightM fallback WALL_H, bukan 0 (regresi I1)", () => {
+    const layout = baseLayout()
+    layout.floors = [...layout.floors, { id: "floor-rooftop", level: 2, name: "Rooftop", heightM: 0.3 }]
+    layout.rooms = [
+      ...layout.rooms,
+      {
+        id: "r-deck",
+        floorId: "floor-rooftop",
+        name: "Rooftop Lounge",
+        type: "rooftop_lounge",
+        x: 1,
+        y: 6,
+        width: 3,
+        depth: 3,
+        areaM2: 9,
+      },
+    ]
+    const facts = analyzeRoom(layout, site, { roomId: "r-deck" })
+    expect(facts?.ceilingHeightM).toBe(2.8) // WALL_H, bukan 0
   })
 })

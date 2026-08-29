@@ -6,7 +6,8 @@ import { useThree } from "@react-three/fiber"
 
 import type { DesignLayout } from "@/types"
 import { usePreviewStore, type ViewPreset } from "@/stores/preview-store"
-import { EXPLODE_GAP, SLAB_T, WALL_H } from "@/lib/three/build-model"
+import { EXPLODE_GAP, SLAB_T } from "@/lib/three/build-model"
+import { interiorCameraPose } from "@/lib/three/interior-camera"
 
 type OrbitLike = {
   target: { set: (x: number, y: number, z: number) => void }
@@ -61,26 +62,21 @@ export function CameraRig({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusNonce, controls])
 
-  // Interior AI-render placement (Fase B): puts the camera INSIDE the room,
-  // eye-level, looking at its center — unlike fly-to-room (frames it from a
-  // high angle looking IN), this shot is what a person standing inside the
-  // room would see.
+  // Interior AI-render placement (Fase B, matematika diekstrak ke Fase C):
+  // puts the camera INSIDE the room, eye-level, looking at its center —
+  // unlike fly-to-room (frames it from a high angle looking IN), this shot
+  // is what a person standing inside the room would see. `interiorCameraPose`
+  // (pure, unit-tested) accounts for split-level (`levelOffsetM`) and low
+  // mezzanine ceilings (`elev.wallHM` clamp).
   React.useEffect(() => {
     if (!controls) return
     const { interiorViewRoomId, exploded } = usePreviewStore.getState()
     const room = interiorViewRoomId ? layout.rooms.find((r) => r.id === interiorViewRoomId) : null
     if (!room) return
     const e = floorElevations(layout.floors).get(room.floorId)
-    const baseY = e ? e.baseY + e.index * (exploded ? EXPLODE_GAP : 0) : 0
-    const cx = room.x + room.width / 2 - site.widthM / 2
-    const cz = room.y + room.depth / 2 - site.depthM / 2
-    // Half-diagonal vector of the room's rectangle — camera sits near one
-    // corner (35% of the way from center) so it looks across the room
-    // instead of straight into a wall.
-    const dx = room.width / 2
-    const dz = room.depth / 2
-    camera.position.set(cx - dx * 0.35, baseY + SLAB_T + 1.5, cz - dz * 0.35)
-    controls.target.set(cx, baseY + SLAB_T + 1.3, cz)
+    const pose = interiorCameraPose(room, e, site, exploded)
+    camera.position.set(...pose.position)
+    controls.target.set(...pose.target)
     controls.update()
     invalidate()
     // eslint-disable-next-line react-hooks/exhaustive-deps

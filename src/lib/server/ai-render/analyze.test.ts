@@ -240,6 +240,55 @@ describe("analyzeScene", () => {
     expect(facts.massing.rooftopRailing).toBe("kaca")
   })
 
+  it("rooftopRailing/hasRooftopDeck juga terdeteksi via kind:'rooftop' (bukan hanya id lama)", () => {
+    const layout = baseLayout()
+    layout.floors = [
+      ...layout.floors,
+      { id: "dak-atas", level: 2, name: "Dak", heightM: 0.2, kind: "rooftop" },
+    ]
+
+    const facts = analyzeScene(layout, site, {
+      position: [0, 1.6, 14],
+      target: [0, 1.5, 0],
+      fov: 50,
+    })
+
+    expect(facts.massing.hasRooftopDeck).toBe(true)
+    // Lantai rooftop TIDAK dihitung sebagai lantai reguler.
+    expect(facts.massing.floors).toBe(2)
+  })
+
+  it("massing.floors mengecualikan mezzanine (bukan lantai penuh) & rooftop; hasMezzanine true saat ada lantai kind:'mezzanine'", () => {
+    const layout = baseLayout()
+    layout.floors = [
+      { id: "lantai-1", level: 0, name: "Lantai 1", heightM: 3.2 },
+      { id: "lantai-2", level: 1, name: "Lantai 2", heightM: 3.2 },
+      { id: "mezz-1", level: 1, name: "Mezzanine", heightM: 2.4, kind: "mezzanine" },
+      { id: "floor-rooftop", level: 2, name: "Rooftop", heightM: 3.2 },
+    ]
+
+    const facts = analyzeScene(layout, site, {
+      position: [0, 1.6, 14],
+      target: [0, 1.5, 0],
+      fov: 50,
+    })
+
+    expect(facts.massing.floors).toBe(2)
+    expect(facts.massing.hasMezzanine).toBe(true)
+  })
+
+  it("hasMezzanine false saat tak ada lantai kind:'mezzanine' (fixture lama, floors tak berubah)", () => {
+    const layout = baseLayout()
+    const facts = analyzeScene(layout, site, {
+      position: [0, 1.6, 14],
+      target: [0, 1.5, 0],
+      fov: 50,
+    })
+
+    expect(facts.massing.hasMezzanine).toBe(false)
+    expect(facts.massing.floors).toBe(2)
+  })
+
   it("vegetationPresent true untuk garden_bed sendirian, tanpa tree/plant", () => {
     const layout = baseLayout()
     layout.exteriorElements = [

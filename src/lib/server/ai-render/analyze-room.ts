@@ -23,6 +23,11 @@ import type {
   Site,
 } from "@/types"
 import { floorElevations, SLAB_T, WALL_H } from "@/lib/geometry/vertical"
+import {
+  isMezzanineFloor,
+  isRegularFloor,
+  mezzanineParentOf,
+} from "@/lib/editor/floors"
 
 import type { CameraPose, FacadeSideId } from "./analyze"
 
@@ -38,11 +43,28 @@ export interface RoomFacts {
   roomId: string
   roomName: string
   roomType: string
-  floorIndex: number // 0 = lantai dasar
+  floorIndex: number // 0 = lantai dasar (index STACKING dari floorElevations — kompat lama)
+  /** Dari `Floor.kind`: "mezzanine" hanya utk ruang di lantai kind:"mezzanine";
+   *  absen ATAU "rooftop" → "regular" (rooftop tak relevan sbg target render
+   *  interior tapi tak boleh terlabel mezzanine bila suatu saat jadi target). */
+  floorKind: "regular" | "mezzanine"
   widthM: number
   depthM: number
   areaM2: number
-  ceilingHeightM: number // WALL_H dibulatkan 1 desimal
+  /** round1(wallHM lantai ruang ini) — PER LANTAI (bukan lagi WALL_H global),
+   *  benar utk mezzanine & lantai ber-heightM kustom. Bila `doubleHeight` →
+   *  wallHM + floorToFloorM lantai void di atasnya (plafon menembus lantai
+   *  berikutnya). */
+  ceilingHeightM: number
+  /** Ada ruang `type:"void"` di lantai reguler BERIKUTNYA (urutan stacking,
+   *  bukan urutan array) yang overlap denahnya menutupi ≥50% luas ruang ini. */
+  doubleHeight: boolean
+  /** HANYA ruang di lantai kind:"mezzanine": nama ruang di lantai INDUK
+   *  (lantai reguler tepat sebelumnya di array) dengan overlap denah TERBESAR
+   *  (>0). Tak ada overlap → absen. */
+  mezzanineOverlooking?: string
+  /** `Room.levelOffsetM` diteruskan (round1) bila ≠0; 0/absen → absen. */
+  levelOffsetM?: number
   style?: string // RoomInteriorPlan.style bila ada
   /** RoomInteriorPlan.colorPalette (nilai objek colors di-flatten jadi
    *  daftar string, urut key abjad). */
@@ -74,9 +96,18 @@ function splitWallId(wallId: string): [string, string] {
 type Rect = { x: number; y: number; width: number; depth: number }
 
 /** Cari ruang berdasarkan id langsung, atau — bila absen — dari pose kamera
- *  world→site: kandidat = rooms yang rect-nya memuat titik proyeksi;
- *  dipilih yang elevasi lantainya memuat pos[1] (tinggi mata). Tak ada
- *  kecocokan (baik id maupun pose) → undefined; tak pernah throw. */
+ *  world→site (resolver v2, "platform tertinggi di bawah mata menang"):
+ *  kandidat = rooms yang rect-nya (denah) memuat titik proyeksi DAN band
+ *  vertikal EFEKTIFnya memuat pos[1] (tinggi mata). Band efektif per ruang:
+ *  `base = elev(floorId).baseY + (levelOffsetM ?? 0)`, `top = base +
+ *  floorToFloorM` — ini membedakan mezzanine (baseY lebih tinggi, band-nya
+ *  DI DALAM floor-to-floor lantai induk → tumpang-tindih) & ruang split-level
+ *  (levelOffsetM menggeser bandnya) dari lantai induknya. Pemenang = `base`
+ *  TERTINGGI di antara kandidat yg bandnya memuat y (fisik-intuitif: berdiri
+ *  di platform tertinggi tepat di bawah kaki); seri → urutan array
+ *  (deterministik, kandidat lebih awal menang krn hanya diganti bila STRICT
+ *  lebih tinggi). Tak ada kandidat (baik id maupun pose) → undefined; tak
+ *  pernah throw. */
 function resolveRoom(
   layout: DesignLayout,
   site: Site,
@@ -91,23 +122,37 @@ function resolveRoom(
   const siteX = px + site.widthM / 2
   const siteY = pz + site.depthM / 2
 
-  const candidates = layout.rooms.filter(
-    (r) => siteX >= r.x && siteX <= r.x + r.width && siteY >= r.y && siteY <= r.y + r.depth
-  )
-  if (candidates.length === 0) return undefined
-
   const elev = floorElevations(layout.floors)
-  for (const room of candidates) {
+
+  let winner: Room | undefined
+  let winnerBase = -Infinity
+  for (const room of layout.rooms) {
+    const inPlan =
+      siteX >= room.x && siteX <= room.x + room.width && siteY >= room.y && siteY <= room.y + room.depth
+    if (!inPlan) continue
+
     const entry = elev.get(room.floorId)
-    const baseY = entry?.baseY ?? 0
-    // Band mencakup seluruh volume lantai (dinding + slab), memakai tinggi
-    // floor-to-floor SPESIFIK lantai ini (floorElevations) — bukan konstanta
-    // global WALL_H+SLAB_T, yang salah untuk lantai dgn heightM kustom.
-    // Fallback ke konstanta global hanya bila entry tak dikenal.
+    // Tinggi floor-to-floor SPESIFIK lantai ini (floorElevations) — bukan
+    // konstanta global WALL_H+SLAB_T, yang salah untuk lantai dgn heightM
+    // kustom. Fallback ke konstanta global hanya bila entry tak dikenal.
     const floorToFloorM = entry?.floorToFloorM ?? WALL_H + SLAB_T
-    if (py >= baseY && py < baseY + floorToFloorM) return room
+    const base = (entry?.baseY ?? 0) + (room.levelOffsetM ?? 0)
+    const top = base + floorToFloorM
+    if (py < base || py >= top) continue
+
+    if (base > winnerBase) {
+      winner = room
+      winnerBase = base
+    }
   }
-  return undefined
+  return winner
+}
+
+/** Luas overlap dua rect denah (m²); tak overlap (lebar/dalam ≤0) → 0. */
+function overlapAreaM2(a: Rect, b: Rect): number {
+  const w = Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x)
+  const d = Math.min(a.y + a.depth, b.y + b.depth) - Math.max(a.y, b.y)
+  return w > 0 && d > 0 ? w * d : 0
 }
 
 /** Flatten objek warna preset (mis. InteriorStylePreset["colors"]) jadi
@@ -171,6 +216,73 @@ export function analyzeRoom(
 
   const elev = floorElevations(layout.floors)
   const floorIndex = elev.get(room.floorId)?.index ?? 0
+  const roomRect: Rect = { x: room.x, y: room.y, width: room.width, depth: room.depth }
+
+  const floor = layout.floors.find((f) => f.id === room.floorId)
+  const floorKind: "regular" | "mezzanine" = floor && isMezzanineFloor(floor) ? "mezzanine" : "regular"
+
+  // mezzanineOverlooking: HANYA ruang di lantai mezzanine — ruang di lantai
+  // INDUK (mezzanineParentOf: lantai reguler tepat sebelumnya di array) dgn
+  // overlap denah TERBESAR (>0). Tak ada overlap/induk → absen.
+  let mezzanineOverlooking: string | undefined
+  if (floorKind === "mezzanine") {
+    const parent = mezzanineParentOf(layout.floors, room.floorId)
+    if (parent) {
+      let bestArea = 0
+      for (const other of layout.rooms) {
+        if (other.floorId !== parent.id) continue
+        const area = overlapAreaM2(roomRect, {
+          x: other.x,
+          y: other.y,
+          width: other.width,
+          depth: other.depth,
+        })
+        if (area > bestArea) {
+          bestArea = area
+          mezzanineOverlooking = other.name
+        }
+      }
+    }
+  }
+
+  // doubleHeight: ruang type:"void" di lantai reguler BERIKUTNYA (urutan
+  // STACKING via floorElevations index — bukan urutan array, konsisten dgn
+  // konvensi mezzanine yg berbagi index induknya) yg overlap denahnya
+  // menutupi ≥50% luas ruang ini.
+  const currentStackIndex = elev.get(room.floorId)?.index ?? 0
+  const nextRegularFloor = layout.floors.find(
+    (f) => isRegularFloor(f) && (elev.get(f.id)?.index ?? -1) === currentStackIndex + 1
+  )
+  const roomAreaM2Raw = room.width * room.depth
+  let doubleHeight = false
+  if (nextRegularFloor) {
+    for (const other of layout.rooms) {
+      if (other.floorId !== nextRegularFloor.id || other.type !== "void") continue
+      const area = overlapAreaM2(roomRect, {
+        x: other.x,
+        y: other.y,
+        width: other.width,
+        depth: other.depth,
+      })
+      if (area >= roomAreaM2Raw * 0.5) {
+        doubleHeight = true
+        break
+      }
+    }
+  }
+
+  // Lantai rooftop punya wallHM 0 (bukan undefined — vertical.ts:118), jadi
+  // `??` saja tidak cukup: ruang terbuka rooftop_lounge akan dapat "0 meter
+  // ceiling" di prompt (temuan I1 final review MEZZ). ≤0 → fallback WALL_H.
+  const rawWallHM = elev.get(room.floorId)?.wallHM
+  const baseWallHM = rawWallHM !== undefined && rawWallHM > 0 ? rawWallHM : WALL_H
+  const ceilingHeightM =
+    doubleHeight && nextRegularFloor
+      ? round1(baseWallHM + (elev.get(nextRegularFloor.id)?.floorToFloorM ?? 0))
+      : round1(baseWallHM)
+
+  const levelOffsetM =
+    room.levelOffsetM !== undefined && room.levelOffsetM !== 0 ? round1(room.levelOffsetM) : undefined
 
   const plan = layout.interiors?.find((p) => p.roomId === room.id)
 
@@ -197,7 +309,6 @@ export function analyzeRoom(
   }
   const windowSides = RING_ORDER.filter((s) => windowSidesSet.has(s))
 
-  const roomRect: Rect = { x: room.x, y: room.y, width: room.width, depth: room.depth }
   const skylightCount = (layout.skylights ?? []).filter((sk) =>
     rectOverlapsRoom({ x: sk.x, y: sk.y, width: sk.widthM, depth: sk.depthM }, roomRect)
   ).length
@@ -216,10 +327,14 @@ export function analyzeRoom(
     roomName: room.name,
     roomType: room.type,
     floorIndex,
+    floorKind,
     widthM: round1(room.width),
     depthM: round1(room.depth),
     areaM2: round1(room.width * room.depth),
-    ceilingHeightM: round1(WALL_H),
+    ceilingHeightM,
+    doubleHeight,
+    mezzanineOverlooking,
+    levelOffsetM,
     style: plan?.style,
     colorPalette: plan?.colorPalette ? flattenColorPalette(plan.colorPalette) : undefined,
     materials,

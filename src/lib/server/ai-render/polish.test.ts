@@ -42,6 +42,7 @@ function baseFacts(): SceneFacts {
       floors: 2,
       approxHeightM: 6.6,
       hasRooftopDeck: false,
+      hasMezzanine: false,
     },
     sides: [
       {
