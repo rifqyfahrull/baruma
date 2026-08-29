@@ -144,6 +144,25 @@ describe("renderParamsHash", () => {
       renderParamsHash({ ...base, layoutRevision: "7" })
     )
   })
+
+  it("styleNotes absen → hash byte-identik dgn skema lama (kompat cache)", () => {
+    expect(renderParamsHash(base)).toBe(renderParamsHash({ ...base, styleNotes: undefined }))
+  })
+
+  it("styleNotes hadir → mengubah hash (cache entry berbeda)", () => {
+    const withNotes = renderParamsHash({ ...base, styleNotes: "suasana hangat sore hari" })
+    expect(withNotes).not.toBe(renderParamsHash(base))
+  })
+
+  it("styleNotes berbeda → hash berbeda", () => {
+    const a = renderParamsHash({ ...base, styleNotes: "suasana hangat" })
+    const b = renderParamsHash({ ...base, styleNotes: "suasana dingin" })
+    expect(a).not.toBe(b)
+  })
+
+  it("styleNotes string kosong diperlakukan sama dgn absen (falsy → tak ditambahkan)", () => {
+    expect(renderParamsHash({ ...base, styleNotes: "" })).toBe(renderParamsHash(base))
+  })
 })
 
 describe("poseKey", () => {

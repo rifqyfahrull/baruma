@@ -479,6 +479,23 @@ const floorPatchSchema = z.object({
     .optional(),
 })
 
+/**
+ * Aksi lintas-mode (floorplan DAN interior): buka dialog Render AI pre-filled
+ * dari chat, bukan render langsung — user tetap menekan Generate sendiri di
+ * dialog (kredit terpotong sadar). Satu konstanta di-spread ke KEDUA union di
+ * bawah supaya chat floorplan maupun interior sama-sama bisa memicunya.
+ * `styleNotes` adalah SATU klausa gaya/mood — bukan prompt bebas; server
+ * menyisipkannya di antara fakta scene & geometry guard (lihat spec
+ * 2026-08-29 ai-render-chat-style-notes).
+ */
+export const aiRenderActionSchema = z.object({
+  type: z.literal("aiRender"),
+  target: z.enum(["exterior", "interior"]),
+  roomId: z.string().min(1).optional(),
+  presetId: z.string().min(1).optional(),
+  styleNotes: z.string().max(240).optional(),
+})
+
 export const floorplanActionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("updateRoom"), roomId: z.string().min(1), patch: roomPatchSchema }),
   z.object({
@@ -568,6 +585,7 @@ export const floorplanActionSchema = z.discriminatedUnion("type", [
     y: z.number().finite(),
   }),
   z.object({ type: z.literal("autoSizeSanitation") }),
+  aiRenderActionSchema,
 ])
 
 export const interiorActionSchema = z.discriminatedUnion("type", [
@@ -588,6 +606,7 @@ export const interiorActionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("updateLight"), roomId: z.string().min(1), lightId: z.string().min(1),
     patch: z.object({ lightType: lightTypeSchema.optional(), colorTemperature: colorTempSchema.optional(), qty: z.number().int().positive().optional(), heightM: z.number().finite().positive().optional(), watt: z.number().finite().positive().optional() }) }),
   z.object({ type: z.literal("removeLight"), roomId: z.string().min(1), lightId: z.string().min(1) }),
+  aiRenderActionSchema,
 ])
 
 export type FloorplanAction = z.infer<typeof floorplanActionSchema>
@@ -1120,5 +1139,16 @@ export function describeAction(action: AssistantAction, scene: AssistantScene): 
     case "moveLight": return "Pindahkan lampu"
     case "updateLight": return "Ubah lampu"
     case "removeLight": return "Hapus lampu"
+    case "aiRender": {
+      const label = action.target === "interior" ? "interior" : "eksterior"
+      if (!action.roomId) return `Buka dialog Render AI (${label})`
+      // Nama ruang dari scene bila resolvable (bentuk berbeda antar mode:
+      // floorplan pakai `id`, interior pakai `roomId`) — jatuh ke roomId
+      // mentah bila ruang tak ditemukan (bukan mengarang nama).
+      const roomName =
+        (scene as FloorplanScene).rooms?.find((r) => r.id === action.roomId)?.name ??
+        (scene as InteriorScene).rooms?.find((r) => r.roomId === action.roomId)?.name
+      return `Buka dialog Render AI (${label} — ${roomName ?? action.roomId})`
+    }
   }
 }

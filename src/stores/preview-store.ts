@@ -95,6 +95,23 @@ type PreviewState = {
   interiorViewRoomId: string | null
   interiorViewNonce: number
 
+  /**
+   * Pre-fill dialog Render AI dari chat AI Agent (spec 2026-08-29 ai-render-
+   * chat-style-notes): panel Asisten mengintersep aksi `aiRender` SEBELUM
+   * diterapkan atomic (apply.ts hanya no-op defensif) dan memanggil
+   * `requestAiRenderPrefill` di sini alih-alih merender langsung —
+   * `ai-render-dialog.tsx` bereaksi pada `nonce` untuk membuka diri sendiri +
+   * mengisi field, user TETAP menekan Generate sendiri (kredit terpotong
+   * sadar). `null` sebelum permintaan pertama.
+   */
+  aiRenderPrefill: {
+    target: "exterior" | "interior"
+    roomId?: string
+    presetId?: string
+    styleNotes?: string
+    nonce: number
+  } | null
+
   canvasEl: HTMLCanvasElement | null
   setCanvas: (el: HTMLCanvasElement | null) => void
 
@@ -186,6 +203,15 @@ type PreviewState = {
   /** Selects the room AND asks the camera to place itself INSIDE it, at eye
    *  level — render AI interior per ruang (Fase B). */
   requestInteriorView: (roomId: string) => void
+  /** Chat AI Agent minta dialog Render AI dibuka pre-filled — bump nonce
+   *  (mirror `requestInteriorView`) supaya efek di `ai-render-dialog.tsx`
+   *  bisa membedakan permintaan baru dari yang sudah dikonsumsi. */
+  requestAiRenderPrefill: (p: {
+    target: "exterior" | "interior"
+    roomId?: string
+    presetId?: string
+    styleNotes?: string
+  }) => void
 }
 
 export const usePreviewStore = create<PreviewState>((set) => ({
@@ -227,6 +253,7 @@ export const usePreviewStore = create<PreviewState>((set) => ({
   focusNonce: 0,
   interiorViewRoomId: null,
   interiorViewNonce: 0,
+  aiRenderPrefill: null,
   canvasEl: null,
   compassEl: null,
   captureFrame: null,
@@ -334,6 +361,10 @@ export const usePreviewStore = create<PreviewState>((set) => ({
       interiorViewNonce: s.interiorViewNonce + 1,
     }))
   },
+  requestAiRenderPrefill: (p) =>
+    set((s) => ({
+      aiRenderPrefill: { ...p, nonce: (s.aiRenderPrefill?.nonce ?? 0) + 1 },
+    })),
 }))
 
 /**

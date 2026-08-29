@@ -89,6 +89,37 @@ const PROMPT_GEOMETRY_GUARD =
   "preserve the exact geometry, camera angle and building proportions from the reference image; " +
   "do not add, remove, or resize any structural elements"
 
+/**
+ * Klausa "catatan gaya" user (spec 2026-08-29 §4 Server — AI Render × Chat).
+ * Teks user TIDAK PERNAH menggantikan prompt — ia menjadi SATU klausa yang
+ * diapit fakta scene deterministik (depan) dan geometry guard yang diperkuat
+ * (belakang, lihat `reinforcedGuard`). Dipanggil dengan `styleNotes` yang
+ * SUDAH tersanitasi oleh caller (`sanitizeStyleNotes`, ./style-notes.ts) —
+ * fungsi ini hanya `.trim()` untuk jaga-jaga & konsistensi dgn pola
+ * `polishedDescription`. Kosong/whitespace-only -> `null` (tak ada klausa),
+ * sama pola falsy-check dgn `nightLampClause`/`interiorLightClause`.
+ */
+function styleNotesClause(styleNotes?: string): string | null {
+  const trimmed = styleNotes?.trim()
+  return trimmed ? `client wishes (mood and non-structural additions only): "${trimmed}"` : null
+}
+
+/**
+ * Guard geometri diperkuat — HANYA saat ada catatan gaya user. Menegaskan
+ * bahwa penambahan yang diminta hanya boleh non-struktural (orang,
+ * kendaraan, tanaman, furnitur, dekor) dan perubahan mood; bangunan itu
+ * sendiri tak pernah diubah. Tanpa styleNotes, guard identik `PROMPT_GEOMETRY_
+ * GUARD` lama -> jalur tanpa styleNotes byte-identik dgn sebelum fitur ini.
+ */
+function reinforcedGuard(hasStyleNotes: boolean): string {
+  if (!hasStyleNotes) return PROMPT_GEOMETRY_GUARD
+  return (
+    `${PROMPT_GEOMETRY_GUARD}; requested additions may only introduce non-structural ` +
+    `elements (people, vehicles, plants, furniture, decor) and mood changes; ` +
+    `never alter, add, or remove any part of the building itself`
+  )
+}
+
 /** Rangkai fakta scene jadi klausa deterministik (urutan tetap, tanpa acak). */
 function describeScene(sceneMeta: RenderSceneMeta): string {
   const parts: string[] = []
@@ -258,11 +289,18 @@ export function describeSceneFacts(facts: SceneFacts, presetId?: string): string
  * dipakai — LLM polish tidak tahu fakta jumlah lampu, jadi ditambahkan
  * kembali secara eksplisit setelah teks polished (bukan diserahkan ke LLM
  * untuk "mengarang" jumlahnya).
+ *
+ * `styleNotes` (opsional, spec 2026-08-29) — bila non-kosong, klausa
+ * "catatan gaya" disisipkan sbg bagian TERPISAH setelah deskripsi (+klausa
+ * lampu) dan sebelum fragmen preset, dan guard geometri di ekor diperkuat
+ * (lihat `reinforcedGuard`). Tanpa `styleNotes`, output byte-identik dgn
+ * sebelum param ini ada — semua snapshot lama tetap utuh.
  */
 export function compilePromptV2(
   facts: SceneFacts,
   presetId: string,
-  polishedDescription?: string | null
+  polishedDescription?: string | null,
+  styleNotes?: string
 ): string {
   const preset = RENDER_PRESET_MAP.get(presetId) ?? RENDER_PRESETS[0]
   const trimmedPolished = polishedDescription?.trim()
@@ -270,13 +308,13 @@ export function compilePromptV2(
   const description = trimmedPolished
     ? trimmedPolished + (lampClause ? `; ${lampClause}` : "")
     : describeSceneFacts(facts, preset.id)
+  const notesClause = styleNotesClause(styleNotes)
 
-  return [
-    `${PROMPT_BASE}.`,
-    `${description}.`,
-    `${preset.promptFragment}.`,
-    `${PROMPT_GEOMETRY_GUARD}.`,
-  ].join(" ")
+  const parts = [`${PROMPT_BASE}.`, `${description}.`]
+  if (notesClause) parts.push(`${notesClause}.`)
+  parts.push(`${preset.promptFragment}.`)
+  parts.push(`${reinforcedGuard(notesClause !== null)}.`)
+  return parts.join(" ")
 }
 
 // ---------------------------------------------------------------------------
@@ -423,11 +461,18 @@ export function interiorLightClause(facts: RoomFacts, presetId: string): string 
  *
  * Klausa lampu interior (#6) HARUS bertahan meski `polishedDescription`
  * dipakai — sama alasan `compilePromptV2`.
+ *
+ * `styleNotes` (opsional, spec 2026-08-29) — perilaku identik dgn
+ * `compilePromptV2`: klausa "catatan gaya" disisipkan setelah deskripsi
+ * (+klausa lampu interior) sebelum fragmen preset, dan guard geometri
+ * diperkuat saat non-kosong. Tanpa `styleNotes`, output byte-identik dgn
+ * sebelum param ini ada.
  */
 export function compilePromptInterior(
   facts: RoomFacts,
   presetId: string,
-  polishedDescription?: string | null
+  polishedDescription?: string | null,
+  styleNotes?: string
 ): string {
   const preset = RENDER_PRESET_MAP.get(presetId) ?? RENDER_PRESETS[0]
   const trimmedPolished = polishedDescription?.trim()
@@ -435,13 +480,13 @@ export function compilePromptInterior(
   const description = trimmedPolished
     ? trimmedPolished + (lightClause ? `; ${lightClause}` : "")
     : describeRoomFacts(facts) + (lightClause ? `; ${lightClause}` : "")
+  const notesClause = styleNotesClause(styleNotes)
 
-  return [
-    `${INTERIOR_PROMPT_BASE}.`,
-    `${description}.`,
-    `${preset.promptFragment}.`,
-    `${PROMPT_GEOMETRY_GUARD}.`,
-  ].join(" ")
+  const parts = [`${INTERIOR_PROMPT_BASE}.`, `${description}.`]
+  if (notesClause) parts.push(`${notesClause}.`)
+  parts.push(`${preset.promptFragment}.`)
+  parts.push(`${reinforcedGuard(notesClause !== null)}.`)
+  return parts.join(" ")
 }
 
 /**

@@ -50,6 +50,7 @@ function makeRow(overrides: Partial<Record<string, unknown>> = {}) {
     target: "exterior",
     room_id: null,
     camera_pose: null,
+    style_notes: null,
     ...overrides,
   }
 }
@@ -101,6 +102,7 @@ describe("createRenderJob", () => {
       target: "exterior",
       roomId: undefined,
       cameraPose: undefined,
+      styleNotes: undefined,
     })
   })
 
@@ -233,6 +235,79 @@ describe("createRenderJob", () => {
     expect(job.target).toBe("interior")
     expect(job.roomId).toBe("r1")
   })
+
+  it("styleNotes TIDAK disisipkan eksplisit saat tak dipassing caller (kolom style_notes absen dari INSERT)", async () => {
+    query.mockResolvedValueOnce({ rows: [makeRow()] })
+
+    const job = await createRenderJob("rnd-abc123", "user-1", {
+      projectId: "proj-1",
+      mode: "cepat",
+      preset: "tropis-siang",
+      shotId: "iso-siang",
+      seed: 42,
+      creditsSpent: 1,
+      provider: "mock",
+      paramsHash: "hash-abc",
+      inputKeys: { beauty: "renders/user-1/proj-1/beauty.png" },
+    })
+
+    const insertCols = lastSql().slice(0, lastSql().indexOf("VALUES"))
+    expect(insertCols).not.toMatch(/\bstyle_notes\b/)
+    expect(job.styleNotes).toBeUndefined()
+  })
+
+  it("styleNotes diberikan (spec 2026-08-29) -> kolom style_notes ikut INSERT via placeholder dinamis", async () => {
+    query.mockResolvedValueOnce({
+      rows: [makeRow({ style_notes: "warm sunset mood, add a dog" })],
+    })
+
+    const job = await createRenderJob("rnd-abc123", "user-1", {
+      projectId: "proj-1",
+      mode: "cepat",
+      preset: "tropis-siang",
+      shotId: "iso-siang",
+      seed: 42,
+      creditsSpent: 1,
+      provider: "mock",
+      paramsHash: "hash-abc",
+      inputKeys: { beauty: "renders/user-1/proj-1/beauty.png" },
+      styleNotes: "warm sunset mood, add a dog",
+    })
+
+    const insertCols = lastSql().slice(0, lastSql().indexOf("VALUES"))
+    expect(insertCols).toMatch(/\bstyle_notes\b/)
+    expect(lastParams()).toContain("warm sunset mood, add a dog")
+    expect(job.styleNotes).toBe("warm sunset mood, add a dog")
+  })
+
+  it("target+roomId+styleNotes sekaligus -> ketiganya ikut INSERT (kombinasi kolom dinamis)", async () => {
+    query.mockResolvedValueOnce({
+      rows: [makeRow({ target: "interior", room_id: "r1", style_notes: "cozy evening light" })],
+    })
+
+    const job = await createRenderJob("rnd-abc123", "user-1", {
+      projectId: "proj-1",
+      mode: "cepat",
+      preset: "tropis-siang",
+      shotId: "iso-siang",
+      seed: 42,
+      creditsSpent: 1,
+      provider: "mock",
+      paramsHash: "hash-abc",
+      inputKeys: { beauty: "renders/user-1/proj-1/beauty.png" },
+      target: "interior",
+      roomId: "r1",
+      styleNotes: "cozy evening light",
+    })
+
+    const insertCols = lastSql().slice(0, lastSql().indexOf("VALUES"))
+    expect(insertCols).toMatch(/\btarget\b/)
+    expect(insertCols).toMatch(/\broom_id\b/)
+    expect(insertCols).toMatch(/\bstyle_notes\b/)
+    expect(job.target).toBe("interior")
+    expect(job.roomId).toBe("r1")
+    expect(job.styleNotes).toBe("cozy evening light")
+  })
 })
 
 describe("getRenderJob — owner-scoped (anti-IDOR)", () => {
@@ -269,6 +344,20 @@ describe("getRenderJob — owner-scoped (anti-IDOR)", () => {
     expect(job?.target).toBe("exterior")
     expect(job?.roomId).toBeUndefined()
     expect(job?.cameraPose).toBeUndefined()
+  })
+
+  it("memetakan style_notes (0044) ke camelCase styleNotes", async () => {
+    query.mockResolvedValueOnce({
+      rows: [makeRow({ style_notes: "moody dusk, add plants" })],
+    })
+    const job = await getRenderJob("rnd-abc123", "user-1")
+    expect(job?.styleNotes).toBe("moody dusk, add plants")
+  })
+
+  it("style_notes null -> styleNotes undefined", async () => {
+    query.mockResolvedValueOnce({ rows: [makeRow()] })
+    const job = await getRenderJob("rnd-abc123", "user-1")
+    expect(job?.styleNotes).toBeUndefined()
   })
 })
 

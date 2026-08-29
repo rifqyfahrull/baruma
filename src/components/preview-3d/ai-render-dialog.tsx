@@ -134,6 +134,12 @@ export function AiRenderDialog({
   const [shotId, setShotId] = React.useState<string>(EXTERIOR_SHOT_OPTIONS[0].id)
   const [target, setTarget] = React.useState<"exterior" | "interior">("exterior")
   const [roomId, setRoomId] = React.useState<string | null>(null)
+  /** Catatan gaya (spec 2026-08-29 ai-render-chat-style-notes) — bisa diisi
+   *  manual di sini ATAU via pre-fill dari chat AI Agent (lihat efek nonce
+   *  di bawah). `styleNotesFromPrefill` mengendalikan chip "dari Asisten" —
+   *  hilang begitu user MENGEDIT teksnya sendiri. */
+  const [styleNotes, setStyleNotes] = React.useState("")
+  const [styleNotesFromPrefill, setStyleNotesFromPrefill] = React.useState(false)
   const [phase, setPhase] = React.useState<Phase>("pilih")
   const [renderId, setRenderId] = React.useState<string | null>(null)
   const [cachedHit, setCachedHit] = React.useState(false)
@@ -168,7 +174,47 @@ export function AiRenderDialog({
     setTarget("exterior")
     setRoomId(null)
     setShotId(EXTERIOR_SHOT_OPTIONS[0].id)
+    setStyleNotes("")
+    setStyleNotesFromPrefill(false)
   }
+
+  // Pre-fill dari chat AI Agent (spec 2026-08-29 ai-render-chat-style-notes):
+  // panel Asisten mengintersep aksi `aiRender` dan memanggil
+  // `requestAiRenderPrefill`, membumkan `aiRenderPrefill.nonce` — efek ini
+  // membuka dialog SENDIRI + mengisi field, meniru pola nonce
+  // viewNonce/focusNonce/interiorViewNonce (camera-rig.tsx): subscribe hanya
+  // ke nonce (bukan seluruh objek) lalu baca payload via getState() di dalam
+  // efek, supaya efek TIDAK re-run tiap render biasa. Berjalan juga saat
+  // MOUNT (dialog belum pernah dibuka sebelumnya, mis. user baru pindah dari
+  // /editor ke /preview-3d) — nonce yang dibaca saat itu sudah > 0 bila
+  // prefill sempat diminta sebelum komponen ini mount.
+  const aiRenderPrefillNonce = usePreviewStore((s) => s.aiRenderPrefill?.nonce)
+  React.useEffect(() => {
+    const prefill = usePreviewStore.getState().aiRenderPrefill
+    if (!prefill) return
+    setOpen(true)
+    setTarget(prefill.target)
+    const nextOptions = prefill.target === "interior" ? INTERIOR_SHOT_OPTIONS : EXTERIOR_SHOT_OPTIONS
+    setShotId((prev) => (nextOptions.some((o) => o.id === prev) ? prev : nextOptions[0].id))
+    // roomId tak valid (ruang sudah dihapus/berganti sejak chat) → biarkan
+    // tak terseleksi, JANGAN tulis id basi.
+    if (prefill.roomId && layout.rooms.some((r) => r.id === prefill.roomId)) {
+      setRoomId(prefill.roomId)
+    }
+    // presetId tak valid → biarkan preset aktif (jangan timpa dgn nilai basi).
+    if (prefill.presetId && RENDER_PRESETS.some((p) => p.id === prefill.presetId)) {
+      setPreset(prefill.presetId)
+    }
+    if (prefill.styleNotes) {
+      setStyleNotes(prefill.styleNotes)
+      setStyleNotesFromPrefill(true)
+    }
+    // KONSUMSI SEKALI: bersihkan prefill setelah dipakai — tanpa ini, setiap
+    // remount /preview-3d (navigasi editor↔preview) membuka ulang dialog
+    // tanpa diminta sampai full reload (temuan I1 final review CHAT-R).
+    usePreviewStore.setState({ aiRenderPrefill: null })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aiRenderPrefillNonce])
 
   if (!capabilities.ai_render_v1) return null
 
@@ -329,6 +375,11 @@ export function AiRenderDialog({
         : isCurrentAngle
           ? poseKey(captured.pose)
           : (shot.view as string)
+    // Catatan gaya (spec 2026-08-29 ai-render-chat-style-notes): hanya
+    // diikutkan (ke hash MAUPUN payload) bila non-kosong setelah trim —
+    // absen → params_hash byte-identik dgn skema lama, tak ada field
+    // `styleNotes` di body (kompat cache/kontrak lama).
+    const styleNotesTrimmed = styleNotes.trim()
     const paramsHash = renderParamsHash({
       layoutRevision,
       view,
@@ -336,6 +387,7 @@ export function AiRenderDialog({
       preset,
       seed,
       mode,
+      ...(styleNotesTrimmed ? { styleNotes: styleNotesTrimmed } : {}),
     })
 
     setPhase("proses")
@@ -350,6 +402,7 @@ export function AiRenderDialog({
         pose: captured.pose,
         target,
         ...(targetRoomId ? { roomId: targetRoomId } : {}),
+        ...(styleNotesTrimmed ? { styleNotes: styleNotesTrimmed } : {}),
       },
       {
         onSuccess: (result) => {
@@ -508,6 +561,39 @@ export function AiRenderDialog({
                       <PresetCard key={p.id} preset={p} active={preset === p.id} />
                     ))}
                   </RadioGroup>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold">Catatan gaya (opsional)</p>
+                    {styleNotesFromPrefill && (
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px]"
+                        data-testid="ai-render-style-notes-chip"
+                      >
+                        dari Asisten
+                      </Badge>
+                    )}
+                  </div>
+                  <textarea
+                    data-testid="ai-render-style-notes"
+                    value={styleNotes}
+                    onChange={(e) => {
+                      setStyleNotes(e.target.value.slice(0, 240))
+                      setStyleNotesFromPrefill(false)
+                    }}
+                    maxLength={240}
+                    rows={2}
+                    placeholder="mis. suasana hangat sore hari, tambahkan orang berjalan di taman"
+                    className="w-full resize-none rounded-md border bg-background px-2 py-1.5 text-xs"
+                  />
+                  <p
+                    className="text-right text-[10px] text-muted-foreground"
+                    data-testid="ai-render-style-notes-counter"
+                  >
+                    {styleNotes.length}/240
+                  </p>
                 </div>
 
                 <div className="space-y-1.5">

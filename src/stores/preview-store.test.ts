@@ -150,6 +150,50 @@ describe("preview store — fokus ruang & visibilitas lantai", () => {
   })
 })
 
+describe("preview store — aiRenderPrefill (chat → dialog Render AI)", () => {
+  beforeEach(() => {
+    usePreviewStore.setState({ aiRenderPrefill: null })
+  })
+
+  it("defaults to null (belum ada permintaan dari chat)", () => {
+    expect(usePreviewStore.getState().aiRenderPrefill).toBeNull()
+  })
+
+  it("requestAiRenderPrefill mengisi payload & memulai nonce di 1", () => {
+    usePreviewStore.getState().requestAiRenderPrefill({
+      target: "interior",
+      roomId: "room-1",
+      presetId: "tropis-siang",
+      styleNotes: "suasana hangat",
+    })
+    const s = usePreviewStore.getState()
+    expect(s.aiRenderPrefill).toEqual({
+      target: "interior",
+      roomId: "room-1",
+      presetId: "tropis-siang",
+      styleNotes: "suasana hangat",
+      nonce: 1,
+    })
+  })
+
+  it("bump nonce di setiap panggilan berikutnya (mirror requestInteriorView)", () => {
+    usePreviewStore.getState().requestAiRenderPrefill({ target: "exterior" })
+    const first = usePreviewStore.getState().aiRenderPrefill!.nonce
+    usePreviewStore.getState().requestAiRenderPrefill({ target: "exterior" })
+    const second = usePreviewStore.getState().aiRenderPrefill!.nonce
+    expect(second).toBe(first + 1)
+  })
+
+  it("field opsional (roomId/presetId/styleNotes) boleh absen", () => {
+    usePreviewStore.getState().requestAiRenderPrefill({ target: "exterior" })
+    const s = usePreviewStore.getState()
+    expect(s.aiRenderPrefill?.target).toBe("exterior")
+    expect(s.aiRenderPrefill?.roomId).toBeUndefined()
+    expect(s.aiRenderPrefill?.presetId).toBeUndefined()
+    expect(s.aiRenderPrefill?.styleNotes).toBeUndefined()
+  })
+})
+
 describe("preview store — captureFrame (screenshot bridge)", () => {
   it("defaults to null (canvas belum mount)", () => {
     expect(initial.captureFrame).toBeNull()

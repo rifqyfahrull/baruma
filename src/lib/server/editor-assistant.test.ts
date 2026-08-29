@@ -683,6 +683,42 @@ describe("describeAction (setSoilBearing)", () => {
   })
 })
 
+describe("sanitizeActions (floorplan aiRender)", () => {
+  it("passes a valid aiRender action through untouched (no roomId guard, mirrors sanitizeInterior)", () => {
+    const action = {
+      type: "aiRender",
+      target: "exterior",
+      presetId: "tropis-siang",
+      styleNotes: "add a red car parked in the driveway",
+    }
+    const out = sanitizeActions("floorplan", [action], fpScene) as FloorplanAction[]
+    expect(out).toEqual([action])
+  })
+
+  it("drops a malformed aiRender action (missing required target)", () => {
+    const out = sanitizeActions("floorplan", [{ type: "aiRender", styleNotes: "x" }], fpScene)
+    expect(out).toHaveLength(0)
+  })
+})
+
+describe("sanitizeActions (interior aiRender) — simetri dgn floorplan", () => {
+  it("passes a valid interior aiRender action through untouched", () => {
+    const action = {
+      type: "aiRender",
+      target: "interior",
+      roomId: "r1",
+      styleNotes: "soft warm bedroom lighting",
+    }
+    const out = sanitizeActions("interior", [action], intScene)
+    expect(out).toEqual([action])
+  })
+
+  it("drops a malformed interior aiRender action (target invalid)", () => {
+    const out = sanitizeActions("interior", [{ type: "aiRender", target: "rooftop" }], intScene)
+    expect(out).toHaveLength(0)
+  })
+})
+
 const fpSceneElec: FloorplanScene = {
   ...fpScene,
   electrical: [
@@ -1138,6 +1174,26 @@ describe("buildMessages", () => {
     expect(msgs[0].content).toContain("japandi") // available styles
     expect(msgs[0].content).toContain("RUANG")
     expect(msgs.at(-1)).toEqual({ role: "user", content: "tambah sofa" })
+  })
+
+  it("floorplan prompt documents the aiRender action + preset ids + non-structural rule", () => {
+    const msgs = buildMessages("floorplan", fpScene, "buatkan render eksterior", [])
+    expect(msgs[0].content).toContain('"aiRender"')
+    expect(msgs[0].content).toContain("tropis-siang")
+    expect(msgs[0].content).toContain("tropis-senja")
+    expect(msgs[0].content).toContain("skandinavia-siang")
+    expect(msgs[0].content).toContain("malam")
+    expect(msgs[0].content.toLowerCase()).toContain("non-struktural")
+  })
+
+  it("interior prompt documents the aiRender action + preset ids + non-structural rule", () => {
+    const msgs = buildMessages("interior", intScene, "buatkan render ruang ini", [])
+    expect(msgs[0].content).toContain('"aiRender"')
+    expect(msgs[0].content).toContain("tropis-siang")
+    expect(msgs[0].content).toContain("tropis-senja")
+    expect(msgs[0].content).toContain("skandinavia-siang")
+    expect(msgs[0].content).toContain("malam")
+    expect(msgs[0].content.toLowerCase()).toContain("non-struktural")
   })
 
   it("trims history to the last 8 turns", () => {

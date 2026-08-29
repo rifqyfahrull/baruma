@@ -19,13 +19,17 @@ const FLOORPLAN_CAPABILITIES = [
   "addElectricalPoint", "moveElectricalPoint", "updateElectricalPoint",
   "removeElectricalPoint", "autoGenerateElectrical", "addWaterPoint", "moveWaterPoint",
   "updateWaterPoint", "removeWaterPoint", "autoGenerateWater", "moveSanitationObject",
-  "autoSizeSanitation",
+  "autoSizeSanitation", "aiRender",
 ] as const
 
 const INTERIOR_CAPABILITIES = [
   "addFurniture", "moveFurniture", "rotateFurniture", "removeFurniture", "setStyle",
-  "resetRoom", "addLight", "moveLight", "updateLight", "removeLight",
+  "resetRoom", "addLight", "moveLight", "updateLight", "removeLight", "aiRender",
 ] as const
+
+// Semua aksi terstruktur (termasuk `aiRender`, 2026-08-29) kini didokumentasikan
+// di system prompt LLM (editor-assistant.ts) — tidak ada lagi yang dikecualikan.
+const PROMPT_DOC_EXEMPT = new Set<string>([])
 
 function discriminatorValues(schema: typeof floorplanActionSchema | typeof interiorActionSchema): string[] {
   return schema.options.map((option) => option.shape.type.value)
@@ -65,8 +69,14 @@ describe("Unified Agent capability parity", () => {
   it("keeps every structured action documented in its mode-specific prompt", () => {
     const floorPrompt = buildMessages("floorplan", floorplanScene, "bantu", [])[0].content
     const interiorPrompt = buildMessages("interior", interiorScene, "bantu", [])[0].content
-    for (const capability of FLOORPLAN_CAPABILITIES) expect(floorPrompt).toContain(`"${capability}"`)
-    for (const capability of INTERIOR_CAPABILITIES) expect(interiorPrompt).toContain(`"${capability}"`)
+    for (const capability of FLOORPLAN_CAPABILITIES) {
+      if (PROMPT_DOC_EXEMPT.has(capability)) continue
+      expect(floorPrompt).toContain(`"${capability}"`)
+    }
+    for (const capability of INTERIOR_CAPABILITIES) {
+      if (PROMPT_DOC_EXEMPT.has(capability)) continue
+      expect(interiorPrompt).toContain(`"${capability}"`)
+    }
   })
 
   it("round-trips updateRoom.patch.edgeBowM (balkon tepi melengkung) through the zod action schema", () => {

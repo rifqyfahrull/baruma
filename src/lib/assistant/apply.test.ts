@@ -5,6 +5,7 @@ import {
   applyFloorplanActions,
   applyFloorplanActionsAtomic,
   applyInteriorActions,
+  applyInteriorActionsAtomic,
 } from "@/lib/assistant/apply"
 import { useEditorStore } from "@/stores/editor-store"
 import { useInteriorStore } from "@/stores/interior-store"
@@ -761,5 +762,52 @@ describe("INTEGRASI penuh — build → apply → edit deterministik → apply (
       const p = parseOpeningWall(o.wallId)
       expect(p && roomIds.has(p.roomId), `bukaan ${o.wallId} di ruang tak ada`).toBe(true)
     }
+  })
+})
+
+describe("applyFloorplanActions / applyInteriorActions — aiRender no-op", () => {
+  beforeEach(() => {
+    useEditorStore.getState().loadLayout(makeLayout(), sampleSite, [])
+    useInteriorStore
+      .getState()
+      .load({ projectId: "p", layout: makeLayout(), style: "japandi", initialRoomId: "r1" })
+  })
+
+  it("counts as applied but leaves the floorplan layout byte-identical", () => {
+    const before = useEditorStore.getState().layout
+    const applied = applyFloorplanActions([{ type: "aiRender", target: "exterior" }])
+    expect(applied).toBe(1)
+    expect(useEditorStore.getState().layout).toEqual(before)
+  })
+
+  it("counts as applied but leaves the interior plan byte-identical", () => {
+    const before = useInteriorStore.getState().plan
+    const applied = applyInteriorActions([
+      { type: "aiRender", target: "interior", roomId: "r1" },
+    ])
+    expect(applied).toBe(1)
+    expect(useInteriorStore.getState().plan).toEqual(before)
+  })
+
+  it("does not throw when mixed with a real floorplan action in an atomic batch", () => {
+    expect(() =>
+      applyFloorplanActionsAtomic([
+        { type: "aiRender", target: "exterior" },
+        { type: "updateRoom", roomId: "r1", patch: { name: "Ruang Baru" } },
+      ])
+    ).not.toThrow()
+    expect(applyFloorplanActionsAtomic([
+      { type: "aiRender", target: "exterior" },
+      { type: "updateRoom", roomId: "r1", patch: { name: "Ruang Baru 2" } },
+    ])).toBe(true)
+  })
+
+  it("does not throw when mixed with a real interior action in an atomic batch", () => {
+    expect(() =>
+      applyInteriorActionsAtomic([
+        { type: "aiRender", target: "interior", roomId: "r1" },
+        { type: "addLight", roomId: "r1", lightType: "downlight" },
+      ])
+    ).not.toThrow()
   })
 })

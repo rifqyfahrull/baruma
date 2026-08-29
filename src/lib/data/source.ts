@@ -265,6 +265,12 @@ export interface DataSource {
        *  bidikan preset (bukan "Sudut saat ini", yang membiarkan server
        *  mendeteksi ruang dari pose kamera). */
       roomId?: string
+      /** Catatan gaya opsional (chat pre-fill ATAU diketik manual — spec
+       *  2026-08-29 ai-render-chat-style-notes). Hanya dikirim bila
+       *  non-kosong; server menyisipkannya sbg SATU klausa mood/non-
+       *  struktural di antara fakta scene & geometry guard, bukan prompt
+       *  bebas. */
+      styleNotes?: string
     }
   ): Promise<{ job: AiRenderJob; cached: boolean }>
 

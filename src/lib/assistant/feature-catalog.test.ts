@@ -53,6 +53,9 @@ describe("feature-catalog integritas", () => {
     expect(soilBearing.category).toBe("struktur")
     const manageOpening = FEATURE_CATALOG.find((f) => f.id === "manage-opening")!
     expect(isAgentExecutable(manageOpening)).toBe(true)
+    const aiRender = FEATURE_CATALOG.find((f) => f.id === "ai-render")!
+    expect(isAgentExecutable(aiRender)).toBe(true)
+    expect(aiRender.triggers[0]).toMatchObject({ kind: "agent", action: "aiRender" })
   })
 })
 
@@ -81,6 +84,8 @@ describe("matchFeatures — intent Bahasa Indonesia", () => {
     ["atur daya dukung tanah 180 kPa", "soil-bearing"],
     ["geser pintu kamar sedikit ke kanan", "manage-opening"],
     ["hapus jendela ruang tamu", "manage-opening"],
+    ["render", "ai-render"],
+    ["bikin gambar realistis eksterior", "ai-render"],
   ]
   it.each(newCases)("'%s' → fitur teratas mengandung %s", (q, expectedId) => {
     const ids = matchFeatures(q).map((f) => f.id)

@@ -267,6 +267,72 @@ describe("compilePromptV2 — snapshot", () => {
 })
 
 /**
+ * Klausa "catatan gaya" (spec 2026-08-29 §4 Server) — styleNotes param
+ * opsional keempat. Tanpa styleNotes: output byte-identik dgn snapshot lama
+ * (dites terpisah di bawah via perbandingan langsung, TANPA styleNotes sama
+ * sekali di argumen call, supaya jalur lama tak tersentuh).
+ */
+describe("compilePromptV2 — styleNotes (spec 2026-08-29)", () => {
+  it("snapshot: eye-level facts + styleNotes, tanpa polishedDescription", () => {
+    expect(
+      compilePromptV2(eyeLevelFacts, "tropis-siang", undefined, "add a golden retriever on the lawn")
+    ).toMatchSnapshot()
+  })
+
+  it("klausa styleNotes muncul SETELAH deskripsi (+lampu) dan SEBELUM fragmen preset", () => {
+    const prompt = compilePromptV2(aerialTwoSideFacts, "malam", undefined, "add a red car in the driveway")
+    const notesIdx = prompt.indexOf('client wishes (mood and non-structural additions only): "add a red car in the driveway"')
+    const presetIdx = prompt.indexOf(RENDER_PRESETS.find((p) => p.id === "malam")!.promptFragment)
+    const lampIdx = prompt.indexOf("3 warm exterior lamps glowing")
+    expect(notesIdx).toBeGreaterThan(-1)
+    expect(presetIdx).toBeGreaterThan(-1)
+    expect(lampIdx).toBeGreaterThan(-1)
+    expect(lampIdx).toBeLessThan(notesIdx)
+    expect(notesIdx).toBeLessThan(presetIdx)
+  })
+
+  it("guard diperkuat (klausa non-struktural) muncul di ekor prompt saat styleNotes ada", () => {
+    const prompt = compilePromptV2(eyeLevelFacts, "tropis-siang", undefined, "add some plants")
+    expect(prompt.endsWith(
+      `${GEOMETRY_GUARD_TEXT}; requested additions may only introduce non-structural elements ` +
+        `(people, vehicles, plants, furniture, decor) and mood changes; ` +
+        `never alter, add, or remove any part of the building itself.`
+    )).toBe(true)
+  })
+
+  it("guard TIDAK diperkuat (tetap klausa lama) saat styleNotes absen", () => {
+    const prompt = compilePromptV2(eyeLevelFacts, "tropis-siang")
+    expect(prompt.endsWith(`${GEOMETRY_GUARD_TEXT}.`)).toBe(true)
+    expect(prompt).not.toContain("requested additions may only introduce non-structural elements")
+  })
+
+  it("styleNotes kosong/whitespace-only tidak menyisipkan klausa & tidak memperkuat guard", () => {
+    const prompt = compilePromptV2(eyeLevelFacts, "tropis-siang", undefined, "   ")
+    expect(prompt).not.toContain("client wishes")
+    expect(prompt.endsWith(`${GEOMETRY_GUARD_TEXT}.`)).toBe(true)
+  })
+
+  it("polishedDescription + styleNotes berdampingan — klausa styleNotes tetap ada setelah teks polished", () => {
+    const prompt = compilePromptV2(
+      eyeLevelFacts,
+      "tropis-siang",
+      "  POLISHED scene description  ",
+      "make it feel cozy at dusk"
+    )
+    expect(prompt).toContain("POLISHED scene description")
+    const polishedIdx = prompt.indexOf("POLISHED scene description")
+    const notesIdx = prompt.indexOf('client wishes (mood and non-structural additions only): "make it feel cozy at dusk"')
+    expect(notesIdx).toBeGreaterThan(polishedIdx)
+  })
+
+  it("WITHOUT styleNotes: output identik dgn memanggil compilePromptV2 3-argumen (jalur lama tak berubah)", () => {
+    const a = compilePromptV2(eyeLevelFacts, "tropis-siang", "  POLISHED  ")
+    const b = compilePromptV2(eyeLevelFacts, "tropis-siang", "  POLISHED  ", undefined)
+    expect(a).toBe(b)
+  })
+})
+
+/**
  * Fixtures Fase B Task 2 — kamar japandi lengkap (dari fixture Task 1
  * analyze-room.test.ts) dan ruang minim (tanpa interiors plan, tipe ruang
  * tak ada di peta EN → fallback ke tipe mentah, lantai kedua).
@@ -467,6 +533,81 @@ describe("compilePromptInterior — snapshot", () => {
     const known = compilePromptInterior(japandiBedroomFacts, "tropis-siang")
     const unknown = compilePromptInterior(japandiBedroomFacts, "does-not-exist")
     expect(unknown).toBe(known)
+  })
+})
+
+describe("compilePromptInterior — styleNotes (spec 2026-08-29)", () => {
+  it("snapshot: japandi bedroom + styleNotes, tanpa polishedDescription", () => {
+    expect(
+      compilePromptInterior(
+        japandiBedroomFacts,
+        "skandinavia-siang",
+        undefined,
+        "add a small potted plant near the window"
+      )
+    ).toMatchSnapshot()
+  })
+
+  it("klausa styleNotes muncul SETELAH deskripsi (+lampu) dan SEBELUM fragmen preset", () => {
+    const prompt = compilePromptInterior(
+      japandiBedroomFacts,
+      "malam",
+      undefined,
+      "add a cat curled up on the bed"
+    )
+    const notesIdx = prompt.indexOf(
+      'client wishes (mood and non-structural additions only): "add a cat curled up on the bed"'
+    )
+    const presetIdx = prompt.indexOf(RENDER_PRESETS.find((p) => p.id === "malam")!.promptFragment)
+    const lightIdx = prompt.indexOf("4 interior light fixtures on (4 warm)")
+    expect(notesIdx).toBeGreaterThan(-1)
+    expect(presetIdx).toBeGreaterThan(-1)
+    expect(lightIdx).toBeGreaterThan(-1)
+    expect(lightIdx).toBeLessThan(notesIdx)
+    expect(notesIdx).toBeLessThan(presetIdx)
+  })
+
+  it("guard diperkuat muncul di ekor prompt saat styleNotes ada", () => {
+    const prompt = compilePromptInterior(
+      japandiBedroomFacts,
+      "tropis-siang",
+      undefined,
+      "add fresh flowers on the nightstand"
+    )
+    expect(
+      prompt.endsWith(
+        `${GEOMETRY_GUARD_TEXT}; requested additions may only introduce non-structural elements ` +
+          `(people, vehicles, plants, furniture, decor) and mood changes; ` +
+          `never alter, add, or remove any part of the building itself.`
+      )
+    ).toBe(true)
+  })
+
+  it("guard TIDAK diperkuat saat styleNotes absen (jalur lama byte-identik)", () => {
+    const prompt = compilePromptInterior(japandiBedroomFacts, "tropis-siang")
+    expect(prompt.endsWith(`${GEOMETRY_GUARD_TEXT}.`)).toBe(true)
+    expect(prompt).not.toContain("requested additions may only introduce non-structural elements")
+  })
+
+  it("polishedDescription + styleNotes berdampingan — klausa styleNotes tetap ada setelah teks polished", () => {
+    const prompt = compilePromptInterior(
+      japandiBedroomFacts,
+      "tropis-siang",
+      "  POLISHED room description  ",
+      "make it feel warmer"
+    )
+    expect(prompt).toContain("POLISHED room description")
+    const polishedIdx = prompt.indexOf("POLISHED room description")
+    const notesIdx = prompt.indexOf(
+      'client wishes (mood and non-structural additions only): "make it feel warmer"'
+    )
+    expect(notesIdx).toBeGreaterThan(polishedIdx)
+  })
+
+  it("WITHOUT styleNotes: output identik dgn memanggil compilePromptInterior 3-argumen (jalur lama tak berubah)", () => {
+    const a = compilePromptInterior(japandiBedroomFacts, "tropis-siang", "  POLISHED  ")
+    const b = compilePromptInterior(japandiBedroomFacts, "tropis-siang", "  POLISHED  ", undefined)
+    expect(a).toBe(b)
   })
 })
 

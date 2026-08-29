@@ -1365,6 +1365,7 @@ export async function createRender(
     pose: { position: [number, number, number]; target: [number, number, number]; fov: number }
     target?: "exterior" | "interior"
     roomId?: string
+    styleNotes?: string
   }
 ): Promise<{ job: AiRenderJob; cached: boolean }> {
   await delay(600)
@@ -1388,6 +1389,10 @@ export async function createRender(
     // ikut utk render interior per ruang — dipakai badge galeri riwayat.
     target: input.target ?? "exterior",
     ...(input.roomId ? { roomId: input.roomId } : {}),
+    // Paritas server (spec 2026-08-29 ai-render-chat-style-notes): mock
+    // menyalin styleNotes apa adanya (server-lah yang sanitasi) — cukup utk
+    // paritas kontrak/galeri, mock tak menyusun prompt sungguhan.
+    ...(input.styleNotes ? { styleNotes: input.styleNotes } : {}),
     watermarked: db.user.plan === "free",
     outputUrl: MOCK_RENDER_PLACEHOLDER,
     createdAt: nowISO(),

@@ -104,6 +104,7 @@ beforeEach(() => {
       height: 10,
       pose: POSE_FIXTURE,
     })),
+    aiRenderPrefill: null,
   })
 })
 
@@ -116,7 +117,7 @@ afterEach(() => {
   uploadRenderInputMock.mockClear()
   toastMock.success.mockReset()
   toastMock.error.mockReset()
-  usePreviewStore.setState({ captureRenderInputs: null })
+  usePreviewStore.setState({ captureRenderInputs: null, aiRenderPrefill: null })
 })
 
 describe("AiRenderDialog — gating Presisi (aiRenderHd)", () => {
@@ -519,6 +520,230 @@ describe("AiRenderDialog — Riwayat Render (galeri)", () => {
     await waitFor(() => {
       expect(screen.getByText(/Belum ada render/)).toBeTruthy()
     })
+  })
+})
+
+describe("AiRenderDialog — pre-fill dari chat (aiRenderPrefill, spec 2026-08-29)", () => {
+  it("nonce sudah dibumkan SEBELUM mount: dialog terbuka & field terisi (target/roomId/preset/styleNotes valid)", async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    usePreviewStore.getState().requestAiRenderPrefill({
+      target: "interior",
+      roomId: "r2",
+      presetId: "tropis-senja",
+      styleNotes: "suasana hangat sore hari",
+    })
+
+    renderDialog()
+
+    await waitFor(() => {
+      expect(screen.getByTestId("ai-render-target-interior").getAttribute("aria-pressed")).toBe(
+        "true"
+      )
+    })
+    expect((screen.getByTestId("ai-render-interior-room") as HTMLSelectElement).value).toBe("r2")
+    expect(screen.getByTestId("ai-render-preset-tropis-senja").className).toMatch(/border-primary/)
+    expect((screen.getByTestId("ai-render-style-notes") as HTMLTextAreaElement).value).toBe(
+      "suasana hangat sore hari"
+    )
+    expect(screen.getByTestId("ai-render-style-notes-chip")).toBeTruthy()
+  })
+
+  it("prefill DIKONSUMSI SEKALI: store dibersihkan setelah dipakai, remount tak membuka ulang dialog (regresi I1)", async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    usePreviewStore.getState().requestAiRenderPrefill({
+      target: "exterior",
+      styleNotes: "warm dusk",
+    })
+
+    const { unmount } = renderDialog()
+    await waitFor(() => {
+      expect(screen.getByTestId("ai-render-style-notes")).toBeTruthy()
+    })
+    // Terkonsumsi → store bersih.
+    expect(usePreviewStore.getState().aiRenderPrefill).toBeNull()
+
+    // Simulasi navigasi editor↔preview: unmount lalu mount ulang — dialog
+    // TIDAK boleh terbuka sendiri lagi.
+    unmount()
+    renderDialog()
+    expect(screen.queryByTestId("ai-render-style-notes")).toBeNull()
+  })
+
+  it("bump nonce SETELAH mount (dialog sudah terbuka manual) juga mengisi field", async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    renderDialog()
+    openDialog()
+    expect(screen.getByTestId("ai-render-target-eksterior").getAttribute("aria-pressed")).toBe(
+      "true"
+    )
+
+    usePreviewStore.getState().requestAiRenderPrefill({ target: "interior", roomId: "r1" })
+
+    await waitFor(() => {
+      expect(screen.getByTestId("ai-render-target-interior").getAttribute("aria-pressed")).toBe(
+        "true"
+      )
+    })
+    expect((screen.getByTestId("ai-render-interior-room") as HTMLSelectElement).value).toBe("r1")
+  })
+
+  it("roomId tak valid (ruang tak ada di layout) → fallback: tetap tak terseleksi", async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    usePreviewStore.getState().requestAiRenderPrefill({
+      target: "interior",
+      roomId: "room-hantu",
+    })
+
+    renderDialog()
+
+    await waitFor(() => {
+      expect(screen.getByTestId("ai-render-target-interior").getAttribute("aria-pressed")).toBe(
+        "true"
+      )
+    })
+    expect((screen.getByTestId("ai-render-interior-room") as HTMLSelectElement).value).toBe("")
+  })
+
+  it("presetId tak valid → fallback: preset default TIDAK berubah", async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    usePreviewStore.getState().requestAiRenderPrefill({
+      target: "exterior",
+      presetId: "preset-hantu",
+    })
+
+    renderDialog()
+
+    await waitFor(() => {
+      expect(screen.getByTestId("ai-render-target-eksterior").getAttribute("aria-pressed")).toBe(
+        "true"
+      )
+    })
+    // Default = RENDER_PRESETS[0].id ("tropis-siang") — preset invalid diabaikan.
+    expect(screen.getByTestId("ai-render-preset-tropis-siang").className).toMatch(
+      /border-primary/
+    )
+  })
+
+  it("tanpa styleNotes dari prefill → tak ada chip 'dari Asisten'", async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    usePreviewStore.getState().requestAiRenderPrefill({ target: "exterior" })
+
+    renderDialog()
+
+    await waitFor(() => {
+      expect(screen.getByTestId("ai-render-target-eksterior").getAttribute("aria-pressed")).toBe(
+        "true"
+      )
+    })
+    expect(screen.queryByTestId("ai-render-style-notes-chip")).toBeNull()
+  })
+})
+
+describe("AiRenderDialog — field Catatan gaya (textarea maxLength/counter/chip)", () => {
+  it("counter menampilkan panjang saat ini / 240, terpotong ke 240 karakter", async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    renderDialog()
+    openDialog()
+
+    const textarea = screen.getByTestId("ai-render-style-notes") as HTMLTextAreaElement
+    fireEvent.change(textarea, { target: { value: "a".repeat(300) } })
+
+    expect(textarea.value.length).toBe(240)
+    expect(screen.getByTestId("ai-render-style-notes-counter").textContent).toBe("240/240")
+
+    fireEvent.change(textarea, { target: { value: "halo" } })
+    expect(screen.getByTestId("ai-render-style-notes-counter").textContent).toBe("4/240")
+  })
+
+  it("mengedit textarea setelah pre-fill menghapus chip 'dari Asisten'", async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    usePreviewStore.getState().requestAiRenderPrefill({
+      target: "exterior",
+      styleNotes: "dari asisten",
+    })
+    renderDialog()
+
+    await waitFor(() => {
+      expect(screen.getByTestId("ai-render-style-notes-chip")).toBeTruthy()
+    })
+
+    fireEvent.change(screen.getByTestId("ai-render-style-notes"), {
+      target: { value: "diedit user" },
+    })
+
+    expect(screen.queryByTestId("ai-render-style-notes-chip")).toBeNull()
+  })
+
+  it("menutup dialog mereset styleNotes & chip", async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    renderDialog()
+    openDialog()
+    fireEvent.change(screen.getByTestId("ai-render-style-notes"), {
+      target: { value: "sementara" },
+    })
+    fireEvent.click(screen.getByTestId("ai-render-open")) // toggle close via trigger
+    openDialog()
+    expect((screen.getByTestId("ai-render-style-notes") as HTMLTextAreaElement).value).toBe("")
+  })
+})
+
+describe("AiRenderDialog — payload createRender memuat styleNotes hanya bila non-kosong", () => {
+  it("styleNotes terisi (trim non-kosong) → dikirim di body createRender", async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    const job: AiRenderJob = {
+      id: "rnd-notes-1",
+      status: "succeeded",
+      mode: "cepat",
+      preset: "tropis-siang",
+      shotId: "iso-siang",
+      watermarked: false,
+      outputUrl: "/api/v1/assets/file/renders/rnd-notes-1.png",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    }
+    createRenderMock.mockResolvedValue({ job, cached: false })
+    getRenderMock.mockResolvedValue(job)
+
+    renderDialog()
+    openDialog()
+    fireEvent.change(screen.getByTestId("ai-render-style-notes"), {
+      target: { value: "  suasana hangat  " },
+    })
+    fireEvent.click(screen.getByTestId("ai-render-submit"))
+
+    await waitFor(() => {
+      expect(createRenderMock).toHaveBeenCalledTimes(1)
+    })
+    const [, bodyArg] = createRenderMock.mock.calls[0]
+    expect(bodyArg.styleNotes).toBe("suasana hangat")
+  })
+
+  it("styleNotes kosong/hanya spasi → TIDAK dikirim (field absen di body)", async () => {
+    getCurrentUserMock.mockResolvedValue(proUser)
+    const job: AiRenderJob = {
+      id: "rnd-notes-2",
+      status: "succeeded",
+      mode: "cepat",
+      preset: "tropis-siang",
+      shotId: "iso-siang",
+      watermarked: false,
+      outputUrl: "/api/v1/assets/file/renders/rnd-notes-2.png",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    }
+    createRenderMock.mockResolvedValue({ job, cached: false })
+    getRenderMock.mockResolvedValue(job)
+
+    renderDialog()
+    openDialog()
+    fireEvent.change(screen.getByTestId("ai-render-style-notes"), {
+      target: { value: "   " },
+    })
+    fireEvent.click(screen.getByTestId("ai-render-submit"))
+
+    await waitFor(() => {
+      expect(createRenderMock).toHaveBeenCalledTimes(1)
+    })
+    const [, bodyArg] = createRenderMock.mock.calls[0]
+    expect(bodyArg.styleNotes).toBeUndefined()
   })
 })
 

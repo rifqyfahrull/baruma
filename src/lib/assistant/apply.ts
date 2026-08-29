@@ -607,6 +607,12 @@ export function applyFloorplanActions(actions: FloorplanAction[]): number {
         store.beginDrag()
         store.moveSanitationObject(a.kind, a.ref ?? null, a.x, a.y)
         store.endDrag()
+      } else if (a.type === "aiRender") {
+        // No-op eksplisit: `aiRender` hanya membuka dialog Render AI
+        // pre-filled (project-agent-panel.tsx mengintersep aksi ini SEBELUM
+        // sampai ke sini) — jalur ini defensif kalau ia lolos ke apply.
+        // Tak ada perubahan layout; tetap dihitung "applied" agar batch
+        // atomic yang mencampurnya dengan aksi nyata tidak rollback palsu.
       }
       applied++
     } catch {
@@ -623,6 +629,13 @@ export function applyInteriorActions(actions: InteriorAction[]): number {
     try {
       if (a.type === "setStyle") {
         store.setStyle(a.style)
+        applied++
+        continue
+      }
+      if (a.type === "aiRender") {
+        // No-op eksplisit (lihat catatan di applyFloorplanActions) — roomId
+        // opsional (target "exterior" tak punya ruang), jadi ditangani di
+        // sini sebelum guard `roomId` di bawah yang berlaku utk aksi lain.
         applied++
         continue
       }

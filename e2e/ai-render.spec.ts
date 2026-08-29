@@ -208,4 +208,29 @@ test.describe("Render AI", () => {
     // Hasil mock sukses (sinyal yang sama dgn kasus-kasus di atas).
     await expect(page.getByTestId("ai-render-result-image")).toBeVisible({ timeout: 30_000 })
   })
+
+  test('Catatan gaya manual — counter update, submit sukses (spec 2026-08-29 ai-render-chat-style-notes)', async ({
+    page,
+  }) => {
+    await page.route("https://mock-storage.example.com/**", (route) =>
+      route.fulfill({ status: 200, body: "" })
+    )
+
+    await openPreview(page)
+    await page.getByTestId("ai-render-open").click()
+    await expect(page.getByRole("heading", { name: "Render AI" })).toBeVisible()
+
+    const note = "warm sunset, add a parked car"
+    const notesField = page.getByTestId("ai-render-style-notes")
+    await notesField.fill(note)
+    await expect(notesField).toHaveValue(note)
+    await expect(page.getByTestId("ai-render-style-notes-counter")).toHaveText(
+      `${note.length}/240`
+    )
+
+    await page.getByTestId("ai-render-submit").click()
+
+    // Hasil mock sukses (sinyal yang sama dgn kasus-kasus lain).
+    await expect(page.getByTestId("ai-render-result-image")).toBeVisible({ timeout: 30_000 })
+  })
 })

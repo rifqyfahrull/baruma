@@ -582,6 +582,23 @@ export const FEATURE_CATALOG: FeatureEntry[] = [
     examplePhrases: ["kenapa kacanya keliatan datar", "ada opsi kaca yang lebih transparan gak?"],
     triggers: [{ kind: "ui", where: "Toolbar 3D → ikon mata 'Opsi tampilan' → toggle 'Kaca realistis (lebih berat)'." }],
   },
+  {
+    id: "ai-render",
+    name: "Render AI (foto realistis)",
+    category: "editor",
+    description:
+      "Membuka dialog Render AI pre-filled (target eksterior/ruang interior, preset suasana, catatan gaya) langsung dari chat — user tetap menekan Generate sendiri di dialog (kredit terpotong sadar); TIDAK ada render langsung dari chat.",
+    keywords: [
+      "render", "render ai", "gambar realistis", "foto realistis", "visualisasi",
+      "photoreal", "rendering", "hasil render", "bikin foto rumah",
+    ],
+    examplePhrases: [
+      "render eksterior rumah ini dong, suasana golden hour",
+      "bikin foto realistis ruang tamu",
+      "aku mau lihat visualisasi malam hari",
+    ],
+    triggers: [{ kind: "agent", action: "aiRender" }],
+  },
 ]
 
 const CATEGORY_LABEL: Record<FeatureCategory, string> = {

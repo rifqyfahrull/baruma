@@ -567,6 +567,137 @@ describe("POST /api/v1/projects/[id]/renders", () => {
     expect(body.error).toContain("pose")
     expect(vi.mocked(creditsRepo.spendCreditsOnce)).not.toHaveBeenCalled()
   })
+
+  // ---------------------------------------------------------------------
+  // styleNotes (Task 3 — AI Render × Chat, spec 2026-08-29 §4 Server).
+  // sanitizeStyleNotes/compilePromptV2/compilePromptInterior dipakai APA
+  // ADANYA (real, tak dimock) — hanya polishScene yang dimock (null).
+  // ---------------------------------------------------------------------
+
+  it("201 pose+styleNotes -> prompt memuat 'client wishes' + guard diperkuat, createRenderJob dgn styleNotes tersanitasi", async () => {
+    const token = await signToken(USER_ID)
+    vi.mocked(layoutsRepo.getLayoutPayload).mockResolvedValueOnce(minimalLayout)
+    vi.mocked(creditsRepo.spendCreditsOnce).mockResolvedValueOnce("ok")
+    const job = makeJob()
+    vi.mocked(rendersRepo.createRenderJob).mockResolvedValueOnce(job)
+    mockProvider.submit.mockResolvedValueOnce({ kind: "done", imageBytes: new Uint8Array([1]) })
+    vi.mocked(finalizeLib.finalizeRenderJob).mockResolvedValueOnce(makeJob({ status: "succeeded" }))
+
+    const { sceneMeta: _sceneMeta, ...bodyWithoutSceneMeta } = validBody
+    const res = await POST(
+      await postReq(token, {
+        ...bodyWithoutSceneMeta,
+        pose: validPose,
+        styleNotes: "warm sunset, add a parked car",
+      }),
+      ctx
+    )
+    expect(res.status).toBe(201)
+    expect(mockProvider.submit).toHaveBeenCalledWith(
+      expect.objectContaining({ prompt: expect.stringContaining("client wishes") })
+    )
+    expect(mockProvider.submit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prompt: expect.stringContaining(
+          "never alter, add, or remove any part of the building itself"
+        ),
+      })
+    )
+    expect(vi.mocked(rendersRepo.createRenderJob)).toHaveBeenCalledWith(
+      expect.any(String),
+      USER_ID,
+      expect.objectContaining({ styleNotes: "warm sunset, add a parked car" })
+    )
+  })
+
+  it("styleNotes berisi URL -> prompt & job memuat teks tersanitasi TANPA URL", async () => {
+    const token = await signToken(USER_ID)
+    vi.mocked(layoutsRepo.getLayoutPayload).mockResolvedValueOnce(minimalLayout)
+    vi.mocked(creditsRepo.spendCreditsOnce).mockResolvedValueOnce("ok")
+    const job = makeJob()
+    vi.mocked(rendersRepo.createRenderJob).mockResolvedValueOnce(job)
+    mockProvider.submit.mockResolvedValueOnce({ kind: "done", imageBytes: new Uint8Array([1]) })
+    vi.mocked(finalizeLib.finalizeRenderJob).mockResolvedValueOnce(makeJob({ status: "succeeded" }))
+
+    const { sceneMeta: _sceneMeta, ...bodyWithoutSceneMeta } = validBody
+    const res = await POST(
+      await postReq(token, {
+        ...bodyWithoutSceneMeta,
+        pose: validPose,
+        styleNotes: "add dog https://evil.com/x thanks",
+      }),
+      ctx
+    )
+    expect(res.status).toBe(201)
+    expect(mockProvider.submit).toHaveBeenCalledWith(
+      expect.objectContaining({ prompt: expect.stringContaining("add dog thanks") })
+    )
+    const submittedPrompt = mockProvider.submit.mock.calls[0][0].prompt as string
+    expect(submittedPrompt).not.toContain("evil.com")
+    expect(vi.mocked(rendersRepo.createRenderJob)).toHaveBeenCalledWith(
+      expect.any(String),
+      USER_ID,
+      expect.objectContaining({ styleNotes: "add dog thanks" })
+    )
+  })
+
+  it("400 styleNotes > 240 karakter (zod)", async () => {
+    const token = await signToken(USER_ID)
+    const res = await POST(
+      await postReq(token, { ...validBody, styleNotes: "a".repeat(241) }),
+      ctx
+    )
+    expect(res.status).toBe(400)
+  })
+
+  it("target interior + styleNotes -> prompt interior memuat 'client wishes'", async () => {
+    const token = await signToken(USER_ID)
+    vi.mocked(layoutsRepo.getLayoutPayload).mockResolvedValueOnce(minimalLayout)
+    vi.mocked(creditsRepo.spendCreditsOnce).mockResolvedValueOnce("ok")
+    const job = makeJob({ target: "interior", roomId: "r1" })
+    vi.mocked(rendersRepo.createRenderJob).mockResolvedValueOnce(job)
+    mockProvider.submit.mockResolvedValueOnce({ kind: "done", imageBytes: new Uint8Array([1]) })
+    vi.mocked(finalizeLib.finalizeRenderJob).mockResolvedValueOnce(makeJob({ status: "succeeded" }))
+
+    const { sceneMeta: _sceneMeta, ...bodyWithoutSceneMeta } = validBody
+    const res = await POST(
+      await postReq(token, {
+        ...bodyWithoutSceneMeta,
+        pose: validPose,
+        target: "interior",
+        roomId: "r1",
+        styleNotes: "cozy warm lighting",
+      }),
+      ctx
+    )
+    expect(res.status).toBe(201)
+    expect(mockProvider.submit).toHaveBeenCalledWith(
+      expect.objectContaining({ prompt: expect.stringContaining("client wishes") })
+    )
+    expect(vi.mocked(rendersRepo.createRenderJob)).toHaveBeenCalledWith(
+      expect.any(String),
+      USER_ID,
+      expect.objectContaining({ styleNotes: "cozy warm lighting" })
+    )
+  })
+
+  it("tanpa styleNotes -> prompt TIDAK memuat 'client wishes' & createRenderJob TIDAK menerima styleNotes (regresi byte-path lama)", async () => {
+    const token = await signToken(USER_ID)
+    vi.mocked(creditsRepo.spendCreditsOnce).mockResolvedValueOnce("ok")
+    const job = makeJob()
+    vi.mocked(rendersRepo.createRenderJob).mockResolvedValueOnce(job)
+    mockProvider.submit.mockResolvedValueOnce({ kind: "done", imageBytes: new Uint8Array([1]) })
+    vi.mocked(finalizeLib.finalizeRenderJob).mockResolvedValueOnce(makeJob({ status: "succeeded" }))
+
+    const res = await POST(await postReq(token, validBody), ctx)
+    expect(res.status).toBe(201)
+    const submittedPrompt = mockProvider.submit.mock.calls[0][0].prompt as string
+    expect(submittedPrompt).not.toContain("client wishes")
+    const createArgs = vi.mocked(rendersRepo.createRenderJob).mock.calls[0][2] as {
+      styleNotes?: string
+    }
+    expect(createArgs.styleNotes).toBeUndefined()
+  })
 })
 
 describe("GET /api/v1/projects/[id]/renders", () => {

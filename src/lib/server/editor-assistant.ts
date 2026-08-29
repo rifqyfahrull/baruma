@@ -18,6 +18,7 @@ import { reconcileOverlappingRooms } from "@/lib/audit/reflow"
 import { FURNITURE_LIBRARY, INTERIOR_STYLES, getFurniture } from "@/lib/interior/presets"
 import { OPENING_KIND_META, ROOM_TYPES } from "@/lib/constants"
 import { FACADE_CLADDINGS } from "@/lib/three/facade-claddings"
+import { RENDER_PRESETS } from "./ai-render/prompt"
 import { featureCatalogPromptBlock } from "@/lib/assistant/feature-catalog"
 import { isSelfIntersecting, segmentLength } from "@/lib/exterior/geometry"
 import { findConnectivityRegressions } from "./connectivity-guard"
@@ -54,6 +55,22 @@ const CLADDING_LIST = FACADE_CLADDINGS.map((c) => `${c.id} (${c.label})`).join("
 const OPENING_KIND_LIST = Object.entries(OPENING_KIND_META)
   .map(([id, meta]) => `${id} (${meta.label})`)
   .join(", ")
+
+/** Daftar id RENDER_PRESETS di-inline dari sumber tunggal (ai-render/prompt.ts)
+ *  supaya prompt LLM tidak pernah menyimpang dari preset yang benar-benar ada. */
+const AI_RENDER_PRESET_IDS = RENDER_PRESETS.map((p) => p.id).join("|")
+
+/**
+ * Dokumentasi aksi `aiRender` — sama persis di prompt floorplan & interior
+ * (aksi lintas-mode, lihat `aiRenderActionSchema`). Sengaja TIDAK memicu
+ * render langsung: aksi ini hanya membuka dialog Render AI pre-filled, user
+ * tetap menekan tombol Generate sendiri (kredit terpotong sadar) — lihat
+ * spec 2026-08-29-ai-render-chat-style-notes §1.
+ */
+const AI_RENDER_ACTION_DOC =
+  '- {"type":"aiRender","target":"exterior|interior","roomId?":"<id ruang>","presetId?":"<id preset>","styleNotes?":"<teks Inggris ringkas>"} — buka dialog Render AI PRE-FILLED; TIDAK merender langsung, user tetap menekan Generate sendiri di dialog. HANYA keluarkan aksi ini bila pengguna EKSPLISIT meminta gambar render/visualisasi foto-realistis (bukan sekadar mengubah desain). target "interior" WAJIB roomId — pilih dari nama ruang yang disebut pengguna, cocokkan ke ruang yang ada di scene di atas; target "exterior" tidak memakai roomId. presetId salah satu: ' +
+  AI_RENDER_PRESET_IDS +
+  ' — isi HANYA bila suasana yang disebut pengguna jelas cocok dengan salah satu preset itu, jika tidak biarkan kosong (dialog memakai preset yang sedang aktif). styleNotes = terjemahan RINGKAS ke Bahasa Inggris dari keinginan pengguna, HANYA mood/suasana/cahaya DAN penambahan NON-STRUKTURAL (orang, kendaraan, tanaman/vegetasi, dekor) — JANGAN PERNAH menuliskan instruksi yang mengubah bangunan itu sendiri (dinding, atap, jumlah lantai, material struktur, tata ruang); maksimal 240 karakter.\n'
 
 /**
  * Panduan memilih JENIS pintu — cerminan tabel keputusan `doorSpecFor()`
@@ -211,7 +228,9 @@ function buildFloorplanMessages(
       '- {"type":"removeWaterPoint","id":"<id titik>"} — hapus titik air.\n' +
       '- {"type":"autoGenerateWater","floorId?":"<id lantai>"} — buat titik air default otomatis; tanpa floorId berlaku untuk semua lantai.\n' +
       '- {"type":"moveSanitationObject","kind":"septicTank|soakwell|controlBox","ref?":<indeks bak kontrol>,"x":<meter>,"y":<meter>} — geser objek sanitasi di LAHAN (x/y = koordinat meter absolut pada lahan; ref hanya untuk controlBox = indeks bak).\n' +
-      '- {"type":"autoSizeSanitation"} — hitung ulang & tempatkan septic tank, sumur resapan, dan bak kontrol berukuran SNI (level lahan; tanpa argumen).\n\n' +
+      '- {"type":"autoSizeSanitation"} — hitung ulang & tempatkan septic tank, sumur resapan, dan bak kontrol berukuran SNI (level lahan; tanpa argumen).\n' +
+      AI_RENDER_ACTION_DOC +
+      "\n" +
       "ATURAN:\n" +
       "- HUKUM DASAR RUMAH — langgar ini dan usulanmu ditolak sistem: (a) SETIAP ruang dalam wajib bisa dicapai DARI DALAM rumah, lewat pintu ke ruang tetangga atau koridor; pintu yang hanya membuka ke halaman/luar TIDAK membuat ruang itu terjangkau. (b) Rumah harus tersambung dari DEPAN ke BELAKANG di dalam — penghuni tidak boleh dipaksa keluar rumah (mis. memutar lewat carport/taman) untuk pindah antar ruang. (c) Jangan menghapus atau memindahkan pintu yang merupakan SATU-SATUNYA akses dalam sebuah ruang tanpa menyediakan penggantinya di usulan yang sama. (d) Ruang baru (addRoom) wajib disertai pintu yang menyambungkannya ke ruang yang sudah terhubung. Sebelum mengirim usulan, telusuri jalur kaki dari pintu masuk utama ke tiap ruang; bila ada yang tak tercapai, tambahkan pintu/koridor penghubung dalam usulan yang sama.\n" +
       '- KAPAN MEMBUAT KORIDOR: bila sebuah ruang hanya bertetangga dengan ruang PRIVAT lain (kamar tidur/kamar mandi orang), menambah pintu berarti memaksa penghuni menembus kamar orang — itu SALAH. Jawabannya ruang sirkulasi: {"type":"addRoom","roomType":"koridor","floorId":"<id>","x":..,"y":..,"width":..,"depth":..} selebar 0,9–1,2 m pada celah antara area sirkulasi (ruang tamu/keluarga) dan ruang-ruang terkurung, LALU tambahkan pintu dari tiap ruang itu ke koridor. Lebih baik mengorbankan sedikit luas ruang servis daripada membiarkan kamar hanya bisa dimasuki lewat kamar lain.\n' +
@@ -396,7 +415,9 @@ function buildInteriorMessages(
       '- {"type":"addLight","roomId":"<id>","lightType":"downlight|pendant|wall_lamp|indirect|task|outdoor"} — tambah lampu baru.\n' +
       '- {"type":"moveLight","roomId":"<id>","lightId":"<id lampu di ruang>","x":<meter>,"y":<meter>} — geser posisi lampu.\n' +
       '- {"type":"updateLight","roomId":"<id>","lightId":"<id lampu>","patch":{"lightType"?:"...","colorTemperature"?:"warm|neutral|cool","qty"?:<int>,"heightM"?:<meter>,"watt"?:<1-200, daya per unit — dipakai sirkuit/RAB/estimasi energi>}} — ubah properti lampu.\n' +
-      '- {"type":"removeLight","roomId":"<id>","lightId":"<id lampu>"} — hapus lampu.\n\n' +
+      '- {"type":"removeLight","roomId":"<id>","lightId":"<id lampu>"} — hapus lampu.\n' +
+      AI_RENDER_ACTION_DOC +
+      "\n" +
       "ATURAN:\n" +
       "- HANYA gunakan roomId yang ADA di RUANG di bawah, dan furnitureId katalog dari DAFTAR FURNITUR.\n" +
       "- Untuk move/rotate/remove, furnitureId adalah id furnitur yang SUDAH ada di ruang itu (lihat scene), bukan id katalog.\n" +
@@ -487,6 +508,16 @@ function sanitizeFloorplan(raw: unknown[], scene: FloorplanScene): FloorplanActi
     if (!parsed.success) continue
     const a = parsed.data
 
+    if (a.type === "aiRender") {
+      // Mirrors sanitizeInterior's aiRender branch: fully validated by the
+      // zod schema already (target enum, styleNotes ≤240) and roomId is
+      // OPTIONAL (target "exterior" has no room) — skip the generic roomId
+      // guard below. Without this branch a floorplan-mode aiRender would be
+      // silently dropped (roomId, when present, doesn't refer to a
+      // FloorplanRoom the loop below would resolve).
+      out.push(a)
+      continue
+    }
     if (a.type === "updateRoom" || a.type === "addOpening" || a.type === "deleteRoom") {
       const room = roomById.get(a.roomId)
       if (!room) continue
@@ -875,6 +906,15 @@ function sanitizeInterior(raw: unknown[], scene: InteriorScene): InteriorAction[
 
     if (a.type === "setStyle") {
       out.push(a) // style already validated by the enum schema
+      continue
+    }
+    if (a.type === "aiRender") {
+      // Fully validated by the zod schema already (target enum, styleNotes
+      // ≤240) and roomId is OPTIONAL (target "exterior" has no room) — skip
+      // the generic roomId guard below. Prompt grounding/instructions for
+      // the LLM to emit this land in a follow-up task; forward a well-formed
+      // call through untouched so it survives sanitization.
+      out.push(a)
       continue
     }
     const room = roomById.get(a.roomId)

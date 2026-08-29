@@ -30,6 +30,9 @@ interface RenderJobRow {
   target: string
   room_id: string | null
   camera_pose: unknown
+  // 0044_render_style_notes.sql — "catatan gaya" user tersanitasi (audit),
+  // lihat komentar `styleNotes` di `RenderJob` di bawah.
+  style_notes: string | null
 }
 
 export type RenderJobStatus = "queued" | "submitted" | "processing" | "succeeded" | "failed"
@@ -60,6 +63,11 @@ export interface RenderJob {
   target: string
   roomId?: string
   cameraPose?: unknown
+  // 0044_render_style_notes.sql (spec 2026-08-29, AI Render × Chat) —
+  // "catatan gaya" user TERSANITASI (src/lib/server/ai-render/style-notes.ts)
+  // yang dikomposisikan ke prompt sbg klausa terapit. Disimpan utk audit/
+  // galeri (kolom sudah ada, UI galeri menyusul — di luar cakupan task ini).
+  styleNotes?: string
 }
 
 // Kolom eksplisit (gaya assets.ts/projects.ts) — hindari `SELECT *` biar kolom
@@ -67,7 +75,7 @@ export interface RenderJob {
 const COLS =
   "id, owner_id, project_id, status, mode, preset, shot_id, seed, credits_spent, " +
   "provider, provider_request_id, params_hash, input_keys, output_key, watermarked, " +
-  "error_message, created_at, updated_at, target, room_id, camera_pose"
+  "error_message, created_at, updated_at, target, room_id, camera_pose, style_notes"
 
 function rowToRenderJob(row: RenderJobRow): RenderJob {
   return {
@@ -92,6 +100,7 @@ function rowToRenderJob(row: RenderJobRow): RenderJob {
     target: row.target,
     roomId: row.room_id ?? undefined,
     cameraPose: row.camera_pose ?? undefined,
+    styleNotes: row.style_notes ?? undefined,
   }
 }
 
@@ -126,6 +135,13 @@ export async function createRenderJob(
     // eksplisit").
     target?: string
     roomId?: string
+    // Spec 2026-08-29 (AI Render × Chat — Style Notes). Kolom DINAMIS
+    // (pola sama dgn target/roomId): route sudah mensanitasi via
+    // `sanitizeStyleNotes` sebelum sampai sini, jadi nilai di sini
+    // diasumsikan bersih; hanya disisipkan ke INSERT saat diberikan ->
+    // job lama (dan render tanpa catatan gaya) tetap NULL, tak menyentuh
+    // jalur eksisting.
+    styleNotes?: string
   }
 ): Promise<RenderJob> {
   const cols = [
@@ -167,6 +183,10 @@ export async function createRenderJob(
   if (opts.roomId !== undefined) {
     cols.push("room_id")
     vals.push(opts.roomId)
+  }
+  if (opts.styleNotes !== undefined) {
+    cols.push("style_notes")
+    vals.push(opts.styleNotes)
   }
   const placeholders = vals.map((_, i) => `$${i + 1}`).join(",")
 

@@ -30,8 +30,17 @@ import { AgentClarificationWizard } from "@/components/assistant/agent-clarifica
 import { parseClarificationSteps } from "@/lib/assistant/clarification-parser"
 import { useEditorStore } from "@/stores/editor-store"
 import { useInteriorStore } from "@/stores/interior-store"
+import { usePreviewStore } from "@/stores/preview-store"
 import { useProjectAgentUiStore, type RequestedAgentMode } from "@/stores/project-agent-ui-store"
 import { cn } from "@/lib/utils"
+
+/** Aksi `aiRender` — bagian dari KEDUA union (floorplan & interior, lihat
+ *  `aiRenderActionSchema`). Dipakai untuk narrow array saat memisahkannya
+ *  dari aksi "nyata" sebelum apply atomic — lihat `applyMessage`. */
+type AiRenderAction = Extract<FloorplanAction | InteriorAction, { type: "aiRender" }>
+function isAiRenderAction(a: FloorplanAction | InteriorAction): a is AiRenderAction {
+  return a.type === "aiRender"
+}
 
 const MODE_LABEL: Record<AssistantMode, string> = {
   brief: "Brief",
@@ -306,16 +315,46 @@ export function ProjectAgentPanel({
       openTarget(message)
       return
     }
+    const actions = message.actions as (FloorplanAction | InteriorAction)[]
+    // Aksi `aiRender` DIINTERSEP di sini — bukan diteruskan ke apply atomic
+    // (apply.ts hanya no-op defensif utknya). Buka dialog Render AI
+    // pre-filled lewat store alih-alih render langsung dari chat (spec
+    // 2026-08-29 ai-render-chat-style-notes: user tetap menekan Generate
+    // sendiri, kredit terpotong sadar). Hanya aksi PERTAMA yang dipakai bila
+    // AI mengeluarkan lebih dari satu (tak terduga dlm praktik).
+    const aiRenderActions = actions.filter(isAiRenderAction)
+    const rest = actions.filter((a) => !isAiRenderAction(a))
+
+    if (aiRenderActions.length > 0) {
+      const first = aiRenderActions[0]
+      usePreviewStore.getState().requestAiRenderPrefill({
+        target: first.target,
+        roomId: first.roomId,
+        presetId: first.presetId,
+        styleNotes: first.styleNotes,
+      })
+      toast.info("Dialog Render AI disiapkan — buka Preview 3D bila belum")
+    }
+
+    if (rest.length === 0) {
+      // Pesan berisi aiRender saja: tak ada apply atomic (rest kosong akan
+      // langsung false-kan applyFloorplanActionsAtomic/applyInteriorActionsAtomic
+      // — array kosong dianggap gagal), jadi lewati; tetap tandai "applied"
+      // supaya kartu usulan tak menggantung di "proposed" selamanya.
+      setStatus.mutate({ messageId: message.id, status: "applied" })
+      return
+    }
+
     const success = message.mode === "floorplan"
-      ? applyFloorplanActionsAtomic(message.actions as FloorplanAction[])
-      : applyInteriorActionsAtomic(message.actions as InteriorAction[])
+      ? applyFloorplanActionsAtomic(rest as FloorplanAction[])
+      : applyInteriorActionsAtomic(rest as InteriorAction[])
     if (!success) {
       toast.error("Usulan sudah tidak cocok dengan kondisi terbaru. Minta AI Agent membuat usulan baru.")
       return
     }
     setStatus.mutate(
       { messageId: message.id, status: "applied" },
-      { onSuccess: () => toast.success(`${message.actions!.length} perubahan diterapkan sebagai satu langkah Undo.`) }
+      { onSuccess: () => toast.success(`${rest.length} perubahan diterapkan sebagai satu langkah Undo.`) }
     )
   }
 

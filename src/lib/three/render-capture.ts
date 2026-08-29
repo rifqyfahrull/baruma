@@ -28,6 +28,14 @@ export type RenderParamsInput = {
   preset: string
   seed: number
   mode: string
+  /**
+   * Catatan gaya opsional dari dialog Render AI (chat pre-fill ATAU diketik
+   * manual — spec 2026-08-29 ai-render-chat-style-notes). Diikutkan ke kunci
+   * hash HANYA bila ada (lihat `renderParamsHash`) — catatan berbeda = cache
+   * entry berbeda; absen → kunci byte-identik dgn skema lama (kompat cache
+   * lintas render tanpa catatan gaya).
+   */
+  styleNotes?: string
 }
 
 /**
@@ -179,14 +187,15 @@ export function depthPixelsToGrayscale(
  * lintas proses/deploy — TIDAK boleh memakai `Math.random`/waktu.
  */
 export function renderParamsHash(input: RenderParamsInput): string {
-  const key = [
-    String(input.layoutRevision),
-    input.view,
-    input.lighting,
-    input.preset,
-    String(input.seed),
-    input.mode,
-  ].join(":")
+  const key =
+    [
+      String(input.layoutRevision),
+      input.view,
+      input.lighting,
+      input.preset,
+      String(input.seed),
+      input.mode,
+    ].join(":") + (input.styleNotes ? `:notes:${input.styleNotes}` : "")
   let hash = 0x811c9dc5
   for (let i = 0; i < key.length; i++) {
     hash ^= key.charCodeAt(i)

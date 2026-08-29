@@ -30,6 +30,7 @@ import {
 import type { CameraPose, RoomFacts } from "@/lib/server/ai-render"
 import type { DesignLayout } from "@/types"
 import { polishScene } from "@/lib/server/ai-render/polish"
+import { sanitizeStyleNotes } from "@/lib/server/ai-render/style-notes"
 import { finalizeRenderJob, failRenderJob } from "@/lib/server/ai-render/finalize"
 import { renderJobView } from "@/lib/server/ai-render/view"
 import { ok, err, errCode, handleError } from "@/lib/server/response"
@@ -85,6 +86,11 @@ const bodySchema = z.object({
   // analyzeRoom di ./ai-render/analyze-room.ts).
   target: z.enum(["exterior", "interior"]).optional(),
   roomId: z.string().min(1).optional(),
+  // Task 3 (spec 2026-08-29 §4 Server) — "catatan gaya" bebas dari dialog
+  // Render AI (manual atau prefill dari chat Asisten). Disanitasi via
+  // `sanitizeStyleNotes` sebelum dipakai (lihat di bawah) — nilai mentah di
+  // sini TIDAK PERNAH langsung disisipkan ke prompt/DB.
+  styleNotes: z.string().max(240).optional(),
 })
 
 const VALID_PRESET_IDS = new Set(RENDER_PRESETS.map((p) => p.id))
@@ -139,9 +145,14 @@ export async function POST(
     }
     const parsed = bodySchema.safeParse(raw)
     if (!parsed.success) return err(400, parsed.error.issues[0]?.message ?? "Invalid input")
-    const { mode, preset, shotId, clientRequestId, inputKeys, paramsHash, pose, sceneMeta, target, roomId } =
+    const { mode, preset, shotId, clientRequestId, inputKeys, paramsHash, pose, sceneMeta, target, roomId, styleNotes } =
       parsed.data
     const isInterior = target === "interior"
+    // Sanitasi sekali di sini — dipakai apa adanya oleh kedua jalur prompt
+    // (v2 eksterior & interior) DAN createRenderJob di bawah; undefined-safe
+    // (lihat sanitizeStyleNotes) sehingga jalur tanpa styleNotes byte-identik
+    // dgn sebelum fitur ini.
+    const cleanNotes = sanitizeStyleNotes(styleNotes)
 
     // Interior WAJIB pose kamera (dipakai analyzeRoom utk deteksi ruang bila
     // roomId absen, DAN utk cameraPose yang disimpan ke job) — dicek SEBELUM
@@ -268,13 +279,13 @@ export async function POST(
       // Guard pra-spend di atas menjamin roomFacts non-null & pose ada di
       // sini (isInterior hanya true setelah kedua hal itu tervalidasi).
       const polished = await polishScene(roomFacts!)
-      prompt = compilePromptInterior(roomFacts!, preset, polished)
+      prompt = compilePromptInterior(roomFacts!, preset, polished, cleanNotes)
       cameraPose = pose
     } else if (pose) {
       if (layout) {
         const facts = analyzeScene(layout, project.site, pose)
         const polished = await polishScene(facts)
-        prompt = compilePromptV2(facts, preset, polished)
+        prompt = compilePromptV2(facts, preset, polished, cleanNotes)
         cameraPose = pose
       } else {
         // Guard di atas (sebelum spendCreditsOnce) menjamin sceneMeta ada
@@ -303,6 +314,10 @@ export async function POST(
       // Hanya diisi utk interior — eksterior tetap bergantung DEFAULT DB
       // (lihat komentar opts.target di repo/renders.ts).
       ...(isInterior ? { target: "interior", roomId: roomFacts!.roomId } : {}),
+      // Kolom dinamis (pola sama dgn target/roomId di atas) — repo hanya
+      // menyisipkannya ke INSERT saat !== undefined, jadi jalur tanpa
+      // styleNotes tak menyentuh kolom style_notes sama sekali.
+      styleNotes: cleanNotes,
     })
 
     const provider = getRenderProvider(mode)

@@ -134,6 +134,10 @@ export type AiRenderJob = {
   /** Hanya render interior per ruang: id ruangan yang dirender (hasil
    *  resolusi server — utk label galeri, di-join ke layout.rooms klien). */
   roomId?: string;
+  /** Catatan gaya opsional (chat pre-fill ATAU diketik manual di dialog —
+   *  spec 2026-08-29 ai-render-chat-style-notes). Absen di job lama pra-
+   *  fitur ini. */
+  styleNotes?: string;
   watermarked: boolean;
   outputUrl: string | null;
   errorMessage?: string;
